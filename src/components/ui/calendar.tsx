@@ -23,20 +23,20 @@ function Calendar({
             showOutsideDays={showOutsideDays}
             className={cn("p-3 pointer-events-auto", className)}
             classNames={{
-                months: "flex flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0",
-                month: "space-y-4",
+                months: "flex flex-col sm:flex-row space-y-4 sm:space-y-0",
+                month: "space-y-4 relative mx-2",
                 month_caption: "flex justify-center pt-1 relative items-center",
                 caption_label: "text-sm font-medium",
-                nav: "space-x-1 flex items-center",
+                nav: "flex items-center",
                 button_previous: cn(
                     buttonVariants({ variant: "outline" }),
                     "h-7 w-7 bg-transparent p-0 opacity-50 hover:opacity-100",
-                    "absolute right-1"
+                    "absolute right-2 top-2 z-10"
                 ),
                 button_next: cn(
                     buttonVariants({ variant: "outline" }),
                     "h-7 w-7 bg-transparent p-0 opacity-50 hover:opacity-100",
-                    "absolute left-1"
+                    "absolute left-2 top-2 z-10"
                 ),
                 month_grid: "w-full border-collapse space-y-1",
                 weekdays: "flex",
@@ -50,7 +50,7 @@ function Calendar({
                 ),
                 range_end: "day-range-end",
                 selected:
-                    "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground focus:bg-primary focus:text-primary-foreground",
+                    "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground focus:bg-primary focus:text-primary-foreground rounded-md",
                 today: "bg-accent text-accent-foreground",
                 outside:
                     "day-outside text-muted-foreground opacity-50 aria-selected:bg-accent/50 aria-selected:text-muted-foreground aria-selected:opacity-30",
@@ -62,7 +62,7 @@ function Calendar({
             }}
             components={{
                 Chevron: ({ orientation }) => {
-                    const Icon = orientation === "left" ? ChevronLeft : ChevronRight
+                    const Icon = orientation === "left" ? ChevronRight : ChevronLeft
                     return <Icon className="h-4 w-4" />
                 },
             }}
