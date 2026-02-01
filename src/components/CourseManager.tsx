@@ -1,13 +1,12 @@
 import * as React from "react"
 import { format, parseISO } from "date-fns"
 import { DatePicker } from "@/components/ui/date-picker"
-import { Plus, Trash2 } from "lucide-react"
+import { Trash2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
-
-
+import { Card, CardContent } from "@/components/ui/card"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import type { Course } from "@/types"
 
@@ -28,6 +27,7 @@ const DAYS = [
 ]
 
 export function CourseManager({ courses, onAddCourse, onDeleteCourse }: CourseManagerProps) {
+    const [isDialogOpen, setIsDialogOpen] = React.useState(false)
     const [name, setName] = React.useState("")
     const [startDate, setStartDate] = React.useState("")
 
@@ -52,11 +52,13 @@ export function CourseManager({ courses, onAddCourse, onDeleteCourse }: CourseMa
             totalLessons: limitType === 'count' ? parseInt(lessonCount) : undefined
         })
 
+        // Reset form
         setName("")
         setStartDate("")
         setSelectedDays([])
         setEndDate("")
         setLessonCount("")
+        setIsDialogOpen(false)
     }
 
     const toggleDay = (day: number) => {
@@ -66,13 +68,45 @@ export function CourseManager({ courses, onAddCourse, onDeleteCourse }: CourseMa
     }
 
     return (
-        <div className="pb-20 grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
-            <Card className="border-none shadow-md bg-white/50 backdrop-blur-sm">
-                <CardHeader>
-                    <CardTitle className="text-xl text-primary">הוספת חוג חדש</CardTitle>
-                    <CardDescription>הזן את פרטי החוג כדי להתחיל במעקב</CardDescription>
-                </CardHeader>
-                <CardContent>
+        <div className="pb-20 space-y-6">
+            <div className="space-y-4">
+                <h3 className="font-semibold text-lg px-2">החוגים שלי</h3>
+                {courses.length === 0 ? (
+                    <p className="text-muted-foreground text-center py-8">עדיין לא הוספת חוגים</p>
+                ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {courses.map(course => (
+                            <Card key={course.id} className="overflow-hidden">
+                                <CardContent className="p-4 flex items-center justify-between">
+                                    <div>
+                                        <h4 className="font-bold">{course.name}</h4>
+                                        <p className="text-sm text-muted-foreground">
+                                            ימי {course.daysOfWeek.map(d => DAYS.find(day => day.value === d)?.label).join(', ')}
+                                        </p>
+                                    </div>
+                                    <Button variant="ghost" size="icon" onClick={() => onDeleteCourse(course.id)} className="text-destructive hover:bg-destructive/10">
+                                        <Trash2 className="w-5 h-5" />
+                                    </Button>
+                                </CardContent>
+                            </Card>
+                        ))}
+                    </div>
+                )}
+            </div>
+
+            <Button
+                onClick={() => setIsDialogOpen(true)}
+                className="w-full md:w-auto text-base font-bold shadow-lg shadow-primary/20 gap-2"
+            >
+                הוסף חוג חדש
+            </Button>
+
+            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+                <DialogContent className="w-full h-full max-w-none max-h-none rounded-none md:w-auto md:h-auto md:max-w-md md:max-h-[90vh] md:rounded-lg overflow-y-auto">
+                    <DialogHeader>
+                        <DialogTitle className="text-xl text-primary">הוספת חוג חדש</DialogTitle>
+                        <DialogDescription>הזן את פרטי החוג כדי להתחיל במעקב</DialogDescription>
+                    </DialogHeader>
                     <form onSubmit={handleSubmit} className="space-y-4">
                         <div className="space-y-2">
                             <Label htmlFor="name">שם החוג</Label>
@@ -141,36 +175,12 @@ export function CourseManager({ courses, onAddCourse, onDeleteCourse }: CourseMa
                             </Tabs>
                         </div>
 
-                        <Button type="submit" className="w-full mt-4 text-base font-bold shadow-lg shadow-primary/20 gap-2">
-                            <Plus className="w-5 h-5" />
+                        <Button type="submit" className="w-full mt-4 text-base font-bold shadow-lg shadow-primary/20">
                             הוסף חוג
                         </Button>
                     </form>
-                </CardContent>
-            </Card>
-
-            <div className="space-y-4">
-                <h3 className="font-semibold text-lg px-2">החוגים שלי</h3>
-                {courses.length === 0 ? (
-                    <p className="text-muted-foreground text-center py-8">עדיין לא הוספת חוגים</p>
-                ) : (
-                    courses.map(course => (
-                        <Card key={course.id} className="overflow-hidden">
-                            <CardContent className="p-4 flex items-center justify-between">
-                                <div>
-                                    <h4 className="font-bold">{course.name}</h4>
-                                    <p className="text-sm text-muted-foreground">
-                                        ימי {course.daysOfWeek.map(d => DAYS.find(day => day.value === d)?.label).join(', ')}
-                                    </p>
-                                </div>
-                                <Button variant="ghost" size="icon" onClick={() => onDeleteCourse(course.id)} className="text-destructive hover:bg-destructive/10">
-                                    <Trash2 className="w-5 h-5" />
-                                </Button>
-                            </CardContent>
-                        </Card>
-                    ))
-                )}
-            </div>
+                </DialogContent>
+            </Dialog>
         </div >
     )
 }
