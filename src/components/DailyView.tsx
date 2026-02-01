@@ -1,5 +1,5 @@
 import * as React from "react"
-import { Check, X, Calendar as CalendarIcon } from "lucide-react"
+import { Check, X, Calendar as CalendarIcon, Trash2 } from "lucide-react"
 import { format, parseISO, isToday } from "date-fns"
 import { Card, CardContent } from "@/components/ui/card"
 import { Switch } from "@/components/ui/switch"
@@ -16,6 +16,7 @@ interface DailyViewProps {
     onUpdateAttendance: (sessionId: string, data: Session['attendance']) => void
     onScheduleReplacement: (sessionId: string) => void
     onUpdateSessionDate: (sessionId: string, newDate: string) => void
+    onDeleteSession: (sessionId: string) => void
 }
 
 const REASONS: { value: AbsenceReason; label: string }[] = [
@@ -26,7 +27,7 @@ const REASONS: { value: AbsenceReason; label: string }[] = [
     { value: "other", label: "אחר" },
 ]
 
-export function DailyView({ sessions, courses, onUpdateAttendance, onScheduleReplacement, onUpdateSessionDate }: DailyViewProps) {
+export function DailyView({ sessions, courses, onUpdateAttendance, onScheduleReplacement, onUpdateSessionDate, onDeleteSession }: DailyViewProps) {
     const [showFuture, setShowFuture] = React.useState(false)
     const [selectedCourseId, setSelectedCourseId] = React.useState<string>("all")
 
@@ -95,10 +96,12 @@ export function DailyView({ sessions, courses, onUpdateAttendance, onScheduleRep
                         <SessionCard
                             key={session.id}
                             session={session}
+                            sessions={sessions}
                             isNext={nextSessionIds.has(session.id)}
                             onUpdate={onUpdateAttendance}
                             onScheduleReplacement={onScheduleReplacement}
                             onUpdateSessionDate={onUpdateSessionDate}
+                            onDeleteSession={onDeleteSession}
                         />
                     ))
                 )}
@@ -107,9 +110,17 @@ export function DailyView({ sessions, courses, onUpdateAttendance, onScheduleRep
     )
 }
 
-function SessionCard({ session, isNext, onUpdate, onScheduleReplacement, onUpdateSessionDate }: { session: Session; isNext?: boolean; onUpdate: (id: string, data: Session['attendance']) => void; onScheduleReplacement: (id: string) => void; onUpdateSessionDate: (id: string, d: string) => void }) {
+function SessionCard({ session, sessions, isNext, onUpdate, onScheduleReplacement, onUpdateSessionDate, onDeleteSession }: { session: Session; sessions: Session[]; isNext?: boolean; onUpdate: (id: string, data: Session['attendance']) => void; onScheduleReplacement: (id: string) => void; onUpdateSessionDate: (id: string, d: string) => void; onDeleteSession: (id: string) => void }) {
     const isPresent = session.attendance?.status === 'present'
     const isAbsent = session.attendance?.status === 'absent'
+
+    // Calculate replacement limits for this course
+    const courseSessions = sessions.filter(s => s.courseId === session.courseId)
+    const personalAbsences = courseSessions.filter(s => s.attendance?.status === 'absent' && s.attendance.reason === 'personal').length
+    const absent = courseSessions.filter(s => s.attendance?.status === 'absent').length
+    const entitledReplacements = absent - personalAbsences
+    const actualReplacements = courseSessions.filter(s => s.isReplacement).length
+    const canAddReplacement = actualReplacements < entitledReplacements
 
     const handleStatusChange = (status: 'present' | 'absent') => {
         onUpdate(session.id, {
@@ -163,7 +174,18 @@ function SessionCard({ session, isNext, onUpdate, onScheduleReplacement, onUpdat
                             />
                         </div>
                     </div>
-                    {isToday(dateObj) && <span className="text-xs font-bold px-2 py-1 bg-blue-100 text-blue-700 rounded-full">היום</span>}
+                    <div className="flex items-center gap-2">
+                        {isToday(dateObj) && <span className="text-xs font-bold px-2 py-1 bg-blue-100 text-blue-700 rounded-full">היום</span>}
+                        {session.isReplacement && (
+                            <button
+                                onClick={() => onDeleteSession(session.id)}
+                                className="p-1.5 rounded-lg text-rose-600 hover:bg-rose-100 transition-colors"
+                                title="מחק שיעור השלמה"
+                            >
+                                <Trash2 className="w-4 h-4" />
+                            </button>
+                        )}
+                    </div>
                 </div>
 
                 <div className="flex gap-3 mb-4">
@@ -231,10 +253,15 @@ function SessionCard({ session, isNext, onUpdate, onScheduleReplacement, onUpdat
 
                         <button
                             onClick={() => onScheduleReplacement(session.id)}
-                            className="w-full mt-2 py-2 text-sm font-medium text-orange-600 bg-orange-50 hover:bg-orange-100 rounded-lg border border-orange-200 transition-colors flex items-center justify-center gap-2"
+                            disabled={!canAddReplacement}
+                            className={`w-full mt-2 py-2 text-sm font-medium rounded-lg border transition-colors flex items-center justify-center gap-2 ${canAddReplacement
+                                ? 'text-orange-600 bg-orange-50 hover:bg-orange-100 border-orange-200 cursor-pointer'
+                                : 'text-gray-400 bg-gray-50 border-gray-200 cursor-not-allowed opacity-60'
+                                }`}
+                            title={canAddReplacement ? 'קבע שיעור השלמה' : `הגעת למגבלת ההשלמות (${actualReplacements}/${entitledReplacements})`}
                         >
                             <CalendarIcon className="w-4 h-4" />
-                            קבע שיעור השלמה
+                            קבע שיעור השלמה {!canAddReplacement && `(${actualReplacements}/${entitledReplacements})`}
                         </button>
                     </>
                 )}

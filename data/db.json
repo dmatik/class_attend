@@ -15,9 +15,10 @@
       "name": "דימה",
       "startDate": "2026-01-02",
       "daysOfWeek": [
+        0,
         1
       ],
-      "totalLessons": 10
+      "totalLessons": 11
     }
   ],
   "sessions": [
@@ -171,82 +172,80 @@
       "date": "2026-03-08"
     },
     {
-      "id": "a6629ec9-9738-4df3-b82e-ad6debd74c79",
+      "id": "86772a95-c0cd-47f8-b2d9-20a08ea07d65",
       "courseId": "bf5aa5cb-e45a-47de-baec-666be9678221",
       "courseName": "דימה",
-      "date": "2026-01-05",
-      "attendance": {
-        "status": "present"
-      }
+      "date": "2026-01-05"
     },
     {
-      "id": "3c854a4e-737f-46ba-8a9c-3555b0ba3f38",
+      "id": "51fce550-3f69-4ab5-a9d9-f2089b10d877",
       "courseId": "bf5aa5cb-e45a-47de-baec-666be9678221",
       "courseName": "דימה",
-      "date": "2026-01-12",
-      "attendance": {
-        "status": "present"
-      }
+      "date": "2026-01-12"
     },
     {
-      "id": "bba04208-b78b-4b60-b07e-d0a1decf6c00",
+      "id": "d6360ff1-0d46-420c-8f45-ebeda2dc0eca",
       "courseId": "bf5aa5cb-e45a-47de-baec-666be9678221",
       "courseName": "דימה",
-      "date": "2026-01-19",
-      "attendance": {
-        "status": "present"
-      }
+      "date": "2026-01-19"
     },
     {
-      "id": "cd955b5d-9030-4cbe-be3a-9af28c3b6015",
+      "id": "4c70005d-b5d6-45db-bc35-2119c245a93c",
       "courseId": "bf5aa5cb-e45a-47de-baec-666be9678221",
       "courseName": "דימה",
       "date": "2026-01-26",
       "attendance": {
-        "status": "present"
+        "status": "absent",
+        "reason": "holiday"
       }
     },
     {
-      "id": "1fc5aae3-544f-43fb-aab7-ac4fece9a784",
+      "id": "7c5b8300-edea-4776-999e-82a607098aa1",
+      "courseId": "bf5aa5cb-e45a-47de-baec-666be9678221",
+      "courseName": "דימה",
+      "date": "2026-02-01"
+    },
+    {
+      "id": "306ed006-1330-442a-b6f0-0be5421733aa",
       "courseId": "bf5aa5cb-e45a-47de-baec-666be9678221",
       "courseName": "דימה",
       "date": "2026-02-02"
     },
     {
-      "id": "e9934111-1a8d-4acc-bf87-0662949a4b0d",
+      "id": "e6c166af-26ce-445d-93f4-3244ab21ec17",
+      "courseId": "bf5aa5cb-e45a-47de-baec-666be9678221",
+      "courseName": "דימה",
+      "date": "2026-02-08"
+    },
+    {
+      "id": "157bfda6-e306-465a-9930-29132da71217",
       "courseId": "bf5aa5cb-e45a-47de-baec-666be9678221",
       "courseName": "דימה",
       "date": "2026-02-09"
     },
     {
-      "id": "e1c4a629-c71c-4732-896d-b21268706ecd",
+      "id": "23b62583-ae94-44d1-95ab-e9e80a09f2e3",
+      "courseId": "bf5aa5cb-e45a-47de-baec-666be9678221",
+      "courseName": "דימה",
+      "date": "2026-02-15"
+    },
+    {
+      "id": "4f3bf06a-4f72-40c7-b1bc-827accd157f6",
       "courseId": "bf5aa5cb-e45a-47de-baec-666be9678221",
       "courseName": "דימה",
       "date": "2026-02-16"
     },
     {
-      "id": "2685ed83-c514-4e3a-a5c6-dd58c857e3b0",
+      "id": "30d304cc-15f3-4679-9c75-42db8fa0ffcc",
       "courseId": "bf5aa5cb-e45a-47de-baec-666be9678221",
       "courseName": "דימה",
-      "date": "2026-02-23"
+      "date": "2026-02-22"
     },
     {
-      "id": "d299bb17-3004-4ed0-9990-e4bc2dc354f6",
+      "id": "a469988d-b3fe-4dee-8d4e-916f938594a3",
       "courseId": "bf5aa5cb-e45a-47de-baec-666be9678221",
       "courseName": "דימה",
-      "date": "2026-03-02"
-    },
-    {
-      "id": "aa1388ba-fb66-4540-837f-48c2a0b968ba",
-      "courseId": "bf5aa5cb-e45a-47de-baec-666be9678221",
-      "courseName": "דימה",
-      "date": "2026-03-09"
-    },
-    {
-      "id": "0701fcd5-a4a0-4ef2-84da-be8cea0aa551",
-      "courseId": "e1146eb2-0a8d-4324-b0e6-89ed5aab0bca",
-      "courseName": "שחייה",
-      "date": "2026-03-13",
+      "date": "2026-02-23",
       "isReplacement": true
     }
   ]

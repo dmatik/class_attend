@@ -1,7 +1,7 @@
 import * as React from "react"
 import { format, parseISO } from "date-fns"
 import { DatePicker } from "@/components/ui/date-picker"
-import { Trash2 } from "lucide-react"
+import { Trash2, Edit } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -13,6 +13,7 @@ import type { Course } from "@/types"
 interface CourseManagerProps {
     courses: Course[]
     onAddCourse: (course: Course) => void
+    onEditCourse: (course: Course) => void
     onDeleteCourse: (id: string) => void
 }
 
@@ -26,8 +27,9 @@ const DAYS = [
     { label: "ש", value: 6 },
 ]
 
-export function CourseManager({ courses, onAddCourse, onDeleteCourse }: CourseManagerProps) {
+export function CourseManager({ courses, onAddCourse, onEditCourse, onDeleteCourse }: CourseManagerProps) {
     const [isDialogOpen, setIsDialogOpen] = React.useState(false)
+    const [editingCourse, setEditingCourse] = React.useState<Course | null>(null)
     const [name, setName] = React.useState("")
     const [startDate, setStartDate] = React.useState("")
 
@@ -43,14 +45,27 @@ export function CourseManager({ courses, onAddCourse, onDeleteCourse }: CourseMa
         if (limitType === 'date' && !endDate) return
         if (limitType === 'count' && !lessonCount) return
 
-        onAddCourse({
-            id: crypto.randomUUID(),
-            name,
-            startDate,
-            daysOfWeek: selectedDays,
-            endDate: limitType === 'date' ? endDate : undefined,
-            totalLessons: limitType === 'count' ? parseInt(lessonCount) : undefined
-        })
+        if (editingCourse) {
+            // Edit mode
+            onEditCourse({
+                id: editingCourse.id,
+                name,
+                startDate,
+                daysOfWeek: selectedDays,
+                endDate: limitType === 'date' ? endDate : undefined,
+                totalLessons: limitType === 'count' ? parseInt(lessonCount) : undefined
+            })
+        } else {
+            // Add mode
+            onAddCourse({
+                id: crypto.randomUUID(),
+                name,
+                startDate,
+                daysOfWeek: selectedDays,
+                endDate: limitType === 'date' ? endDate : undefined,
+                totalLessons: limitType === 'count' ? parseInt(lessonCount) : undefined
+            })
+        }
 
         // Reset form
         setName("")
@@ -58,6 +73,7 @@ export function CourseManager({ courses, onAddCourse, onDeleteCourse }: CourseMa
         setSelectedDays([])
         setEndDate("")
         setLessonCount("")
+        setEditingCourse(null)
         setIsDialogOpen(false)
     }
 
@@ -65,6 +81,34 @@ export function CourseManager({ courses, onAddCourse, onDeleteCourse }: CourseMa
         setSelectedDays(prev =>
             prev.includes(day) ? prev.filter(d => d !== day) : [...prev, day]
         )
+    }
+
+    const handleEditClick = (course: Course) => {
+        setEditingCourse(course)
+        setName(course.name)
+        setStartDate(course.startDate)
+        setSelectedDays(course.daysOfWeek)
+        if (course.endDate) {
+            setLimitType('date')
+            setEndDate(course.endDate)
+        } else if (course.totalLessons) {
+            setLimitType('count')
+            setLessonCount(course.totalLessons.toString())
+        }
+        setIsDialogOpen(true)
+    }
+
+    const handleDialogClose = (open: boolean) => {
+        setIsDialogOpen(open)
+        if (!open) {
+            // Reset form when closing
+            setEditingCourse(null)
+            setName("")
+            setStartDate("")
+            setSelectedDays([])
+            setEndDate("")
+            setLessonCount("")
+        }
     }
 
     return (
@@ -84,9 +128,14 @@ export function CourseManager({ courses, onAddCourse, onDeleteCourse }: CourseMa
                                             ימי {course.daysOfWeek.map(d => DAYS.find(day => day.value === d)?.label).join(', ')}
                                         </p>
                                     </div>
-                                    <Button variant="ghost" size="icon" onClick={() => onDeleteCourse(course.id)} className="text-destructive hover:bg-destructive/10">
-                                        <Trash2 className="w-5 h-5" />
-                                    </Button>
+                                    <div className="flex gap-2">
+                                        <Button variant="ghost" size="icon" onClick={() => handleEditClick(course)} className="text-primary hover:bg-primary/10">
+                                            <Edit className="w-5 h-5" />
+                                        </Button>
+                                        <Button variant="ghost" size="icon" onClick={() => onDeleteCourse(course.id)} className="text-destructive hover:bg-destructive/10">
+                                            <Trash2 className="w-5 h-5" />
+                                        </Button>
+                                    </div>
                                 </CardContent>
                             </Card>
                         ))}
@@ -101,11 +150,11 @@ export function CourseManager({ courses, onAddCourse, onDeleteCourse }: CourseMa
                 הוסף חוג חדש
             </Button>
 
-            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+            <Dialog open={isDialogOpen} onOpenChange={handleDialogClose}>
                 <DialogContent className="w-full h-full max-w-none max-h-none rounded-none md:w-auto md:h-auto md:max-w-md md:max-h-[90vh] md:rounded-lg overflow-y-auto">
                     <DialogHeader>
-                        <DialogTitle className="text-xl text-primary">הוספת חוג חדש</DialogTitle>
-                        <DialogDescription>הזן את פרטי החוג כדי להתחיל במעקב</DialogDescription>
+                        <DialogTitle className="text-xl text-primary">{editingCourse ? 'עריכת חוג' : 'הוספת חוג חדש'}</DialogTitle>
+                        <DialogDescription>{editingCourse ? 'ערוך את פרטי החוג' : 'הזן את פרטי החוג כדי להתחיל במעקב'}</DialogDescription>
                     </DialogHeader>
                     <form onSubmit={handleSubmit} className="space-y-4">
                         <div className="space-y-2">
@@ -176,7 +225,7 @@ export function CourseManager({ courses, onAddCourse, onDeleteCourse }: CourseMa
                         </div>
 
                         <Button type="submit" className="w-full mt-4 text-base font-bold shadow-lg shadow-primary/20">
-                            הוסף חוג
+                            {editingCourse ? 'שמור שינויים' : 'הוסף חוג'}
                         </Button>
                     </form>
                 </DialogContent>

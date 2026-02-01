@@ -41,7 +41,7 @@ export function DatePicker({ date, setDate, placeholder = "בחר תאריך", c
                     )}
                 >
                     <CalendarIcon className="ml-2 h-4 w-4" />
-                    {date ? format(date, "PPP", { locale: he }) : <span>{placeholder}</span>}
+                    {date ? format(date, "EEEE, d בMMMM yyyy", { locale: he }) : <span>{placeholder}</span>}
                 </Button>
             </PopoverTrigger>
             <PopoverContent className="w-auto p-0" align="start">
@@ -49,6 +49,7 @@ export function DatePicker({ date, setDate, placeholder = "בחר תאריך", c
                     mode="single"
                     selected={date}
                     onSelect={handleSelect} // Auto-close on select
+                    defaultMonth={date}
                     initialFocus
                 />
             </PopoverContent>

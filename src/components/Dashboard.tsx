@@ -100,7 +100,10 @@ export function Dashboard({ sessions }: DashboardProps) {
                                     <CardTitle className="text-sm font-medium text-orange-600">זכאי להשלמה</CardTitle>
                                 </CardHeader>
                                 <CardContent className="p-4 pt-0">
-                                    <div className="text-3xl font-bold text-orange-700">{makeups}</div>
+                                    <div className="text-3xl font-bold text-orange-700">
+                                        {makeups}
+                                        {replacementsCount > 0 && <span className="text-lg opacity-80 font-normal"> ({replacementsCount})</span>}
+                                    </div>
                                 </CardContent>
                             </Card>
                         </div>
