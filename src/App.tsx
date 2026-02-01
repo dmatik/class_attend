@@ -1,0 +1,221 @@
+import { useState, useEffect } from "react"
+import { Calendar as CalendarIcon, LayoutDashboard, Settings } from "lucide-react"
+import { addDays, format, parseISO } from "date-fns"
+import { DailyView } from "@/components/DailyView"
+import { CourseManager } from "@/components/CourseManager"
+import { Dashboard } from "@/components/Dashboard"
+import type { Session, Course } from "@/types"
+import { cn } from "@/lib/utils"
+
+function App() {
+  const [activeTab, setActiveTab] = useState<'daily' | 'dashboard' | 'courses'>('daily')
+  /* API Sync Logic */
+  const [courses, setCourses] = useState<Course[]>([])
+  const [sessions, setSessions] = useState<Session[]>([])
+  const [loading, setLoading] = useState(true)
+
+  // Initial Fetch
+  useEffect(() => {
+    fetch('/api/data')
+      .then(res => res.json())
+      .then(data => {
+        setCourses(data.courses || [])
+        setSessions(data.sessions || [])
+        setLoading(false)
+      })
+      .catch(err => {
+        console.error("Failed to fetch data:", err)
+        setLoading(false)
+      })
+  }, [])
+
+  // Auto-Save Effect (Debounced or on change)
+  useEffect(() => {
+    if (loading) return
+    const saveData = async () => {
+      try {
+        await fetch('/api/data', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ courses, sessions })
+        })
+      } catch (err) {
+        console.error("Failed to save data", err)
+      }
+    }
+    const timeout = setTimeout(saveData, 500)
+    return () => clearTimeout(timeout)
+  }, [courses, sessions, loading])
+
+  const handleAddCourse = (course: Course) => {
+    setCourses([...courses, course])
+    const newSessions: Session[] = []
+    const start = parseISO(course.startDate)
+
+    let currentDate = start
+    let sessionsAdded = 0
+    let safetyCounter = 0
+    const maxIterations = 365
+
+    while (safetyCounter < maxIterations) {
+      if (course.totalLessons && sessionsAdded >= course.totalLessons) break
+      if (course.endDate && format(currentDate, 'yyyy-MM-dd') > course.endDate) break
+
+      if (course.daysOfWeek.includes(currentDate.getDay())) {
+        newSessions.push({
+          id: crypto.randomUUID(),
+          courseId: course.id,
+          courseName: course.name,
+          date: format(currentDate, 'yyyy-MM-dd'),
+        })
+        sessionsAdded++
+      }
+      currentDate = addDays(currentDate, 1)
+      safetyCounter++
+    }
+    setSessions(prev => [...prev, ...newSessions])
+  }
+
+  const handleDeleteCourse = (id: string) => {
+    setCourses(courses.filter(c => c.id !== id))
+    setSessions(sessions.filter(s => s.courseId !== id))
+  }
+
+  const handleUpdateAttendance = (sessionId: string, data: Session['attendance']) => {
+    setSessions(sessions.map(s => s.id === sessionId ? { ...s, attendance: data } : s))
+  }
+
+  const handleScheduleReplacement = (sessionId: string) => {
+    const session = sessions.find(s => s.id === sessionId)
+    if (!session) return
+
+    const course = courses.find(c => c.id === session.courseId)
+    if (!course) return
+
+    // Find the latest session for this course
+    const courseSessions = sessions.filter(s => s.courseId === session.courseId)
+    const sortedDates = courseSessions.map(s => s.date).sort((a, b) => b.localeCompare(a))
+    const lastDateStr = sortedDates[0]
+    let currentDate = addDays(parseISO(lastDateStr), 1)
+
+    // Find next valid day
+    let found = false
+    let safetyCounter = 0
+    while (!found && safetyCounter < 100) {
+      if (course.daysOfWeek.includes(currentDate.getDay())) {
+        const newSession: Session = {
+          id: crypto.randomUUID(),
+          courseId: course.id,
+          courseName: course.name,
+          date: format(currentDate, 'yyyy-MM-dd'),
+          isReplacement: true
+        }
+        setSessions(prev => [...prev, newSession])
+        found = true
+      }
+      currentDate = addDays(currentDate, 1)
+      safetyCounter++
+    }
+  }
+
+  const handleUpdateSessionDate = (sessionId: string, newDate: string) => {
+    setSessions(sessions.map(s => s.id === sessionId ? { ...s, date: newDate } : s))
+  }
+
+  return (
+    <div className="min-h-screen bg-gray-50 text-foreground font-sans rtl md:flex">
+      {/* Desktop Sidebar */}
+      <aside className="hidden md:flex flex-col w-64 bg-white border-l h-screen sticky top-0 shrink-0 shadow-sm z-20">
+        <div className="p-6 border-b">
+          <h1 className="text-2xl font-bold bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent">
+            Attendance
+          </h1>
+        </div>
+        <nav className="flex-1 p-4 space-y-2">
+          <button
+            onClick={() => setActiveTab('daily')}
+            className={cn("flex items-center gap-3 w-full px-4 py-3 rounded-lg text-lg font-medium transition-colors hover:bg-muted", activeTab === 'daily' ? "bg-primary/10 text-primary" : "text-muted-foreground")}
+          >
+            <CalendarIcon className="w-5 h-5" />
+            <span>יומן</span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab('dashboard')}
+            className={cn("flex items-center gap-3 w-full px-4 py-3 rounded-lg text-lg font-medium transition-colors hover:bg-muted", activeTab === 'dashboard' ? "bg-primary/10 text-primary" : "text-muted-foreground")}
+          >
+            <LayoutDashboard className="w-5 h-5" />
+            <span>דשבורד</span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab('courses')}
+            className={cn("flex items-center gap-3 w-full px-4 py-3 rounded-lg text-lg font-medium transition-colors hover:bg-muted", activeTab === 'courses' ? "bg-primary/10 text-primary" : "text-muted-foreground")}
+          >
+            <Settings className="w-5 h-5" />
+            <span>ניהול</span>
+          </button>
+        </nav>
+      </aside>
+
+      <div className="flex-1 flex flex-col min-h-0">
+        {/* Mobile Header */}
+        <header className="md:hidden bg-white border-b sticky top-0 z-10 px-4 py-3 flex items-center justify-center shadow-sm">
+          <h1 className="text-xl font-bold bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent">
+            Attendance
+          </h1>
+        </header>
+
+        {/* Main Content */}
+        <main className="p-4 md:p-8 w-full max-w-7xl mx-auto min-h-[calc(100vh-140px)] md:min-h-screen overflow-y-auto">
+          {activeTab === 'daily' && (
+            <DailyView
+              sessions={sessions}
+              courses={courses}
+              onUpdateAttendance={handleUpdateAttendance}
+              onScheduleReplacement={handleScheduleReplacement}
+              onUpdateSessionDate={handleUpdateSessionDate}
+            />
+          )}
+          {activeTab === 'dashboard' && (
+            <Dashboard sessions={sessions} />
+          )}
+          {activeTab === 'courses' && (
+            <CourseManager courses={courses} onAddCourse={handleAddCourse} onDeleteCourse={handleDeleteCourse} />
+          )}
+        </main>
+      </div>
+
+      {/* Mobile Bottom Nav */}
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t safe-area-bottom pb-safe max-w-md mx-auto shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] z-20">
+        <div className="flex justify-around items-center h-16">
+          <button
+            onClick={() => setActiveTab('daily')}
+            className={cn("flex flex-col items-center justify-center w-full h-full space-y-1 transition-colors", activeTab === 'daily' ? "text-primary" : "text-muted-foreground")}
+          >
+            <CalendarIcon className="w-6 h-6" />
+            <span className="text-xs font-medium">יומן</span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab('dashboard')}
+            className={cn("flex flex-col items-center justify-center w-full h-full space-y-1 transition-colors", activeTab === 'dashboard' ? "text-primary" : "text-muted-foreground")}
+          >
+            <LayoutDashboard className="w-6 h-6" />
+            <span className="text-xs font-medium">דשבורד</span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab('courses')}
+            className={cn("flex flex-col items-center justify-center w-full h-full space-y-1 transition-colors", activeTab === 'courses' ? "text-primary" : "text-muted-foreground")}
+          >
+            <Settings className="w-6 h-6" />
+            <span className="text-xs font-medium">ניהול</span>
+          </button>
+        </div>
+      </nav>
+    </div>
+  )
+}
+
+export default App

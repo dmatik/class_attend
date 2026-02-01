@@ -1,0 +1,253 @@
+{
+  "courses": [
+    {
+      "id": "e1146eb2-0a8d-4324-b0e6-89ed5aab0bca",
+      "name": "שחייה",
+      "startDate": "2026-01-01",
+      "daysOfWeek": [
+        0,
+        5
+      ],
+      "totalLessons": 20
+    },
+    {
+      "id": "bf5aa5cb-e45a-47de-baec-666be9678221",
+      "name": "דימה",
+      "startDate": "2026-01-02",
+      "daysOfWeek": [
+        1
+      ],
+      "totalLessons": 10
+    }
+  ],
+  "sessions": [
+    {
+      "id": "c96d6218-74d9-4d05-b02f-599a80e382cc",
+      "courseId": "e1146eb2-0a8d-4324-b0e6-89ed5aab0bca",
+      "courseName": "שחייה",
+      "date": "2026-01-02",
+      "attendance": {
+        "status": "present"
+      }
+    },
+    {
+      "id": "e96b8dcd-7f6f-4010-9234-3b768f94d5bf",
+      "courseId": "e1146eb2-0a8d-4324-b0e6-89ed5aab0bca",
+      "courseName": "שחייה",
+      "date": "2026-01-04",
+      "attendance": {
+        "status": "present"
+      }
+    },
+    {
+      "id": "bb7337db-f8bc-414c-96f6-74c5a5398d4b",
+      "courseId": "e1146eb2-0a8d-4324-b0e6-89ed5aab0bca",
+      "courseName": "שחייה",
+      "date": "2026-01-09",
+      "attendance": {
+        "status": "absent",
+        "reason": "holiday"
+      }
+    },
+    {
+      "id": "534c7f74-b27c-48db-83d1-c5a9ffe87782",
+      "courseId": "e1146eb2-0a8d-4324-b0e6-89ed5aab0bca",
+      "courseName": "שחייה",
+      "date": "2026-01-11",
+      "attendance": {
+        "status": "present"
+      }
+    },
+    {
+      "id": "5ca78d37-0a9d-4f93-810b-5c07cda3db6e",
+      "courseId": "e1146eb2-0a8d-4324-b0e6-89ed5aab0bca",
+      "courseName": "שחייה",
+      "date": "2026-01-16",
+      "attendance": {
+        "status": "absent",
+        "reason": "personal"
+      }
+    },
+    {
+      "id": "991686aa-fb81-42bf-97c0-48b942712e6a",
+      "courseId": "e1146eb2-0a8d-4324-b0e6-89ed5aab0bca",
+      "courseName": "שחייה",
+      "date": "2026-01-18",
+      "attendance": {
+        "status": "present"
+      }
+    },
+    {
+      "id": "decb5ab3-ce35-46b5-8276-742b06e21c46",
+      "courseId": "e1146eb2-0a8d-4324-b0e6-89ed5aab0bca",
+      "courseName": "שחייה",
+      "date": "2026-01-23",
+      "attendance": {
+        "status": "present"
+      }
+    },
+    {
+      "id": "c0707af9-9e06-422b-88a7-b656b6b9a56e",
+      "courseId": "e1146eb2-0a8d-4324-b0e6-89ed5aab0bca",
+      "courseName": "שחייה",
+      "date": "2026-01-25",
+      "attendance": {
+        "status": "present"
+      }
+    },
+    {
+      "id": "5aa6d956-7864-4691-85ee-b933afaad893",
+      "courseId": "e1146eb2-0a8d-4324-b0e6-89ed5aab0bca",
+      "courseName": "שחייה",
+      "date": "2026-01-30",
+      "attendance": {
+        "status": "present"
+      }
+    },
+    {
+      "id": "8432166e-5a80-4488-a4c9-396e83881c84",
+      "courseId": "e1146eb2-0a8d-4324-b0e6-89ed5aab0bca",
+      "courseName": "שחייה",
+      "date": "2026-02-01"
+    },
+    {
+      "id": "3a14a51e-6cb3-4042-82c8-073e447ce125",
+      "courseId": "e1146eb2-0a8d-4324-b0e6-89ed5aab0bca",
+      "courseName": "שחייה",
+      "date": "2026-02-06"
+    },
+    {
+      "id": "750142f1-b1b1-44a7-af23-155b996f5757",
+      "courseId": "e1146eb2-0a8d-4324-b0e6-89ed5aab0bca",
+      "courseName": "שחייה",
+      "date": "2026-02-08"
+    },
+    {
+      "id": "2edd595c-7653-4f63-82dc-b40cfaa305df",
+      "courseId": "e1146eb2-0a8d-4324-b0e6-89ed5aab0bca",
+      "courseName": "שחייה",
+      "date": "2026-02-13"
+    },
+    {
+      "id": "dd86ec73-cd5f-4a4d-9aa3-11f466a2f29a",
+      "courseId": "e1146eb2-0a8d-4324-b0e6-89ed5aab0bca",
+      "courseName": "שחייה",
+      "date": "2026-02-15"
+    },
+    {
+      "id": "d92a711c-7c9d-41c8-9a6b-5768c0883f10",
+      "courseId": "e1146eb2-0a8d-4324-b0e6-89ed5aab0bca",
+      "courseName": "שחייה",
+      "date": "2026-02-20"
+    },
+    {
+      "id": "f6762381-bc76-4f86-9486-22e585031071",
+      "courseId": "e1146eb2-0a8d-4324-b0e6-89ed5aab0bca",
+      "courseName": "שחייה",
+      "date": "2026-02-22"
+    },
+    {
+      "id": "c847530c-e384-4089-94b3-f50c50d6d0ba",
+      "courseId": "e1146eb2-0a8d-4324-b0e6-89ed5aab0bca",
+      "courseName": "שחייה",
+      "date": "2026-02-27"
+    },
+    {
+      "id": "ae5e3fc3-2a31-49c4-8ce2-64855b0f1f35",
+      "courseId": "e1146eb2-0a8d-4324-b0e6-89ed5aab0bca",
+      "courseName": "שחייה",
+      "date": "2026-03-01"
+    },
+    {
+      "id": "a3f8265d-d792-434a-a6d1-4cafe089f411",
+      "courseId": "e1146eb2-0a8d-4324-b0e6-89ed5aab0bca",
+      "courseName": "שחייה",
+      "date": "2026-03-06"
+    },
+    {
+      "id": "f65afcfc-9c91-4d1c-8195-a18c98b87fa3",
+      "courseId": "e1146eb2-0a8d-4324-b0e6-89ed5aab0bca",
+      "courseName": "שחייה",
+      "date": "2026-03-08"
+    },
+    {
+      "id": "a6629ec9-9738-4df3-b82e-ad6debd74c79",
+      "courseId": "bf5aa5cb-e45a-47de-baec-666be9678221",
+      "courseName": "דימה",
+      "date": "2026-01-05",
+      "attendance": {
+        "status": "present"
+      }
+    },
+    {
+      "id": "3c854a4e-737f-46ba-8a9c-3555b0ba3f38",
+      "courseId": "bf5aa5cb-e45a-47de-baec-666be9678221",
+      "courseName": "דימה",
+      "date": "2026-01-12",
+      "attendance": {
+        "status": "present"
+      }
+    },
+    {
+      "id": "bba04208-b78b-4b60-b07e-d0a1decf6c00",
+      "courseId": "bf5aa5cb-e45a-47de-baec-666be9678221",
+      "courseName": "דימה",
+      "date": "2026-01-19",
+      "attendance": {
+        "status": "present"
+      }
+    },
+    {
+      "id": "cd955b5d-9030-4cbe-be3a-9af28c3b6015",
+      "courseId": "bf5aa5cb-e45a-47de-baec-666be9678221",
+      "courseName": "דימה",
+      "date": "2026-01-26",
+      "attendance": {
+        "status": "present"
+      }
+    },
+    {
+      "id": "1fc5aae3-544f-43fb-aab7-ac4fece9a784",
+      "courseId": "bf5aa5cb-e45a-47de-baec-666be9678221",
+      "courseName": "דימה",
+      "date": "2026-02-02"
+    },
+    {
+      "id": "e9934111-1a8d-4acc-bf87-0662949a4b0d",
+      "courseId": "bf5aa5cb-e45a-47de-baec-666be9678221",
+      "courseName": "דימה",
+      "date": "2026-02-09"
+    },
+    {
+      "id": "e1c4a629-c71c-4732-896d-b21268706ecd",
+      "courseId": "bf5aa5cb-e45a-47de-baec-666be9678221",
+      "courseName": "דימה",
+      "date": "2026-02-16"
+    },
+    {
+      "id": "2685ed83-c514-4e3a-a5c6-dd58c857e3b0",
+      "courseId": "bf5aa5cb-e45a-47de-baec-666be9678221",
+      "courseName": "דימה",
+      "date": "2026-02-23"
+    },
+    {
+      "id": "d299bb17-3004-4ed0-9990-e4bc2dc354f6",
+      "courseId": "bf5aa5cb-e45a-47de-baec-666be9678221",
+      "courseName": "דימה",
+      "date": "2026-03-02"
+    },
+    {
+      "id": "aa1388ba-fb66-4540-837f-48c2a0b968ba",
+      "courseId": "bf5aa5cb-e45a-47de-baec-666be9678221",
+      "courseName": "דימה",
+      "date": "2026-03-09"
+    },
+    {
+      "id": "0701fcd5-a4a0-4ef2-84da-be8cea0aa551",
+      "courseId": "e1146eb2-0a8d-4324-b0e6-89ed5aab0bca",
+      "courseName": "שחייה",
+      "date": "2026-03-13",
+      "isReplacement": true
+    }
+  ]
+}
