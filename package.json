@@ -12,7 +12,8 @@
     "preview": "vite preview",
     "build:image": "docker compose build",
     "docker:up": "docker compose up -d",
-    "docker:down": "docker compose down"
+    "docker:down": "docker compose down",
+    "docker:export": "docker save -o class-attend-app.tar class_attend-app:latest"
   },
   "dependencies": {
     "@radix-ui/react-dialog": "^1.1.15",

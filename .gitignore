@@ -24,3 +24,7 @@ dist-ssr
 
 # Data
 data/
+
+# Docker
+*.tar
+class-attend-app.tar

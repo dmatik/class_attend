@@ -5,7 +5,7 @@ import { DailyView } from "@/components/DailyView"
 import { CourseManager } from "@/components/CourseManager"
 import { Dashboard } from "@/components/Dashboard"
 import type { Session, Course } from "@/types"
-import { cn } from "@/lib/utils"
+import { cn, uuidv4 } from "@/lib/utils"
 
 function App() {
   const [activeTab, setActiveTab] = useState<'daily' | 'dashboard' | 'courses'>('daily')
@@ -63,7 +63,7 @@ function App() {
 
       if (course.daysOfWeek.includes(currentDate.getDay())) {
         newSessions.push({
-          id: crypto.randomUUID(),
+          id: uuidv4(),
           courseId: course.id,
           courseName: course.name,
           date: format(currentDate, 'yyyy-MM-dd'),
@@ -108,7 +108,7 @@ function App() {
       while (safetyCounter < maxIterations && sessionsAdded < updatedCourse.totalLessons) {
         if (updatedCourse.daysOfWeek.includes(currentDate.getDay())) {
           newSessions.push({
-            id: crypto.randomUUID(),
+            id: uuidv4(),
             courseId: updatedCourse.id,
             courseName: updatedCourse.name,
             date: format(currentDate, 'yyyy-MM-dd'),
@@ -140,7 +140,7 @@ function App() {
 
         if (updatedCourse.daysOfWeek.includes(currentDate.getDay())) {
           newSessions.push({
-            id: crypto.randomUUID(),
+            id: uuidv4(),
             courseId: updatedCourse.id,
             courseName: updatedCourse.name,
             date: format(currentDate, 'yyyy-MM-dd'),
@@ -203,7 +203,7 @@ function App() {
     while (!found && safetyCounter < 100) {
       if (course.daysOfWeek.includes(currentDate.getDay())) {
         const newSession: Session = {
-          id: crypto.randomUUID(),
+          id: uuidv4(),
           courseId: course.id,
           courseName: course.name,
           date: format(currentDate, 'yyyy-MM-dd'),

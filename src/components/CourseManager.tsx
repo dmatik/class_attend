@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent } from "@/components/ui/card"
+import { uuidv4 } from "@/lib/utils"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import type { Course } from "@/types"
@@ -58,7 +59,7 @@ export function CourseManager({ courses, onAddCourse, onEditCourse, onDeleteCour
         } else {
             // Add mode
             onAddCourse({
-                id: crypto.randomUUID(),
+                id: uuidv4(),
                 name,
                 startDate,
                 daysOfWeek: selectedDays,
