@@ -1,4 +1,5 @@
 import path from "path"
+import fs from "fs"
 import react from "@vitejs/plugin-react"
 import { defineConfig } from "vite"
 
@@ -6,7 +7,7 @@ export default defineConfig({
   plugins: [react()],
   resolve: {
     alias: {
-      "@": path.resolve(__dirname, "./src"),
+      "@": path.resolve(process.cwd(), "./src"),
     },
   },
   server: {
@@ -16,5 +17,8 @@ export default defineConfig({
         changeOrigin: true,
       },
     }
+  },
+  define: {
+    '__APP_VERSION__': JSON.stringify(JSON.parse(fs.readFileSync('package.json', 'utf-8')).version),
   }
 })

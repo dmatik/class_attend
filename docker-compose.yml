@@ -1,6 +1,10 @@
 services:
   app:
-    build: .
+    image: class-attend-app:0.0.1
+    build:
+      context: .
+      args:
+        APP_VERSION: "0.0.1"
     ports:
       - "8080:5173"
     volumes:

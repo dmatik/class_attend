@@ -27,6 +27,10 @@ RUN mkdir -p data
 
 ENV NODE_ENV=production
 ENV PORT=5173
+ARG APP_VERSION=0.0.0
+ENV APP_VERSION=$APP_VERSION
+LABEL version=$APP_VERSION
+
 EXPOSE 5173
 
 CMD ["node", "server/index.js"]

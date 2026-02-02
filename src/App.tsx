@@ -336,6 +336,9 @@ function App() {
             <span>ניהול</span>
           </button>
         </nav>
+        <div className="p-4 border-t text-xs text-center text-muted-foreground">
+          v{__APP_VERSION__}
+        </div>
       </aside>
 
       <div className="flex-1 flex flex-col min-h-0">
