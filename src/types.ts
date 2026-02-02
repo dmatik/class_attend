@@ -22,4 +22,6 @@ export interface Session {
     date: string // ISO date string YYYY-MM-DD
     attendance?: AttendanceRecord
     isReplacement?: boolean
+    replacementForSessionId?: string // If this is a replacement, ID of the original missed session
+    replacementSessionId?: string // If this session was missed, ID of the replacement session
 }

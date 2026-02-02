@@ -181,7 +181,19 @@ function App() {
   }
 
   const handleUpdateAttendance = (sessionId: string, data: Session['attendance']) => {
-    setSessions(sessions.map(s => s.id === sessionId ? { ...s, attendance: data } : s))
+    setSessions(prev => prev.map(s => {
+      if (s.id === sessionId) {
+        const newSession = { ...s }
+        if (data === undefined) {
+          delete newSession.attendance
+          // Preserve replacementSessionId even when clearing attendance
+        } else {
+          newSession.attendance = data
+        }
+        return newSession
+      }
+      return s
+    }))
   }
 
   const handleScheduleReplacement = (sessionId: string) => {
@@ -202,14 +214,21 @@ function App() {
     let safetyCounter = 0
     while (!found && safetyCounter < 100) {
       if (course.daysOfWeek.includes(currentDate.getDay())) {
+        const replacementId = uuidv4()
         const newSession: Session = {
-          id: uuidv4(),
+          id: replacementId,
           courseId: course.id,
           courseName: course.name,
           date: format(currentDate, 'yyyy-MM-dd'),
-          isReplacement: true
+          isReplacement: true,
+          replacementForSessionId: sessionId
         }
-        setSessions(prev => [...prev, newSession])
+
+        // Update the original session to link to the replacement
+        setSessions(prev => [
+          ...prev.map(s => s.id === sessionId ? { ...s, replacementSessionId: replacementId } : s),
+          newSession
+        ])
         found = true
       }
       currentDate = addDays(currentDate, 1)
@@ -222,7 +241,26 @@ function App() {
   }
 
   const handleDeleteSession = (sessionId: string) => {
-    setSessions(sessions.filter(s => s.id !== sessionId))
+    const sessionToDelete = sessions.find(s => s.id === sessionId)
+
+    if (sessionToDelete) {
+      // If deleting a replacement, clear the link from the original session
+      if (sessionToDelete.replacementForSessionId) {
+        setSessions(prev =>
+          prev
+            .filter(s => s.id !== sessionId)
+            .map(s => s.id === sessionToDelete.replacementForSessionId
+              ? { ...s, replacementSessionId: undefined }
+              : s
+            )
+        )
+      } else {
+        // Regular deletion
+        setSessions(sessions.filter(s => s.id !== sessionId))
+      }
+    } else {
+      setSessions(sessions.filter(s => s.id !== sessionId))
+    }
   }
 
   return (

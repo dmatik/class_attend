@@ -1,6 +1,7 @@
 import * as React from "react"
 import { Check, X, Calendar as CalendarIcon, Trash2 } from "lucide-react"
 import { format, parseISO, isToday } from "date-fns"
+import { he } from "date-fns/locale"
 import { Card, CardContent } from "@/components/ui/card"
 import { Switch } from "@/components/ui/switch"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
@@ -9,6 +10,7 @@ import { Label } from "@/components/ui/label"
 import type { Session, AbsenceReason, Course } from "@/types"
 import { cn } from "@/lib/utils"
 import { DatePicker } from "@/components/ui/date-picker"
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog"
 
 interface DailyViewProps {
     sessions: Session[]
@@ -111,8 +113,18 @@ export function DailyView({ sessions, courses, onUpdateAttendance, onScheduleRep
 }
 
 function SessionCard({ session, sessions, isNext, onUpdate, onScheduleReplacement, onUpdateSessionDate, onDeleteSession }: { session: Session; sessions: Session[]; isNext?: boolean; onUpdate: (id: string, data: Session['attendance']) => void; onScheduleReplacement: (id: string) => void; onUpdateSessionDate: (id: string, d: string) => void; onDeleteSession: (id: string) => void }) {
-    const isPresent = session.attendance?.status === 'present'
-    const isAbsent = session.attendance?.status === 'absent'
+    // Use local state for immediate UI updates
+    const [localAttendance, setLocalAttendance] = React.useState(session.attendance)
+    const [showDeleteReplacementAlert, setShowDeleteReplacementAlert] = React.useState(false)
+    const [pendingStatusChange, setPendingStatusChange] = React.useState<'present' | 'clear' | null>(null)
+
+    // Sync local state with prop changes
+    React.useEffect(() => {
+        setLocalAttendance(session.attendance)
+    }, [session.attendance])
+
+    const isPresent = localAttendance?.status === 'present'
+    const isAbsent = localAttendance?.status === 'absent'
 
     // Calculate replacement limits for this course
     const courseSessions = sessions.filter(s => s.courseId === session.courseId)
@@ -122,23 +134,85 @@ function SessionCard({ session, sessions, isNext, onUpdate, onScheduleReplacemen
     const actualReplacements = courseSessions.filter(s => s.isReplacement).length
     const canAddReplacement = actualReplacements < entitledReplacements
 
+    // Find linked replacement session if exists
+    const replacementSession = session.replacementSessionId
+        ? sessions.find(s => s.id === session.replacementSessionId)
+        : undefined
+
+    // Find original session if this is a replacement
+    const originalSession = session.replacementForSessionId
+        ? sessions.find(s => s.id === session.replacementForSessionId)
+        : undefined
+
     const handleStatusChange = (status: 'present' | 'absent') => {
-        onUpdate(session.id, {
-            ...session.attendance,
-            status,
-            reason: status === 'present' ? undefined : session.attendance?.reason,
-            details: status === 'present' ? undefined : session.attendance?.details,
-        })
+        // If clicking the same status, unselect it
+        if (localAttendance?.status === status) {
+            // If unselecting absent and there's a linked replacement, show confirmation
+            if (status === 'absent' && session.replacementSessionId) {
+                setPendingStatusChange('clear')
+                setShowDeleteReplacementAlert(true)
+                return
+            }
+            setLocalAttendance(undefined)
+            onUpdate(session.id, undefined)
+        } else {
+            // If changing from absent to present and there's a linked replacement, show confirmation
+            if (status === 'present' && localAttendance?.status === 'absent' && session.replacementSessionId) {
+                setPendingStatusChange('present')
+                setShowDeleteReplacementAlert(true)
+                return
+            }
+
+            const newAttendance = {
+                ...localAttendance,
+                status,
+                reason: status === 'present' ? undefined : localAttendance?.reason,
+                details: status === 'present' ? undefined : localAttendance?.details,
+            }
+            setLocalAttendance(newAttendance)
+            onUpdate(session.id, newAttendance)
+        }
+    }
+
+    const confirmDeleteReplacement = () => {
+        const replacementId = session.replacementSessionId
+
+        // Delete the replacement session
+        // handleDeleteSession will automatically clear the replacementSessionId from this session
+        if (replacementId) {
+            onDeleteSession(replacementId)
+        }
+
+        // Update attendance based on what action was pending
+        if (pendingStatusChange === 'clear') {
+            // User was trying to clear attendance
+            setLocalAttendance(undefined)
+            onUpdate(session.id, undefined)
+        } else if (pendingStatusChange === 'present') {
+            // User was trying to mark as present
+            const newAttendance = {
+                status: 'present' as const
+            }
+            setLocalAttendance(newAttendance)
+            onUpdate(session.id, newAttendance)
+        }
+
+        setPendingStatusChange(null)
+        setShowDeleteReplacementAlert(false)
     }
 
     const handleReasonChange = (val: string) => {
         if (!isAbsent) return
-        onUpdate(session.id, { ...session.attendance!, status: 'absent', reason: val as AbsenceReason })
+        const newAttendance = { ...localAttendance!, status: 'absent' as const, reason: val as AbsenceReason }
+        setLocalAttendance(newAttendance)
+        onUpdate(session.id, newAttendance)
     }
 
     const handleDetailsChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
         if (!isAbsent) return
-        onUpdate(session.id, { ...session.attendance!, status: 'absent', details: e.target.value })
+        const newAttendance = { ...localAttendance!, status: 'absent' as const, details: e.target.value }
+        setLocalAttendance(newAttendance)
+        onUpdate(session.id, newAttendance)
     }
 
     const dateObj = parseISO(session.date)
@@ -251,21 +325,58 @@ function SessionCard({ session, sessions, isNext, onUpdate, onScheduleReplacemen
                             </div>
                         </div>
 
-                        <button
-                            onClick={() => onScheduleReplacement(session.id)}
-                            disabled={!canAddReplacement}
-                            className={`w-full mt-2 py-2 text-sm font-medium rounded-lg border transition-colors flex items-center justify-center gap-2 ${canAddReplacement
-                                ? 'text-orange-600 bg-orange-50 hover:bg-orange-100 border-orange-200 cursor-pointer'
-                                : 'text-gray-400 bg-gray-50 border-gray-200 cursor-not-allowed opacity-60'
-                                }`}
-                            title={canAddReplacement ? 'קבע שיעור השלמה' : `הגעת למגבלת ההשלמות (${actualReplacements}/${entitledReplacements})`}
-                        >
-                            <CalendarIcon className="w-4 h-4" />
-                            קבע שיעור השלמה {!canAddReplacement && `(${actualReplacements}/${entitledReplacements})`}
-                        </button>
+                        {/* Show replacement button or replacement info */}
+                        {session.replacementSessionId ? (
+                            <div className="w-full mt-2 py-2 px-3 text-sm font-medium text-orange-700 bg-orange-50 rounded-lg border border-orange-200 flex items-center justify-center gap-2">
+                                <CalendarIcon className="w-4 h-4" />
+                                השלמה נקבעה ל-{replacementSession && format(parseISO(replacementSession.date), 'd בMMMM yyyy', { locale: he })}
+                            </div>
+                        ) : (
+                            <button
+                                onClick={() => onScheduleReplacement(session.id)}
+                                disabled={!canAddReplacement}
+                                className={`w-full mt-2 py-2 text-sm font-medium rounded-lg border transition-colors flex items-center justify-center gap-2 ${canAddReplacement
+                                    ? 'text-orange-600 bg-orange-50 hover:bg-orange-100 border-orange-200 cursor-pointer'
+                                    : 'text-gray-400 bg-gray-50 border-gray-200 cursor-not-allowed opacity-60'
+                                    }`}
+                                title={canAddReplacement ? 'קבע שיעור השלמה' : `הגעת למגבלת ההשלמות (${actualReplacements}/${entitledReplacements})`}
+                            >
+                                <CalendarIcon className="w-4 h-4" />
+                                קבע שיעור השלמה {!canAddReplacement && `(${actualReplacements}/${entitledReplacements})`}
+                            </button>
+                        )}
                     </>
                 )}
+
+                {/* Show original event info if this is a replacement */}
+                {session.isReplacement && originalSession && (
+                    <div className="mt-2 py-2 px-3 text-sm text-orange-700 bg-orange-50 rounded-lg border border-orange-200">
+                        <div className="flex items-center gap-2">
+                            <CalendarIcon className="w-4 h-4" />
+                            <span>השלמה עבור שיעור מ-{format(parseISO(originalSession.date), 'd בMMMM yyyy', { locale: he })}</span>
+                        </div>
+                    </div>
+                )}
             </CardContent>
+
+            {/* Confirmation dialog for deleting replacement */}
+            <AlertDialog open={showDeleteReplacementAlert} onOpenChange={setShowDeleteReplacementAlert}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>האם אתה בטוח?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            שיעור ההשלמה שנקבע ל-{replacementSession && format(parseISO(replacementSession.date), 'd בMMMM yyyy', { locale: he })} יימחק.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel onClick={() => {
+                            setPendingStatusChange(null)
+                            setShowDeleteReplacementAlert(false)
+                        }}>ביטול</AlertDialogCancel>
+                        <AlertDialogAction onClick={confirmDeleteReplacement}>אישור</AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </Card>
     )
 }
