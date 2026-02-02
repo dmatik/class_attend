@@ -27,4 +27,4 @@ jobs:
         context: .
         file: ./Dockerfile
         push: true
-        tags: dmatik/class_attend:latest
+        tags: dmatik/class-attend:latest
