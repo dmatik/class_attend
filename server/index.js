@@ -22,6 +22,13 @@ async function ensureDb() {
     try {
         await fs.access(DB_FILE);
     } catch {
+        // Create data directory if it doesn't exist
+        const dataDir = path.dirname(DB_FILE);
+        try {
+            await fs.access(dataDir);
+        } catch {
+            await fs.mkdir(dataDir, { recursive: true });
+        }
         await fs.writeFile(DB_FILE, JSON.stringify({ courses: [], sessions: [] }, null, 2));
     }
 }
