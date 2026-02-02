@@ -4,6 +4,8 @@ import { addDays, format, parseISO } from "date-fns"
 import { DailyView } from "@/components/DailyView"
 import { CourseManager } from "@/components/CourseManager"
 import { Dashboard } from "@/components/Dashboard"
+import { Toaster } from "@/components/ui/toaster"
+import { toast } from "@/hooks/use-toast"
 import type { Session, Course } from "@/types"
 import { cn, uuidv4 } from "@/lib/utils"
 
@@ -48,37 +50,60 @@ function App() {
   }, [courses, sessions, loading])
 
   const handleAddCourse = (course: Course) => {
-    setCourses([...courses, course])
-    const newSessions: Session[] = []
-    const start = parseISO(course.startDate)
+    try {
+      setCourses([...courses, course])
+      const newSessions: Session[] = []
+      const start = parseISO(course.startDate)
 
-    let currentDate = start
-    let sessionsAdded = 0
-    let safetyCounter = 0
-    const maxIterations = 365
+      let currentDate = start
+      let sessionsAdded = 0
+      let safetyCounter = 0
+      const maxIterations = 365
 
-    while (safetyCounter < maxIterations) {
-      if (course.totalLessons && sessionsAdded >= course.totalLessons) break
-      if (course.endDate && format(currentDate, 'yyyy-MM-dd') > course.endDate) break
+      while (safetyCounter < maxIterations) {
+        if (course.totalLessons && sessionsAdded >= course.totalLessons) break
+        if (course.endDate && format(currentDate, 'yyyy-MM-dd') > course.endDate) break
 
-      if (course.daysOfWeek.includes(currentDate.getDay())) {
-        newSessions.push({
-          id: uuidv4(),
-          courseId: course.id,
-          courseName: course.name,
-          date: format(currentDate, 'yyyy-MM-dd'),
-        })
-        sessionsAdded++
+        if (course.daysOfWeek.includes(currentDate.getDay())) {
+          newSessions.push({
+            id: uuidv4(),
+            courseId: course.id,
+            courseName: course.name,
+            date: format(currentDate, 'yyyy-MM-dd'),
+          })
+          sessionsAdded++
+        }
+        currentDate = addDays(currentDate, 1)
+        safetyCounter++
       }
-      currentDate = addDays(currentDate, 1)
-      safetyCounter++
+      setSessions(prev => [...prev, ...newSessions])
+
+      toast({
+        variant: "success",
+        title: "החוג נוצר בהצלחה",
+        description: `נוצרו ${sessionsAdded} שיעורים עבור ${course.name}`,
+      })
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "שגיאה ביצירת חוג",
+        description: "אירעה שגיאה בעת יצירת החוג. נסה שוב.",
+      })
     }
-    setSessions(prev => [...prev, ...newSessions])
   }
 
   const handleDeleteCourse = (id: string) => {
+    const courseToDelete = courses.find(c => c.id === id)
     setCourses(courses.filter(c => c.id !== id))
     setSessions(sessions.filter(s => s.courseId !== id))
+
+    if (courseToDelete) {
+      toast({
+        variant: "success",
+        title: "החוג נמחק",
+        description: `${courseToDelete.name} נמחק בהצלחה`,
+      })
+    }
   }
 
   const handleEditCourse = (updatedCourse: Course) => {
@@ -229,6 +254,12 @@ function App() {
           ...prev.map(s => s.id === sessionId ? { ...s, replacementSessionId: replacementId } : s),
           newSession
         ])
+
+        toast({
+          variant: "success",
+          title: "שיעור השלמה נקבע",
+          description: `שיעור ההשלמה נקבע ל-${format(currentDate, 'd/M/yyyy')}`,
+        })
         found = true
       }
       currentDate = addDays(currentDate, 1)
@@ -254,9 +285,17 @@ function App() {
               : s
             )
         )
+        toast({
+          variant: "success",
+          title: "שיעור ההשלמה נמחק",
+        })
       } else {
         // Regular deletion
         setSessions(sessions.filter(s => s.id !== sessionId))
+        toast({
+          variant: "success",
+          title: "השיעור נמחק",
+        })
       }
     } else {
       setSessions(sessions.filter(s => s.id !== sessionId))
@@ -356,6 +395,7 @@ function App() {
           </button>
         </div>
       </nav>
+      <Toaster />
     </div>
   )
 }

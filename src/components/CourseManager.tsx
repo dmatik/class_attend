@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label"
 import { Card, CardContent } from "@/components/ui/card"
 import { uuidv4 } from "@/lib/utils"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import type { Course } from "@/types"
 
@@ -31,6 +32,7 @@ const DAYS = [
 export function CourseManager({ courses, onAddCourse, onEditCourse, onDeleteCourse }: CourseManagerProps) {
     const [isDialogOpen, setIsDialogOpen] = React.useState(false)
     const [editingCourse, setEditingCourse] = React.useState<Course | null>(null)
+    const [courseToDelete, setCourseToDelete] = React.useState<Course | null>(null)
     const [name, setName] = React.useState("")
     const [startDate, setStartDate] = React.useState("")
 
@@ -112,6 +114,17 @@ export function CourseManager({ courses, onAddCourse, onEditCourse, onDeleteCour
         }
     }
 
+    const handleDeleteClick = (course: Course) => {
+        setCourseToDelete(course)
+    }
+
+    const confirmDelete = () => {
+        if (courseToDelete) {
+            onDeleteCourse(courseToDelete.id)
+            setCourseToDelete(null)
+        }
+    }
+
     return (
         <div className="pb-20 space-y-6">
             <div className="space-y-4">
@@ -133,7 +146,7 @@ export function CourseManager({ courses, onAddCourse, onEditCourse, onDeleteCour
                                         <Button variant="ghost" size="icon" onClick={() => handleEditClick(course)} className="text-primary hover:bg-primary/10">
                                             <Edit className="w-5 h-5" />
                                         </Button>
-                                        <Button variant="ghost" size="icon" onClick={() => onDeleteCourse(course.id)} className="text-destructive hover:bg-destructive/10">
+                                        <Button variant="ghost" size="icon" onClick={() => handleDeleteClick(course)} className="text-destructive hover:bg-destructive/10">
                                             <Trash2 className="w-5 h-5" />
                                         </Button>
                                     </div>
@@ -231,6 +244,21 @@ export function CourseManager({ courses, onAddCourse, onEditCourse, onDeleteCour
                     </form>
                 </DialogContent>
             </Dialog>
+
+            <AlertDialog open={!!courseToDelete} onOpenChange={(open) => !open && setCourseToDelete(null)}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>האם אתה בטוח?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            פעולה זו תמחק את החוג "{courseToDelete?.name}" וכל השיעורים הקשורים אליו. לא ניתן לבטל פעולה זו.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel onClick={() => setCourseToDelete(null)}>ביטול</AlertDialogCancel>
+                        <AlertDialogAction onClick={confirmDelete}>מחק</AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </div >
     )
 }
