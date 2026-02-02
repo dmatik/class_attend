@@ -39,7 +39,13 @@ export function Dashboard({ sessions }: DashboardProps) {
                 // Subscription Logic
                 const personalAbsences = courseSessions.filter(s => s.attendance?.status === 'absent' && s.attendance.reason === 'personal').length
                 const used = present + personalAbsences
-                const makeups = absent - personalAbsences
+
+                // Only count absences with a valid reason (not personal, not undefined) as eligible for replacements
+                const makeups = courseSessions.filter(s =>
+                    s.attendance?.status === 'absent' &&
+                    s.attendance.reason &&
+                    s.attendance.reason !== 'personal'
+                ).length
 
                 return (
                     <div key={name} className="space-y-3">

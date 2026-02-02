@@ -30,8 +30,34 @@ const REASONS: { value: AbsenceReason; label: string }[] = [
 ]
 
 export function DailyView({ sessions, courses, onUpdateAttendance, onScheduleReplacement, onUpdateSessionDate, onDeleteSession }: DailyViewProps) {
-    const [showFuture, setShowFuture] = React.useState(false)
-    const [selectedCourseId, setSelectedCourseId] = React.useState<string>("all")
+    // Initialize state from sessionStorage
+    const [showFuture, setShowFuture] = React.useState(() => {
+        const saved = sessionStorage.getItem('dailyView.showFuture')
+        return saved ? JSON.parse(saved) : false
+    })
+    const [selectedCourseId, setSelectedCourseId] = React.useState<string>(() => {
+        const saved = sessionStorage.getItem('dailyView.selectedCourseId')
+        return saved || "all"
+    })
+    const [eventTypeFilter, setEventTypeFilter] = React.useState<'all' | 'missed' | 'replacement'>(() => {
+        const saved = sessionStorage.getItem('dailyView.eventTypeFilter')
+        return (saved as 'all' | 'missed' | 'replacement') || 'all'
+    })
+
+    // Persist showFuture to sessionStorage
+    React.useEffect(() => {
+        sessionStorage.setItem('dailyView.showFuture', JSON.stringify(showFuture))
+    }, [showFuture])
+
+    // Persist selectedCourseId to sessionStorage
+    React.useEffect(() => {
+        sessionStorage.setItem('dailyView.selectedCourseId', selectedCourseId)
+    }, [selectedCourseId])
+
+    // Persist eventTypeFilter to sessionStorage
+    React.useEffect(() => {
+        sessionStorage.setItem('dailyView.eventTypeFilter', eventTypeFilter)
+    }, [eventTypeFilter])
 
     const todayStr = format(new Date(), 'yyyy-MM-dd')
 
@@ -57,7 +83,16 @@ export function DailyView({ sessions, courses, onUpdateAttendance, onScheduleRep
             const isNext = nextSessionIds.has(s.id)
             const dateMatch = showFuture ? true : (s.date <= todayStr || isNext)
             const courseMatch = selectedCourseId === "all" || s.courseId === selectedCourseId
-            return dateMatch && courseMatch
+
+            // Event type filter
+            let eventTypeMatch = true
+            if (eventTypeFilter === 'missed') {
+                eventTypeMatch = s.attendance?.status === 'absent'
+            } else if (eventTypeFilter === 'replacement') {
+                eventTypeMatch = s.isReplacement === true
+            }
+
+            return dateMatch && courseMatch && eventTypeMatch
         })
         .sort((a, b) => b.date.localeCompare(a.date))
 
@@ -74,6 +109,18 @@ export function DailyView({ sessions, courses, onUpdateAttendance, onScheduleRep
                             {courses.map(course => (
                                 <SelectItem key={course.id} value={course.id}>{course.name}</SelectItem>
                             ))}
+                        </SelectContent>
+                    </Select>
+                </div>
+                <div className="w-full md:w-[200px]">
+                    <Select value={eventTypeFilter} onValueChange={(value) => setEventTypeFilter(value as 'all' | 'missed' | 'replacement')}>
+                        <SelectTrigger className="text-right" dir="rtl">
+                            <SelectValue placeholder="סנן לפי סוג" />
+                        </SelectTrigger>
+                        <SelectContent dir="rtl">
+                            <SelectItem value="all">כל האירועים</SelectItem>
+                            <SelectItem value="missed">רק חיסורים</SelectItem>
+                            <SelectItem value="replacement">רק השלמות</SelectItem>
                         </SelectContent>
                     </Select>
                 </div>
@@ -128,11 +175,26 @@ function SessionCard({ session, sessions, isNext, onUpdate, onScheduleReplacemen
 
     // Calculate replacement limits for this course
     const courseSessions = sessions.filter(s => s.courseId === session.courseId)
-    const personalAbsences = courseSessions.filter(s => s.attendance?.status === 'absent' && s.attendance.reason === 'personal').length
-    const absent = courseSessions.filter(s => s.attendance?.status === 'absent').length
-    const entitledReplacements = absent - personalAbsences
+
+    // Only count absences with a valid reason (not personal, not undefined) as eligible for replacements
+    // Exclude the current session from this count to get the "other" eligible absences
+    const otherEligibleAbsences = courseSessions.filter(s =>
+        s.id !== session.id &&
+        s.attendance?.status === 'absent' &&
+        s.attendance.reason &&
+        s.attendance.reason !== 'personal'
+    ).length
+
     const actualReplacements = courseSessions.filter(s => s.isReplacement).length
-    const canAddReplacement = actualReplacements < entitledReplacements
+
+    // Check if THIS session is eligible for a replacement (has a valid reason)
+    const thisSessionEligible = isAbsent && localAttendance?.reason && localAttendance.reason !== 'personal'
+
+    // Total eligible absences includes this session if it's eligible
+    const totalEligibleAbsences = otherEligibleAbsences + (thisSessionEligible ? 1 : 0)
+
+    // Can add replacement if: under the limit AND this specific session is eligible
+    const canAddReplacement = actualReplacements < totalEligibleAbsences && thisSessionEligible
 
     // Find linked replacement session if exists
     const replacementSession = session.replacementSessionId
@@ -339,10 +401,16 @@ function SessionCard({ session, sessions, isNext, onUpdate, onScheduleReplacemen
                                     ? 'text-orange-600 bg-orange-50 hover:bg-orange-100 border-orange-200 cursor-pointer'
                                     : 'text-gray-400 bg-gray-50 border-gray-200 cursor-not-allowed opacity-60'
                                     }`}
-                                title={canAddReplacement ? 'קבע שיעור השלמה' : `הגעת למגבלת ההשלמות (${actualReplacements}/${entitledReplacements})`}
+                                title={
+                                    canAddReplacement
+                                        ? 'קבע שיעור השלמה'
+                                        : !thisSessionEligible
+                                            ? 'יש לבחור סיבת היעדרות (לא אישית) כדי לקבוע השלמה'
+                                            : 'הגעת למגבלת ההשלמות'
+                                }
                             >
                                 <CalendarIcon className="w-4 h-4" />
-                                קבע שיעור השלמה {!canAddReplacement && `(${actualReplacements}/${entitledReplacements})`}
+                                קבע שיעור השלמה
                             </button>
                         )}
                     </>
