@@ -308,7 +308,7 @@ function App() {
       <aside className="hidden md:flex flex-col w-64 bg-white border-l h-screen sticky top-0 shrink-0 shadow-sm z-20">
         <div className="p-6 border-b">
           <h1 className="text-2xl font-bold bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent">
-            Attendance
+            ניהול חוגים
           </h1>
         </div>
         <nav className="flex-1 p-4 space-y-2">
@@ -342,7 +342,7 @@ function App() {
         {/* Mobile Header */}
         <header className="md:hidden bg-white border-b sticky top-0 z-10 px-4 py-3 flex items-center justify-center shadow-sm">
           <h1 className="text-xl font-bold bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent">
-            Attendance
+            ניהול חוגים
           </h1>
         </header>
 
