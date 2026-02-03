@@ -5,7 +5,7 @@
 ![Docker Pulls](https://img.shields.io/docker/pulls/dmatik/class-attend-app.svg)
 ![Version](https://img.shields.io/badge/version-0.0.6-green)
 
-**Class Attend** is a sleek, mobile-first **attendance tracking application** designed for instructors who value aesthetics and efficiency. Built as a Progressive Web App (PWA), it offers a premium "Glassmorphism" UI, smooth animations, and complete self-hosting capabilities.
+**Class Attend** is a sleek, mobile-first **attendance tracking application** designed for people who value aesthetics and efficiency. Built as a Progressive Web App (PWA), it offers a premium "Glassmorphism" UI, smooth animations, and complete self-hosting capabilities.
 
 > **Note:** Optimized for Hebrew (RTL) but easily adaptable for other languages.
 
@@ -51,20 +51,19 @@
 Class Attend is designed to be up and running in minutes. Choose your preferred method below.
 
 ### **Option A: Docker (Recommended)** 🐳
+The easiest way to run Class Attend is via Docker Compose.
+    
 
-    The easiest way to run Class Attend is via Docker Compose.
-
-    1.  **Pull & Run:**
-        ```bash
-        docker-compose up -d
-        ```
-
-    *Or run manually:*
-        ```bash
-        docker run -d -p 8080:5173 --name class-attend -v $(pwd)/data:/app/data class_attend-app:latest
-        ```
-
-2.  **Access:** Open `http://localhost:8080` in your browser.
+    class_attend:
+        restart: always
+        hostname: class_attend
+        container_name: class_attend
+        image: dmatik/class-attend:latest
+        network_mode: "bridge"
+        ports:
+            - "5173:5173"
+        volumes:
+            - <path to your data folder>:/app/data
 
 ### **Option B: Local Development** 💻
 
@@ -107,4 +106,4 @@ The project leverages a robust **GitHub Actions** pipeline for continuous delive
 
 ---
 
-Made with ❤️ by [Your Name]
+Made with ❤️ by [dmatik]
