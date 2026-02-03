@@ -1,73 +1,110 @@
-# React + TypeScript + Vite
+# Hadu (Class Tracker) 📱✨
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+![License](https://img.shields.io/badge/license-MIT-blue.svg)
+![Build Status](https://img.shields.io/github/actions/workflow/status/dmatik/class_attend/docker-build.yml?label=Build)
+![Docker Pulls](https://img.shields.io/docker/pulls/dmatik/class-attend-app.svg)
+![Version](https://img.shields.io/badge/version-0.0.6-green)
 
-Currently, two official plugins are available:
+**Hadu** is a sleek, mobile-first **attendance tracking application** designed for instructors who value aesthetics and efficiency. Built as a Progressive Web App (PWA), it offers a premium "Glassmorphism" UI, smooth animations, and complete self-hosting capabilities.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+> **Note:** Optimized for Hebrew (RTL) but easily adaptable for other languages.
 
-## React Compiler
+---
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## 📸 Screenshots
 
-## Expanding the ESLint configuration
+![Dashboard Screenshot](./src/assets/screenshot-placeholder.png)
+*(Run the app to see the beautiful glassmorphism in action!)*
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+---
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+## ✨ Key Features
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+*   **📱 Mobile-First & PWA Ready:** Install natively on iOS and Android. detailed manifest and meta tags included.
+*   **🎨 Premium Glassmorphism UI:** Built with **Shadcn UI** and **Tailwind CSS**, featuring a clean, airy aesthetic with dark/light mode capabilities.
+*   **⚡ Smooth Animations:** Powered by **Framer Motion** for fluid page transitions and interaction feedback.
+*   **⏱️ Efficient Tracking:** Quick start/stop attendance functionality with intuitive controls.
+*   **🐳 Dockerized & Self-Hostable:** Full Docker support with multi-stage builds for a lightweight footprint.
+*   **🔒 Secure & Private:** Data stored locally (JSON-based) or self-hosted; easily deployable behind Cloudflare Zero Trust.
+*   **🌍 RTL Support:** Native support for Right-to-Left languages (Hebrew).
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+---
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## 🛠️ Tech Stack
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+### **Frontend**
+![React](https://img.shields.io/badge/react-%2320232a.svg?style=for-the-badge&logo=react&logoColor=%2361DAFB)
+![Vite](https://img.shields.io/badge/vite-%23646CFF.svg?style=for-the-badge&logo=vite&logoColor=white)
+![TailwindCSS](https://img.shields.io/badge/tailwindcss-%2338B2AC.svg?style=for-the-badge&logo=tailwind-css&logoColor=white)
+![TypeScript](https://img.shields.io/badge/typescript-%23007ACC.svg?style=for-the-badge&logo=typescript&logoColor=white)
+![Framer Motion](https://img.shields.io/badge/Framer-Motion-black?style=for-the-badge&logo=framer&logoColor=blue)
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+### **Backend & DevOps**
+![NodeJS](https://img.shields.io/badge/node.js-6DA55F?style=for-the-badge&logo=node.js&logoColor=white)
+![Docker](https://img.shields.io/badge/docker-%230db7ed.svg?style=for-the-badge&logo=docker&logoColor=white)
+![GitHub Actions](https://img.shields.io/badge/github%20actions-%232671E5.svg?style=for-the-badge&logo=githubactions&logoColor=white)
+
+---
+
+## 🚀 Getting Started
+
+Hadu is designed to be up and running in minutes. Choose your preferred method below.
+
+### **Option A: Docker (Recommended)** 🐳
+
+The easiest way to run Hadu is via Docker Compose.
+
+1.  **Pull & Run:**
+    ```bash
+    docker-compose up -d
+    ```
+
+    *Or run manually:*
+    ```bash
+    docker run -d -p 8080:5173 --name hadu -v $(pwd)/data:/app/data class_attend-app:latest
+    ```
+
+2.  **Access:** Open `http://localhost:8080` in your browser.
+
+### **Option B: Local Development** 💻
+
+If you want to contribute or modify the code:
+
+1.  **Clone the repository:**
+    ```bash
+    git clone https://github.com/dmatik/class_attend.git
+    cd class_attend
+    ```
+
+2.  **Install dependencies:**
+    ```bash
+    npm install
+    ```
+
+3.  **Run the development server:**
+    ```bash
+    npm run dev:all
+    ```
+    *This starts both the Express backend (API) and the Vite frontend.*
+
+4.  **Visit:** `http://localhost:5173`
+
+---
+
+## 🏗️ Architecture & CI/CD
+
+The project leverages a robust **GitHub Actions** pipeline for continuous delivery:
+
+1.  **Commit:** Code changes pushed to `main` trigger the pipeline.
+2.  **Build:** A multi-stage Docker build configures the **Node.js (Alpine)** environment and compiles the React app.
+3.  **Publish:** The optimized image is pushed to **Docker Hub**.
+4.  **Deploy:** Tools like **Watchtower** can automatically pull the new image and update your running container.
+
+**Project Structure Overview:**
+*   `src/`: React Frontend (Vite, Tailwind, Components).
+*   `server/`: Lightweight Express server for API & static serving.
+*   `data/`: Persistent storage (JSON) mounted via Docker volumes.
+
+---
+
+Made with ❤️ by [Your Name]
