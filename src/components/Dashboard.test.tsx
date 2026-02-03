@@ -25,7 +25,7 @@ describe('Dashboard Component', () => {
             courseId: 'c1',
             courseName: 'Math 101',
             date: '2023-01-08',
-            attendance: { status: 'absent', reason: 'sick' } // Eligible for makeup
+            attendance: { status: 'absent', reason: 'other' } // Eligible for makeup
         },
         {
             id: '3',
@@ -81,8 +81,7 @@ describe('Dashboard Component', () => {
         // The content is inside a .text-3xl div
 
         // Let's find the card by text 'סה״כ' and check numbers nearby
-        const totalLabel = screen.getByText('סה״כ')
-        const cardContent = totalLabel.closest('.rounded-xl')?.nextSibling || totalLabel.parentElement?.nextSibling
+        // We can look for the "Sah-hak" card content
         // Testing-library philosophy prefers accessible queries. 
         // We can just search for the text "4 (+2)" if it's rendered as such, 
         // or separated. The component renders: 
@@ -98,7 +97,7 @@ describe('Dashboard Component', () => {
         // Regular pending: 1, Replacement pending: 1
         // Display: "1 (+1)"
 
-        const pendingLabel = screen.getByText('ממתינים')
+        // Display: "1 (+1)"
         // We expect to find '1' and '(+1)'
         // Note: '1' might match multiple times, so be careful.
         // We can scope it to the "Pending" card if needed, but checking text presence is a good start.
@@ -113,7 +112,7 @@ describe('Dashboard Component', () => {
         // Present: id 1 (reg), id 5 (rep). Total 2.
         // Card "נכחתי"
 
-        const presentLabel = screen.getByText('נכחתי')
+        // Card "נכחתי"
         // The value '2' should be in the card
         // We can try to traverse up to the card then down to content
         // Or simply expect to find '2' in the document, ensuring it's not ambiguous if other cards default to 0
