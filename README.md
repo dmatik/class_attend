@@ -1,11 +1,11 @@
-# Hadu (Class Tracker) 📱✨
+# Class Attend 📱✨
 
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
 ![Build Status](https://img.shields.io/github/actions/workflow/status/dmatik/class_attend/docker-build.yml?label=Build)
 ![Docker Pulls](https://img.shields.io/docker/pulls/dmatik/class-attend-app.svg)
 ![Version](https://img.shields.io/badge/version-0.0.6-green)
 
-**Hadu** is a sleek, mobile-first **attendance tracking application** designed for instructors who value aesthetics and efficiency. Built as a Progressive Web App (PWA), it offers a premium "Glassmorphism" UI, smooth animations, and complete self-hosting capabilities.
+**Class Attend** is a sleek, mobile-first **attendance tracking application** designed for instructors who value aesthetics and efficiency. Built as a Progressive Web App (PWA), it offers a premium "Glassmorphism" UI, smooth animations, and complete self-hosting capabilities.
 
 > **Note:** Optimized for Hebrew (RTL) but easily adaptable for other languages.
 
@@ -48,21 +48,21 @@
 
 ## 🚀 Getting Started
 
-Hadu is designed to be up and running in minutes. Choose your preferred method below.
+Class Attend is designed to be up and running in minutes. Choose your preferred method below.
 
 ### **Option A: Docker (Recommended)** 🐳
 
-The easiest way to run Hadu is via Docker Compose.
+    The easiest way to run Class Attend is via Docker Compose.
 
-1.  **Pull & Run:**
-    ```bash
-    docker-compose up -d
-    ```
+    1.  **Pull & Run:**
+        ```bash
+        docker-compose up -d
+        ```
 
     *Or run manually:*
-    ```bash
-    docker run -d -p 8080:5173 --name hadu -v $(pwd)/data:/app/data class_attend-app:latest
-    ```
+        ```bash
+        docker run -d -p 8080:5173 --name class-attend -v $(pwd)/data:/app/data class_attend-app:latest
+        ```
 
 2.  **Access:** Open `http://localhost:8080` in your browser.
 
