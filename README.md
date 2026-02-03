@@ -2,7 +2,7 @@
 
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
 ![Build Status](https://img.shields.io/github/actions/workflow/status/dmatik/class_attend/build-and-test.yml?label=build)
-![Docker Pulls](https://hub.docker.com/r/dmatik/class-attend)
+[![Docker Pulls](https://img.shields.io/docker/pulls/dmatik/class-attend.svg)](https://hub.docker.com/r/dmatik/class-attend)
 ![Version](https://img.shields.io/badge/version-0.0.6-green)
 
 **Class Attend** is a sleek, mobile-first **attendance tracking application** designed for people who value aesthetics and efficiency. Built as a Progressive Web App (PWA), it offers a premium "Glassmorphism" UI, smooth animations, and complete self-hosting capabilities.
