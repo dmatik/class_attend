@@ -1,4 +1,5 @@
 import * as React from "react"
+import { motion, AnimatePresence } from "framer-motion"
 import { Check, X, Calendar as CalendarIcon, Trash2 } from "lucide-react"
 import { format, parseISO, isToday } from "date-fns"
 import { he } from "date-fns/locale"
@@ -97,11 +98,16 @@ export function DailyView({ sessions, courses, onUpdateAttendance, onScheduleRep
         .sort((a, b) => b.date.localeCompare(a.date))
 
     return (
-        <div className="space-y-4 pb-20">
-            <div className="flex flex-col md:flex-row gap-4 mb-4 bg-white p-3 rounded-lg shadow-sm border md:items-center md:justify-start">
+        <div className="space-y-6 pb-20">
+            {/* Filter Bar */}
+            <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="flex flex-col md:flex-row gap-4 mb-4 bg-white p-4 rounded-xl shadow-sm border border-slate-200 md:items-center md:justify-start sticky top-0 z-10"
+            >
                 <div className="w-full md:w-[200px]">
                     <Select value={selectedCourseId} onValueChange={setSelectedCourseId}>
-                        <SelectTrigger className="text-right" dir="rtl">
+                        <SelectTrigger className="text-right bg-slate-50 border-slate-200 focus:ring-slate-200" dir="rtl">
                             <SelectValue placeholder="סנן לפי חוג" />
                         </SelectTrigger>
                         <SelectContent dir="rtl">
@@ -114,7 +120,7 @@ export function DailyView({ sessions, courses, onUpdateAttendance, onScheduleRep
                 </div>
                 <div className="w-full md:w-[200px]">
                     <Select value={eventTypeFilter} onValueChange={(value) => setEventTypeFilter(value as 'all' | 'missed' | 'replacement')}>
-                        <SelectTrigger className="text-right" dir="rtl">
+                        <SelectTrigger className="text-right bg-slate-50 border-slate-200 focus:ring-slate-200" dir="rtl">
                             <SelectValue placeholder="סנן לפי סוג" />
                         </SelectTrigger>
                         <SelectContent dir="rtl">
@@ -130,31 +136,39 @@ export function DailyView({ sessions, courses, onUpdateAttendance, onScheduleRep
                         checked={showFuture}
                         onCheckedChange={setShowFuture}
                     />
-                    <Label htmlFor="future-mode" className="cursor-pointer whitespace-nowrap">הצג עתידיים</Label>
+                    <Label htmlFor="future-mode" className="cursor-pointer whitespace-nowrap text-slate-600">הצג עתידיים</Label>
                 </div>
-            </div>
+            </motion.div>
 
-            <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                {sortedSessions.length === 0 ? (
-                    <div className="col-span-full text-center py-10 text-muted-foreground">
-                        <CalendarIcon className="w-12 h-12 mx-auto mb-2 opacity-20" />
-                        No sessions found
-                    </div>
-                ) : (
-                    sortedSessions.map((session) => (
-                        <SessionCard
-                            key={session.id}
-                            session={session}
-                            sessions={sessions}
-                            isNext={nextSessionIds.has(session.id)}
-                            onUpdate={onUpdateAttendance}
-                            onScheduleReplacement={onScheduleReplacement}
-                            onUpdateSessionDate={onUpdateSessionDate}
-                            onDeleteSession={onDeleteSession}
-                        />
-                    ))
-                )}
-            </div>
+            {/* Session List */}
+            <motion.div layout className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                <AnimatePresence mode="popLayout">
+                    {sortedSessions.length === 0 ? (
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            className="col-span-full text-center py-10 text-slate-400"
+                        >
+                            <CalendarIcon className="w-12 h-12 mx-auto mb-2 opacity-20" />
+                            <p>לא נמצאו שיעורים</p>
+                        </motion.div>
+                    ) : (
+                        sortedSessions.map((session) => (
+                            <SessionCard
+                                key={session.id}
+                                session={session}
+                                sessions={sessions}
+                                isNext={nextSessionIds.has(session.id)}
+                                onUpdate={onUpdateAttendance}
+                                onScheduleReplacement={onScheduleReplacement}
+                                onUpdateSessionDate={onUpdateSessionDate}
+                                onDeleteSession={onDeleteSession}
+                            />
+                        ))
+                    )}
+                </AnimatePresence>
+            </motion.div>
         </div>
     )
 }
@@ -280,171 +294,193 @@ function SessionCard({ session, sessions, isNext, onUpdate, onScheduleReplacemen
     const dateObj = parseISO(session.date)
 
     return (
-        <Card className={cn(
-            "overflow-hidden transition-all duration-300 border-l-4",
-            session.isReplacement ? "border-l-orange-500 bg-orange-50/40" :
-                isPresent ? "border-l-emerald-500 bg-emerald-50/30" :
-                    isAbsent ? "border-l-rose-500 bg-rose-50/30" : "border-l-gray-300"
-        )}>
-            <CardContent className="p-5">
-                <div className="flex justify-between items-start mb-4">
-                    <div>
-                        <div className="flex items-center gap-2">
-                            <h3 className="font-bold text-lg text-primary">
-                                {session.courseName}
-                                {session.isReplacement && <span className="mr-2 text-xs font-normal text-orange-600 bg-orange-100 px-2 py-0.5 rounded-full">השלמה</span>}
-                            </h3>
-                            {isNext && (
-                                <span className="text-[10px] font-extrabold bg-primary text-white px-2 py-0.5 rounded-full animate-pulse">
-                                    השיעור הבא
-                                </span>
-                            )}
-                        </div>
-                        <div className="text-sm text-muted-foreground flex items-center gap-1 mt-1">
-                            <DatePicker
-                                date={dateObj}
-                                setDate={(d) => {
-                                    if (d) onUpdateSessionDate(session.id, format(d, 'yyyy-MM-dd'))
-                                }}
-                                className="h-auto p-0 text-muted-foreground border-none shadow-none hover:bg-transparent hover:text-primary w-auto font-normal justify-start"
-                            />
-                        </div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                        {isToday(dateObj) && <span className="text-xs font-bold px-2 py-1 bg-blue-100 text-blue-700 rounded-full">היום</span>}
-                        {session.isReplacement && (
-                            <button
-                                onClick={() => onDeleteSession(session.id)}
-                                className="p-1.5 rounded-lg text-rose-600 hover:bg-rose-100 transition-colors"
-                                title="מחק שיעור השלמה"
-                            >
-                                <Trash2 className="w-4 h-4" />
-                            </button>
-                        )}
-                    </div>
-                </div>
-
-                <div className="flex gap-3 mb-4">
-                    <button
-                        onClick={() => handleStatusChange('present')}
-                        className={cn(
-                            "flex-1 flex items-center justify-center gap-2 py-3 rounded-xl font-bold transition-all border-2",
-                            isPresent
-                                ? "bg-emerald-100 border-emerald-500 text-emerald-700 shadow-sm"
-                                : "bg-white border-transparent text-gray-400 hover:bg-emerald-50 hover:text-emerald-600"
-                        )}
-                    >
-                        <div className={cn("w-6 h-6 rounded-full flex items-center justify-center", isPresent ? "bg-emerald-500 text-white" : "bg-gray-200")}>
-                            <Check className="w-4 h-4" />
-                        </div>
-                        הייתי
-                    </button>
-
-                    <button
-                        onClick={() => handleStatusChange('absent')}
-                        className={cn(
-                            "flex-1 flex items-center justify-center gap-2 py-3 rounded-xl font-bold transition-all border-2",
-                            isAbsent
-                                ? "bg-rose-100 border-rose-500 text-rose-700 shadow-sm"
-                                : "bg-white border-transparent text-gray-400 hover:bg-rose-50 hover:text-rose-600"
-                        )}
-                    >
-                        <div className={cn("w-6 h-6 rounded-full flex items-center justify-center", isAbsent ? "bg-rose-500 text-white" : "bg-gray-200")}>
-                            <X className="w-4 h-4" />
-                        </div>
-                        חסרתי
-                    </button>
-                </div>
-
-                {isAbsent && (
-                    <>
-                        <div className="animate-accordion-down space-y-3 pt-2 border-t border-gray-100 mt-2">
-                            <div>
-                                <Label className="text-xs text-muted-foreground mb-1 block">סיבת היעדרות</Label>
-                                <Select
-                                    value={session.attendance?.reason}
-                                    onValueChange={handleReasonChange}
-                                >
-                                    <SelectTrigger className="bg-white">
-                                        <SelectValue placeholder="בחר סיבה..." />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {REASONS.map(r => (
-                                            <SelectItem key={r.value} value={r.value}>{r.label}</SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
+        <motion.div
+            layout
+            initial={{ opacity: 0, scale: 0.96 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.96 }}
+            transition={{ duration: 0.2 }}
+        >
+            <Card className={cn(
+                "overflow-hidden transition-all duration-300 border-l-4 shadow-sm hover:shadow-md",
+                "bg-white border-slate-200", // Light mode base
+                session.isReplacement ? "border-l-orange-500" :
+                    isPresent ? "border-l-emerald-500" :
+                        isAbsent ? "border-l-rose-500" : "border-l-slate-300"
+            )}>
+                <CardContent className="p-5">
+                    <div className="flex justify-between items-start mb-4">
+                        <div>
+                            <div className="flex items-center gap-2">
+                                <h3 className={cn("font-bold text-lg",
+                                    session.isReplacement ? "text-orange-700" : "text-slate-900"
+                                )}>
+                                    {session.courseName}
+                                    {session.isReplacement && <span className="mr-2 text-xs font-normal text-orange-600 bg-orange-100 px-2 py-0.5 rounded-full">השלמה</span>}
+                                </h3>
+                                {isNext && (
+                                    <span className="text-[10px] font-extrabold bg-blue-600 text-white px-2 py-0.5 rounded-full animate-pulse shadow-sm">
+                                        השיעור הבא
+                                    </span>
+                                )}
                             </div>
-                            <div>
-                                <Label className="text-xs text-muted-foreground mb-1 block">פירוט (אופציונלי)</Label>
-                                <Textarea
-                                    value={session.attendance?.details || ""}
-                                    onChange={handleDetailsChange}
-                                    placeholder="הוסף פרטים..."
-                                    className="resize-none bg-white font-sans"
-                                    rows={2}
+                            <div className="text-sm text-slate-500 flex items-center gap-1 mt-1">
+                                <DatePicker
+                                    date={dateObj}
+                                    setDate={(d) => {
+                                        if (d) onUpdateSessionDate(session.id, format(d, 'yyyy-MM-dd'))
+                                    }}
+                                    className="h-auto p-0 text-slate-500 border-none shadow-none hover:bg-transparent hover:text-blue-600 w-auto font-normal justify-start"
                                 />
                             </div>
                         </div>
-
-                        {/* Show replacement button or replacement info */}
-                        {session.replacementSessionId ? (
-                            <div className="w-full mt-2 py-2 px-3 text-sm font-medium text-orange-700 bg-orange-50 rounded-lg border border-orange-200 flex items-center justify-center gap-2">
-                                <CalendarIcon className="w-4 h-4" />
-                                השלמה נקבעה ל-{replacementSession && format(parseISO(replacementSession.date), 'd בMMMM yyyy', { locale: he })}
-                            </div>
-                        ) : (
-                            <button
-                                onClick={() => onScheduleReplacement(session.id)}
-                                disabled={!canAddReplacement}
-                                className={`w-full mt-2 py-2 text-sm font-medium rounded-lg border transition-colors flex items-center justify-center gap-2 ${canAddReplacement
-                                    ? 'text-orange-600 bg-orange-50 hover:bg-orange-100 border-orange-200 cursor-pointer'
-                                    : 'text-gray-400 bg-gray-50 border-gray-200 cursor-not-allowed opacity-60'
-                                    }`}
-                                title={
-                                    canAddReplacement
-                                        ? 'קבע שיעור השלמה'
-                                        : !thisSessionEligible
-                                            ? 'יש לבחור סיבת היעדרות (לא אישית) כדי לקבוע השלמה'
-                                            : 'הגעת למגבלת ההשלמות'
-                                }
-                            >
-                                <CalendarIcon className="w-4 h-4" />
-                                קבע שיעור השלמה
-                            </button>
-                        )}
-                    </>
-                )}
-
-                {/* Show original event info if this is a replacement */}
-                {session.isReplacement && originalSession && (
-                    <div className="mt-2 py-2 px-3 text-sm text-orange-700 bg-orange-50 rounded-lg border border-orange-200">
                         <div className="flex items-center gap-2">
-                            <CalendarIcon className="w-4 h-4" />
-                            <span>השלמה עבור שיעור מ-{format(parseISO(originalSession.date), 'd בMMMM yyyy', { locale: he })}</span>
+                            {isToday(dateObj) && <span className="text-xs font-bold px-2 py-1 bg-blue-50 text-blue-700 border border-blue-100 rounded-full">היום</span>}
+                            {session.isReplacement && (
+                                <button
+                                    onClick={() => onDeleteSession(session.id)}
+                                    className="p-1.5 rounded-lg text-rose-500 hover:bg-rose-50 transition-colors"
+                                    title="מחק שיעור השלמה"
+                                >
+                                    <Trash2 className="w-4 h-4" />
+                                </button>
+                            )}
                         </div>
                     </div>
-                )}
-            </CardContent>
 
-            {/* Confirmation dialog for deleting replacement */}
-            <AlertDialog open={showDeleteReplacementAlert} onOpenChange={setShowDeleteReplacementAlert}>
-                <AlertDialogContent>
-                    <AlertDialogHeader>
-                        <AlertDialogTitle>האם אתה בטוח?</AlertDialogTitle>
-                        <AlertDialogDescription>
-                            שיעור ההשלמה שנקבע ל-{replacementSession && format(parseISO(replacementSession.date), 'd בMMMM yyyy', { locale: he })} יימחק.
-                        </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                        <AlertDialogCancel onClick={() => {
-                            setPendingStatusChange(null)
-                            setShowDeleteReplacementAlert(false)
-                        }}>ביטול</AlertDialogCancel>
-                        <AlertDialogAction onClick={confirmDeleteReplacement}>אישור</AlertDialogAction>
-                    </AlertDialogFooter>
-                </AlertDialogContent>
-            </AlertDialog>
-        </Card>
+                    <div className="flex gap-3 mb-4">
+                        <motion.button
+                            whileTap={{ scale: 0.97 }}
+                            onClick={() => handleStatusChange('present')}
+                            className={cn(
+                                "flex-1 flex items-center justify-center gap-2 py-3 rounded-xl font-bold transition-all border",
+                                isPresent
+                                    ? "bg-emerald-50 border-emerald-200 text-emerald-700 shadow-sm"
+                                    : "bg-slate-50 border-transparent text-slate-400 hover:bg-emerald-50 hover:text-emerald-600 hover:border-emerald-100"
+                            )}
+                        >
+                            <div className={cn("w-6 h-6 rounded-full flex items-center justify-center", isPresent ? "bg-emerald-500 text-white" : "bg-slate-200 text-slate-400")}>
+                                <Check className="w-4 h-4" />
+                            </div>
+                            הייתי
+                        </motion.button>
+
+                        <motion.button
+                            whileTap={{ scale: 0.97 }}
+                            onClick={() => handleStatusChange('absent')}
+                            className={cn(
+                                "flex-1 flex items-center justify-center gap-2 py-3 rounded-xl font-bold transition-all border",
+                                isAbsent
+                                    ? "bg-rose-50 border-rose-200 text-rose-700 shadow-sm"
+                                    : "bg-slate-50 border-transparent text-slate-400 hover:bg-rose-50 hover:text-rose-600 hover:border-rose-100"
+                            )}
+                        >
+                            <div className={cn("w-6 h-6 rounded-full flex items-center justify-center", isAbsent ? "bg-rose-500 text-white" : "bg-slate-200 text-slate-400")}>
+                                <X className="w-4 h-4" />
+                            </div>
+                            חסרתי
+                        </motion.button>
+                    </div>
+
+                    <AnimatePresence>
+                        {isAbsent && (
+                            <motion.div
+                                initial={{ height: 0, opacity: 0 }}
+                                animate={{ height: 'auto', opacity: 1 }}
+                                exit={{ height: 0, opacity: 0 }}
+                                transition={{ duration: 0.2, ease: "easeInOut" }}
+                                className="overflow-hidden"
+                            >
+                                <div className="space-y-3 pt-4 border-t border-slate-100 mt-2">
+                                    <div>
+                                        <Label className="text-xs text-slate-500 mb-1.5 block font-medium">סיבת היעדרות</Label>
+                                        <Select
+                                            value={session.attendance?.reason}
+                                            onValueChange={handleReasonChange}
+                                            dir="rtl"
+                                        >
+                                            <SelectTrigger className="bg-slate-50 border-slate-200 focus:ring-slate-200 h-9 text-right">
+                                                <SelectValue placeholder="בחר סיבה..." />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                {REASONS.map(r => (
+                                                    <SelectItem key={r.value} value={r.value} className="text-right pr-8" style={{ direction: "rtl" }}>{r.label}</SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+                                    <div>
+                                        <Label className="text-xs text-slate-500 mb-1.5 block font-medium">פירוט (אופציונלי)</Label>
+                                        <Textarea
+                                            value={session.attendance?.details || ""}
+                                            onChange={handleDetailsChange}
+                                            placeholder="הוסף פרטים..."
+                                            className="resize-none bg-slate-50 border-slate-200 focus:ring-slate-200 min-h-[60px]"
+                                            rows={2}
+                                        />
+                                    </div>
+                                </div>
+
+                                {/* Show replacement button or replacement info */}
+                                <div className="pt-3 pb-1">
+                                    {session.replacementSessionId ? (
+                                        <div className="w-full py-2 px-3 text-sm font-medium text-orange-700 bg-orange-50 rounded-lg border border-orange-200 flex items-center justify-center gap-2">
+                                            <CalendarIcon className="w-4 h-4" />
+                                            השלמה נקבעה ל-{replacementSession && format(parseISO(replacementSession.date), 'd בMMMM yyyy', { locale: he })}
+                                        </div>
+                                    ) : (
+                                        <button
+                                            onClick={() => onScheduleReplacement(session.id)}
+                                            disabled={!canAddReplacement}
+                                            className={`w-full py-2.5 text-sm font-medium rounded-lg border transition-all flex items-center justify-center gap-2 ${canAddReplacement
+                                                ? 'text-orange-700 bg-orange-50 hover:bg-orange-100 border-orange-200 cursor-pointer shadow-sm'
+                                                : 'text-slate-400 bg-slate-100 border-slate-200 cursor-not-allowed opacity-70'
+                                                }`}
+                                            title={
+                                                canAddReplacement
+                                                    ? 'קבע שיעור השלמה'
+                                                    : !thisSessionEligible
+                                                        ? 'יש לבחור סיבת היעדרות (לא אישית) כדי לקבוע השלמה'
+                                                        : 'הגעת למגבלת ההשלמות'
+                                            }
+                                        >
+                                            <CalendarIcon className="w-4 h-4" />
+                                            קבע שיעור השלמה
+                                        </button>
+                                    )}
+                                </div>
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
+
+                    {/* Show original event info if this is a replacement */}
+                    {session.isReplacement && originalSession && (
+                        <div className="mt-3 py-2 px-3 text-xs font-medium text-orange-700 bg-orange-50 rounded-lg border border-orange-200 flex items-center gap-2">
+                            <CalendarIcon className="w-3.5 h-3.5" />
+                            <span>השלמה עבור שיעור מ-{format(parseISO(originalSession.date), 'd בMMMM yyyy', { locale: he })}</span>
+                        </div>
+                    )}
+                </CardContent>
+
+                {/* Confirmation dialog for deleting replacement */}
+                <AlertDialog open={showDeleteReplacementAlert} onOpenChange={setShowDeleteReplacementAlert}>
+                    <AlertDialogContent>
+                        <AlertDialogHeader>
+                            <AlertDialogTitle>האם אתה בטוח?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                                שיעור ההשלמה שנקבע ל-{replacementSession && format(parseISO(replacementSession.date), 'd בMMMM yyyy', { locale: he })} יימחק.
+                            </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                            <AlertDialogCancel onClick={() => {
+                                setPendingStatusChange(null)
+                                setShowDeleteReplacementAlert(false)
+                            }}>ביטול</AlertDialogCancel>
+                            <AlertDialogAction onClick={confirmDeleteReplacement} className="bg-red-600 hover:bg-red-700 text-white">אישור</AlertDialogAction>
+                        </AlertDialogFooter>
+                    </AlertDialogContent>
+                </AlertDialog>
+            </Card>
+        </motion.div>
     )
 }

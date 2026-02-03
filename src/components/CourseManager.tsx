@@ -134,15 +134,15 @@ export function CourseManager({ courses, onAddCourse, onEditCourse, onDeleteCour
                 ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                         {courses.map(course => (
-                            <Card key={course.id} className="overflow-hidden">
+                            <Card key={course.id} className="overflow-hidden bg-white border-slate-200 shadow-sm hover:shadow-md transition-shadow">
                                 <CardContent className="p-4 flex items-center justify-between">
                                     <div>
-                                        <h4 className="font-bold">{course.name}</h4>
-                                        <p className="text-sm text-muted-foreground">
+                                        <h4 className="font-bold text-slate-800">{course.name}</h4>
+                                        <p className="text-sm text-slate-500">
                                             ימי {course.daysOfWeek.map(d => DAYS.find(day => day.value === d)?.label).join(', ')}
                                         </p>
                                     </div>
-                                    <div className="flex gap-2">
+                                    <div className="flex items-center gap-2">
                                         <Button variant="ghost" size="icon" onClick={() => handleEditClick(course)} className="text-primary hover:bg-primary/10">
                                             <Edit className="w-5 h-5" />
                                         </Button>
