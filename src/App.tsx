@@ -1,16 +1,18 @@
 import { useState, useEffect } from "react"
+import { motion, AnimatePresence } from "framer-motion"
 import { Calendar as CalendarIcon, LayoutDashboard, Settings } from "lucide-react"
 import { addDays, format, parseISO } from "date-fns"
 import { DailyView } from "@/components/DailyView"
-import { CourseManager } from "@/components/CourseManager"
 import { Dashboard } from "@/components/Dashboard"
+import { CourseManager } from "@/components/CourseManager"
 import { Toaster } from "@/components/ui/toaster"
 import { toast } from "@/hooks/use-toast"
-import type { Session, Course } from "@/types"
 import { cn, uuidv4 } from "@/lib/utils"
+import type { Session, Course } from "@/types"
 
 function App() {
   const [activeTab, setActiveTab] = useState<'daily' | 'dashboard' | 'courses'>('daily')
+
   /* API Sync Logic */
   const [courses, setCourses] = useState<Course[]>([])
   const [sessions, setSessions] = useState<Session[]>([])
@@ -31,7 +33,7 @@ function App() {
       })
   }, [])
 
-  // Auto-Save Effect (Debounced or on change)
+  // Auto-Save Effect
   useEffect(() => {
     if (loading) return
     const saveData = async () => {
@@ -303,103 +305,152 @@ function App() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 text-foreground font-sans rtl md:flex">
+    <div className="flex bg-slate-50 text-slate-900 font-sans rtl min-h-screen">
       {/* Desktop Sidebar */}
-      <aside className="hidden md:flex flex-col w-64 bg-white border-l h-screen sticky top-0 shrink-0 shadow-sm z-20">
-        <div className="p-6 border-b">
-          <h1 className="text-2xl font-bold bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent">
+      <aside className="hidden md:flex flex-col w-64 bg-white border-l border-slate-200 h-screen sticky top-0 z-20 shadow-sm">
+        <div className="p-6 border-b border-slate-100">
+          <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
             ניהול חוגים
           </h1>
         </div>
         <nav className="flex-1 p-4 space-y-2">
-          <button
+          <MenuButton
+            active={activeTab === 'daily'}
             onClick={() => setActiveTab('daily')}
-            className={cn("flex items-center gap-3 w-full px-4 py-3 rounded-lg text-lg font-medium transition-colors hover:bg-muted", activeTab === 'daily' ? "bg-primary/10 text-primary" : "text-muted-foreground")}
-          >
-            <CalendarIcon className="w-5 h-5" />
-            <span>יומן</span>
-          </button>
-
-          <button
+            icon={CalendarIcon}
+            label="יומן"
+          />
+          <MenuButton
+            active={activeTab === 'dashboard'}
             onClick={() => setActiveTab('dashboard')}
-            className={cn("flex items-center gap-3 w-full px-4 py-3 rounded-lg text-lg font-medium transition-colors hover:bg-muted", activeTab === 'dashboard' ? "bg-primary/10 text-primary" : "text-muted-foreground")}
-          >
-            <LayoutDashboard className="w-5 h-5" />
-            <span>דשבורד</span>
-          </button>
-
-          <button
+            icon={LayoutDashboard}
+            label="דשבורד"
+          />
+          <MenuButton
+            active={activeTab === 'courses'}
             onClick={() => setActiveTab('courses')}
-            className={cn("flex items-center gap-3 w-full px-4 py-3 rounded-lg text-lg font-medium transition-colors hover:bg-muted", activeTab === 'courses' ? "bg-primary/10 text-primary" : "text-muted-foreground")}
-          >
-            <Settings className="w-5 h-5" />
-            <span>ניהול</span>
-          </button>
+            icon={Settings}
+            label="ניהול"
+          />
         </nav>
-        <div className="p-4 border-t text-xs text-center text-muted-foreground">
+        <div className="p-4 border-t border-slate-100 text-xs text-center text-slate-400">
           v{__APP_VERSION__}
         </div>
       </aside>
 
-      <div className="flex-1 flex flex-col min-h-0">
+      {/* Main Content Wrapper */}
+      <div className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden">
         {/* Mobile Header */}
-        <header className="md:hidden bg-white border-b sticky top-0 z-10 px-4 py-3 flex items-center justify-center shadow-sm">
-          <h1 className="text-xl font-bold bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent">
+        <header className="md:hidden bg-white/80 backdrop-blur-md border-b border-slate-200 sticky top-0 z-20 px-4 py-3 flex items-center justify-center shrink-0">
+          <h1 className="text-xl font-bold text-slate-900">
             ניהול חוגים
           </h1>
         </header>
 
-        {/* Main Content */}
-        <main className="p-4 md:p-8 w-full max-w-7xl mx-auto min-h-[calc(100vh-140px)] md:min-h-screen overflow-y-auto">
-          {activeTab === 'daily' && (
-            <DailyView
-              sessions={sessions}
-              courses={courses}
-              onUpdateAttendance={handleUpdateAttendance}
-              onScheduleReplacement={handleScheduleReplacement}
-              onUpdateSessionDate={handleUpdateSessionDate}
-              onDeleteSession={handleDeleteSession}
-            />
-          )}
-          {activeTab === 'dashboard' && (
-            <Dashboard sessions={sessions} />
-          )}
-          {activeTab === 'courses' && (
-            <CourseManager courses={courses} onAddCourse={handleAddCourse} onEditCourse={handleEditCourse} onDeleteCourse={handleDeleteCourse} />
-          )}
+        {/* Scrollable Content Area */}
+        <main className="flex-1 overflow-y-auto scrollbar-hide p-4 md:p-8 pb-24 md:pb-8">
+          <div className="max-w-7xl mx-auto">
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={activeTab}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.2 }}
+              >
+                {activeTab === 'daily' && (
+                  <DailyView
+                    sessions={sessions}
+                    courses={courses}
+                    onUpdateAttendance={handleUpdateAttendance}
+                    onScheduleReplacement={handleScheduleReplacement}
+                    onUpdateSessionDate={handleUpdateSessionDate}
+                    onDeleteSession={handleDeleteSession}
+                  />
+                )}
+                {activeTab === 'dashboard' && (
+                  <Dashboard sessions={sessions} />
+                )}
+                {activeTab === 'courses' && (
+                  <CourseManager courses={courses} onAddCourse={handleAddCourse} onEditCourse={handleEditCourse} onDeleteCourse={handleDeleteCourse} />
+                )}
+              </motion.div>
+            </AnimatePresence>
+          </div>
         </main>
       </div>
 
-      {/* Mobile Bottom Nav */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t safe-area-bottom pb-safe max-w-md mx-auto shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] z-20">
+      {/* Mobile Bottom Navigation */}
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white/80 backdrop-blur-md border-t border-slate-200 safe-area-bottom pb-safe z-30">
         <div className="flex justify-around items-center h-16">
-          <button
+          <MobileNavButton
+            active={activeTab === 'daily'}
             onClick={() => setActiveTab('daily')}
-            className={cn("flex flex-col items-center justify-center w-full h-full space-y-1 transition-colors", activeTab === 'daily' ? "text-primary" : "text-muted-foreground")}
-          >
-            <CalendarIcon className="w-6 h-6" />
-            <span className="text-xs font-medium">יומן</span>
-          </button>
-
-          <button
+            icon={CalendarIcon}
+            label="יומן"
+          />
+          <MobileNavButton
+            active={activeTab === 'dashboard'}
             onClick={() => setActiveTab('dashboard')}
-            className={cn("flex flex-col items-center justify-center w-full h-full space-y-1 transition-colors", activeTab === 'dashboard' ? "text-primary" : "text-muted-foreground")}
-          >
-            <LayoutDashboard className="w-6 h-6" />
-            <span className="text-xs font-medium">דשבורד</span>
-          </button>
-
-          <button
+            icon={LayoutDashboard}
+            label="דשבורד"
+          />
+          <MobileNavButton
+            active={activeTab === 'courses'}
             onClick={() => setActiveTab('courses')}
-            className={cn("flex flex-col items-center justify-center w-full h-full space-y-1 transition-colors", activeTab === 'courses' ? "text-primary" : "text-muted-foreground")}
-          >
-            <Settings className="w-6 h-6" />
-            <span className="text-xs font-medium">ניהול</span>
-          </button>
+            icon={Settings}
+            label="ניהול"
+          />
         </div>
       </nav>
       <Toaster />
     </div>
+  )
+}
+
+function MenuButton({ active, onClick, icon: Icon, label }: { active: boolean; onClick: () => void; icon: any; label: string }) {
+  return (
+    <motion.button
+      whileTap={{ scale: 0.98 }}
+      onClick={onClick}
+      className={cn(
+        "flex items-center gap-3 w-full px-4 py-3 rounded-lg text-lg font-medium transition-all duration-200",
+        active
+          ? "bg-blue-50 text-blue-700 shadow-sm border border-blue-100"
+          : "text-slate-500 hover:bg-slate-50 hover:text-slate-900"
+      )}
+    >
+      <Icon className={cn("w-5 h-5", active && "stroke-[2.5px]")} />
+      <span>{label}</span>
+      {active && <motion.div layoutId="activeDesk" className="absolute left-0 w-1 h-6 bg-blue-600 rounded-r-full" />}
+    </motion.button>
+  )
+}
+
+function MobileNavButton({ active, onClick, icon: Icon, label }: { active: boolean; onClick: () => void; icon: any; label: string }) {
+  return (
+    <motion.button
+      whileTap={{ scale: 0.9 }}
+      onClick={onClick}
+      className={cn(
+        "flex flex-col items-center justify-center w-full h-full space-y-1 relative",
+        active ? "text-blue-600" : "text-slate-400"
+      )}
+    >
+      <div className={cn(
+        "p-1.5 rounded-full transition-all duration-300",
+        active ? "bg-blue-50" : "bg-transparent"
+      )}>
+        <Icon className={cn("w-6 h-6", active && "stroke-2")} />
+      </div>
+      <span className="text-[10px] font-medium">{label}</span>
+      {active && (
+        <motion.div
+          layoutId="activeTabMobile"
+          className="absolute -top-1 w-1 h-1 bg-blue-600 rounded-full"
+        />
+      )}
+    </motion.button>
   )
 }
 
