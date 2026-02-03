@@ -1,4 +1,4 @@
-name: Docker Image CI
+name: Docker Build
 
 on:
   workflow_dispatch:
@@ -33,7 +33,6 @@ jobs:
         file: ./Dockerfile
         push: true
         tags: |
-          dmatik/class-attend:latest
           dmatik/class-attend:${{ steps.package-version.outputs.version }}
         build-args: |
           APP_VERSION=${{ steps.package-version.outputs.version }}
