@@ -1,6 +1,6 @@
 import * as React from "react"
 import { motion, AnimatePresence } from "framer-motion"
-import { Check, X, Calendar as CalendarIcon, Trash2 } from "lucide-react"
+import { Check, X, Calendar as CalendarIcon, Trash2, Filter, ChevronDown, ChevronUp } from "lucide-react"
 import { format, parseISO, isToday } from "date-fns"
 import { he } from "date-fns/locale"
 import { Card, CardContent } from "@/components/ui/card"
@@ -44,6 +44,9 @@ export function DailyView({ sessions, courses, onUpdateAttendance, onScheduleRep
         const saved = sessionStorage.getItem('dailyView.eventTypeFilter')
         return (saved as 'all' | 'missed' | 'replacement') || 'all'
     })
+
+    // New state for mobile filters
+    const [isFiltersOpen, setIsFiltersOpen] = React.useState(false)
 
     // Persist showFuture to sessionStorage
     React.useEffect(() => {
@@ -99,46 +102,62 @@ export function DailyView({ sessions, courses, onUpdateAttendance, onScheduleRep
 
     return (
         <div className="space-y-6 pb-20">
-            {/* Filter Bar */}
-            <motion.div
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="flex flex-col md:flex-row gap-4 mb-4 bg-white p-4 rounded-xl shadow-sm border border-slate-200 md:items-center md:justify-start sticky top-0 z-10"
-            >
-                <div className="w-full md:w-[200px]">
-                    <Select value={selectedCourseId} onValueChange={setSelectedCourseId}>
-                        <SelectTrigger className="text-right bg-slate-50 border-slate-200 focus:ring-slate-200" dir="rtl">
-                            <SelectValue placeholder="סנן לפי חוג" />
-                        </SelectTrigger>
-                        <SelectContent dir="rtl">
-                            <SelectItem value="all">כל החוגים</SelectItem>
-                            {courses.map(course => (
-                                <SelectItem key={course.id} value={course.id}>{course.name}</SelectItem>
-                            ))}
-                        </SelectContent>
-                    </Select>
+            {/* Filter Section */}
+            <div className="sticky top-0 z-10 mb-4">
+                {/* Mobile Toggle */}
+                <button
+                    onClick={() => setIsFiltersOpen(!isFiltersOpen)}
+                    className="md:hidden w-full flex items-center justify-between bg-white p-3 rounded-xl shadow-sm border border-slate-200 mb-2 transition-colors active:bg-slate-50"
+                >
+                    <div className="flex items-center gap-2 font-medium text-slate-700">
+                        <Filter className="w-4 h-4" />
+                        <span>סינון ותצוגה</span>
+                    </div>
+                    {isFiltersOpen ? <ChevronUp className="w-4 h-4 text-slate-500" /> : <ChevronDown className="w-4 h-4 text-slate-500" />}
+                </button>
+
+                {/* Collapsible Container */}
+                <div className={cn(
+                    "bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden transition-all duration-300 ease-in-out",
+                    !isFiltersOpen ? "max-h-0 opacity-0 border-none md:max-h-[200px] md:opacity-100 md:border-slate-200 md:border" : "max-h-[500px] opacity-100"
+                )}>
+                    <div className="p-4 flex flex-col md:flex-row gap-4 md:items-center md:justify-start">
+                        <div className="w-full md:w-[200px]">
+                            <Select value={selectedCourseId} onValueChange={setSelectedCourseId} dir="rtl">
+                                <SelectTrigger className="text-right bg-slate-50 border-slate-200 focus:ring-slate-200">
+                                    <SelectValue placeholder="סנן לפי חוג" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="all" className="text-right pr-8">כל החוגים</SelectItem>
+                                    {courses.map(course => (
+                                        <SelectItem key={course.id} value={course.id} className="text-right pr-8">{course.name}</SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
+                        <div className="w-full md:w-[200px]">
+                            <Select value={eventTypeFilter} onValueChange={(value) => setEventTypeFilter(value as 'all' | 'missed' | 'replacement')} dir="rtl">
+                                <SelectTrigger className="text-right bg-slate-50 border-slate-200 focus:ring-slate-200">
+                                    <SelectValue placeholder="סנן לפי סוג" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="all" className="text-right pr-8">כל האירועים</SelectItem>
+                                    <SelectItem value="missed" className="text-right pr-8">רק חיסורים</SelectItem>
+                                    <SelectItem value="replacement" className="text-right pr-8">רק השלמות</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <Switch
+                                id="future-mode"
+                                checked={showFuture}
+                                onCheckedChange={setShowFuture}
+                            />
+                            <Label htmlFor="future-mode" className="cursor-pointer whitespace-nowrap text-slate-600">הצג עתידיים</Label>
+                        </div>
+                    </div>
                 </div>
-                <div className="w-full md:w-[200px]">
-                    <Select value={eventTypeFilter} onValueChange={(value) => setEventTypeFilter(value as 'all' | 'missed' | 'replacement')}>
-                        <SelectTrigger className="text-right bg-slate-50 border-slate-200 focus:ring-slate-200" dir="rtl">
-                            <SelectValue placeholder="סנן לפי סוג" />
-                        </SelectTrigger>
-                        <SelectContent dir="rtl">
-                            <SelectItem value="all">כל האירועים</SelectItem>
-                            <SelectItem value="missed">רק חיסורים</SelectItem>
-                            <SelectItem value="replacement">רק השלמות</SelectItem>
-                        </SelectContent>
-                    </Select>
-                </div>
-                <div className="flex items-center gap-2">
-                    <Switch
-                        id="future-mode"
-                        checked={showFuture}
-                        onCheckedChange={setShowFuture}
-                    />
-                    <Label htmlFor="future-mode" className="cursor-pointer whitespace-nowrap text-slate-600">הצג עתידיים</Label>
-                </div>
-            </motion.div>
+            </div>
 
             {/* Session List */}
             <motion.div layout className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
