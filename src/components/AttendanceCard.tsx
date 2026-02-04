@@ -252,7 +252,7 @@ export function AttendanceCard({ session, sessions, isNext, onUpdate, onSchedule
                                     <div>
                                         <Label className="text-xs text-slate-500 mb-1.5 block font-medium">סיבת היעדרות</Label>
                                         <Select
-                                            value={session.attendance?.reason}
+                                            value={session.attendance?.reason || ""}
                                             onValueChange={handleReasonChange}
                                             dir="rtl"
                                         >
