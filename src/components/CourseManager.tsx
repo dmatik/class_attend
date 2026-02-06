@@ -41,6 +41,15 @@ export function CourseManager({ courses, onAddCourse, onEditCourse, onDeleteCour
     const [endDate, setEndDate] = React.useState("")
     const [lessonCount, setLessonCount] = React.useState<string>("")
 
+    const isFormValid = React.useMemo(() => {
+        if (!name.trim()) return false
+        if (!startDate) return false
+        if (selectedDays.length === 0) return false
+        if (limitType === 'date' && !endDate) return false
+        if (limitType === 'count' && !lessonCount) return false
+        return true
+    }, [name, startDate, selectedDays, limitType, endDate, lessonCount])
+
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault()
         if (!name || !startDate || selectedDays.length === 0) return
@@ -172,7 +181,9 @@ export function CourseManager({ courses, onAddCourse, onEditCourse, onDeleteCour
                     </DialogHeader>
                     <form onSubmit={handleSubmit} className="space-y-4">
                         <div className="space-y-2">
-                            <Label htmlFor="name">שם החוג</Label>
+                            <Label htmlFor="name">
+                                שם החוג <span className="text-destructive">*</span>
+                            </Label>
                             <Input
                                 id="name"
                                 value={name}
@@ -183,7 +194,9 @@ export function CourseManager({ courses, onAddCourse, onEditCourse, onDeleteCour
                         </div>
 
                         <div className="space-y-2">
-                            <Label htmlFor="date">תאריך התחלה</Label>
+                            <Label htmlFor="date">
+                                תאריך התחלה <span className="text-destructive">*</span>
+                            </Label>
                             <DatePicker
                                 date={startDate ? parseISO(startDate) : undefined}
                                 setDate={(d) => setStartDate(d ? format(d, 'yyyy-MM-dd') : "")}
@@ -192,7 +205,9 @@ export function CourseManager({ courses, onAddCourse, onEditCourse, onDeleteCour
                         </div>
 
                         <div className="space-y-2">
-                            <Label>ימי פעילות</Label>
+                            <Label>
+                                ימי פעילות <span className="text-destructive">*</span>
+                            </Label>
                             <div className="flex flex-wrap gap-2 justify-start">
                                 {DAYS.map((day) => (
                                     <button
@@ -227,6 +242,9 @@ export function CourseManager({ courses, onAddCourse, onEditCourse, onDeleteCour
                                         onChange={(e) => setLessonCount(e.target.value)}
                                         min="1"
                                     />
+                                    <p className="text-xs text-muted-foreground mt-1">
+                                        <span className="text-destructive">*</span> חובה להזין מספר שיעורים
+                                    </p>
                                 </TabsContent>
                                 <TabsContent value="date">
                                     <DatePicker
@@ -234,11 +252,18 @@ export function CourseManager({ courses, onAddCourse, onEditCourse, onDeleteCour
                                         setDate={(d) => setEndDate(d ? format(d, 'yyyy-MM-dd') : "")}
                                         placeholder="בחר תאריך סיום"
                                     />
+                                    <p className="text-xs text-muted-foreground mt-1">
+                                        <span className="text-destructive">*</span> חובה לבחור תאריך סיום
+                                    </p>
                                 </TabsContent>
                             </Tabs>
                         </div>
 
-                        <Button type="submit" className="w-full mt-4 text-base font-bold shadow-lg shadow-primary/20">
+                        <Button
+                            type="submit"
+                            className="w-full mt-4 text-base font-bold shadow-lg shadow-primary/20 disabled:opacity-50 disabled:cursor-not-allowed"
+                            disabled={!isFormValid}
+                        >
                             {editingCourse ? 'שמור שינויים' : 'הוסף חוג'}
                         </Button>
                     </form>
