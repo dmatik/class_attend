@@ -152,10 +152,10 @@ export function CourseManager({ courses, onAddCourse, onEditCourse, onDeleteCour
                                         </p>
                                     </div>
                                     <div className="flex items-center gap-2">
-                                        <Button variant="ghost" size="icon" onClick={() => handleEditClick(course)} className="text-primary hover:bg-primary/10">
+                                        <Button variant="ghost" size="icon" onClick={() => handleEditClick(course)} className="bg-primary/10 dark:bg-primary/15 text-primary hover:bg-primary/20 dark:hover:bg-primary/30 transition-colors">
                                             <Edit className="w-5 h-5" />
                                         </Button>
-                                        <Button variant="ghost" size="icon" onClick={() => handleDeleteClick(course)} className="text-destructive hover:bg-destructive/10">
+                                        <Button variant="ghost" size="icon" onClick={() => handleDeleteClick(course)} className="bg-destructive/10 dark:bg-destructive/30 text-destructive hover:bg-destructive/20 dark:hover:bg-destructive/40 transition-colors">
                                             <Trash2 className="w-5 h-5" />
                                         </Button>
                                     </div>

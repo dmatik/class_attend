@@ -46,7 +46,7 @@ describe('AttendanceCard', () => {
         expect(presentBtn).toHaveClass('bg-emerald-50') // Active state class
 
         const absentBtn = screen.getByRole('button', { name: /חסרתי/i })
-        expect(absentBtn).toHaveClass('bg-slate-50') // Inactive state
+        expect(absentBtn).toHaveClass('bg-muted/50') // Inactive state
     })
 
     it('Test Case 2: Toggling status to Absent', async () => {
