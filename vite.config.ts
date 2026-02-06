@@ -22,9 +22,14 @@ export default defineConfig({
         dir: "rtl",
         icons: [
           {
-            src: "/favicon.png",
+            src: "/apple-touch-icon.png",
             sizes: "192x192",
             type: "image/png"
+          },
+          {
+            src: "/favicon.svg",
+            sizes: "192x192",
+            type: "image/svg+xml"
           },
           {
             src: "/favicon.svg",
