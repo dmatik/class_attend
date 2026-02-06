@@ -11,7 +11,7 @@ import { cn, uuidv4 } from "@/lib/utils"
 import type { Session, Course } from "@/types"
 
 function App() {
-  const [activeTab, setActiveTab] = useState<'daily' | 'dashboard' | 'courses'>('daily')
+  const [activeTab, setActiveTab] = useState<'daily' | 'dashboard' | 'courses'>('dashboard')
 
   /* API Sync Logic */
   const [courses, setCourses] = useState<Course[]>([])
