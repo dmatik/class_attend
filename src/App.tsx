@@ -9,6 +9,7 @@ import { Toaster } from "@/components/ui/toaster"
 import { toast } from "@/hooks/use-toast"
 import { cn, uuidv4 } from "@/lib/utils"
 import type { Session, Course } from "@/types"
+import { ModeToggle } from "@/components/mode-toggle"
 
 function App() {
   const [activeTab, setActiveTab] = useState<'daily' | 'dashboard' | 'courses'>('dashboard')
@@ -292,7 +293,6 @@ function App() {
           title: "שיעור ההשלמה נמחק",
         })
       } else {
-        // Regular deletion
         setSessions(sessions.filter(s => s.id !== sessionId))
         toast({
           variant: "success",
@@ -304,11 +304,12 @@ function App() {
     }
   }
 
+
   return (
-    <div className="flex bg-slate-50 text-slate-900 font-sans rtl min-h-screen">
+    <div className="flex bg-background text-foreground font-sans rtl min-h-screen">
       {/* Desktop Sidebar */}
-      <aside className="hidden md:flex flex-col w-64 bg-white border-l border-slate-200 h-screen sticky top-0 z-20 shadow-sm">
-        <div className="p-6 border-b border-slate-100">
+      <aside className="hidden md:flex flex-col w-64 bg-card border-l border-border h-screen sticky top-0 z-20 shadow-sm">
+        <div className="p-6 border-b border-border">
           <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
             ניהול חוגים
           </h1>
@@ -333,23 +334,26 @@ function App() {
             label="ניהול"
           />
         </nav>
-        <div className="p-4 border-t border-slate-100 text-xs text-center text-slate-400">
-          v{__APP_VERSION__}
+        <div className="p-4 border-t border-border flex flex-col items-center gap-4">
+          <ModeToggle />
+          <span className="text-xs text-muted-foreground">v{__APP_VERSION__}</span>
         </div>
       </aside>
 
       {/* Main Content Wrapper */}
       <div className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden">
         {/* Mobile Header */}
-        <header className="md:hidden bg-white/80 backdrop-blur-md border-b border-slate-200 sticky top-0 z-20 px-4 py-3 flex items-center justify-center shrink-0">
+        <header className="md:hidden bg-background/80 backdrop-blur-md border-b border-border sticky top-0 z-20 px-4 py-3 flex items-center justify-between shrink-0">
+          <div className="w-10" /> {/* Spacer for centering if needed, or simply justify-between */}
           <div className="flex flex-row items-baseline gap-2">
-            <h1 className="text-xl font-bold text-slate-900">
+            <h1 className="text-xl font-bold text-foreground">
               ניהול חוגים
             </h1>
-            <span className="text-[10px] font-normal text-slate-400">
+            <span className="text-[10px] font-normal text-muted-foreground">
               v{__APP_VERSION__}
             </span>
           </div>
+          <ModeToggle />
         </header>
 
         {/* Scrollable Content Area */}
@@ -386,7 +390,7 @@ function App() {
       </div>
 
       {/* Mobile Bottom Navigation */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white/80 backdrop-blur-md border-t border-slate-200 safe-area-bottom pb-safe z-30">
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-background/80 backdrop-blur-md border-t border-border safe-area-bottom pb-safe z-30">
         <div className="flex justify-around items-center h-16">
           <MobileNavButton
             active={activeTab === 'daily'}
@@ -421,13 +425,13 @@ function MenuButton({ active, onClick, icon: Icon, label }: { active: boolean; o
       className={cn(
         "flex items-center gap-3 w-full px-4 py-3 rounded-lg text-lg font-medium transition-all duration-200",
         active
-          ? "bg-blue-50 text-blue-700 shadow-sm border border-blue-100"
-          : "text-slate-500 hover:bg-slate-50 hover:text-slate-900"
+          ? "bg-primary/10 text-primary shadow-sm border border-primary/20"
+          : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
       )}
     >
       <Icon className={cn("w-5 h-5", active && "stroke-[2.5px]")} />
       <span>{label}</span>
-      {active && <motion.div layoutId="activeDesk" className="absolute left-0 w-1 h-6 bg-blue-600 rounded-r-full" />}
+      {active && <motion.div layoutId="activeDesk" className="absolute left-0 w-1 h-6 bg-primary rounded-r-full" />}
     </motion.button>
   )
 }
@@ -439,12 +443,12 @@ function MobileNavButton({ active, onClick, icon: Icon, label }: { active: boole
       onClick={onClick}
       className={cn(
         "flex flex-col items-center justify-center w-full h-full space-y-1 relative",
-        active ? "text-blue-600" : "text-slate-400"
+        active ? "text-primary" : "text-muted-foreground"
       )}
     >
       <div className={cn(
         "p-1.5 rounded-full transition-all duration-300",
-        active ? "bg-blue-50" : "bg-transparent"
+        active ? "bg-primary/10" : "bg-transparent"
       )}>
         <Icon className={cn("w-6 h-6", active && "stroke-2")} />
       </div>
@@ -452,7 +456,7 @@ function MobileNavButton({ active, onClick, icon: Icon, label }: { active: boole
       {active && (
         <motion.div
           layoutId="activeTabMobile"
-          className="absolute -top-1 w-1 h-1 bg-blue-600 rounded-full"
+          className="absolute -top-1 w-1 h-1 bg-primary rounded-full"
         />
       )}
     </motion.button>

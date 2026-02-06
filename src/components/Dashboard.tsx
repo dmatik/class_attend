@@ -53,7 +53,7 @@ export function Dashboard({ sessions }: DashboardProps) {
                             {name}
                         </h3>
                         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-                            <Card className="bg-gradient-to-br from-indigo-400 to-purple-500 text-white border-none shadow-lg">
+                            <Card className="bg-gradient-to-br from-indigo-400 to-purple-500 dark:from-indigo-600 dark:to-purple-700 text-white border-none shadow-lg">
                                 <CardHeader className="p-4 pb-2">
                                     <CardTitle className="text-sm font-medium opacity-90">סה״כ</CardTitle>
                                 </CardHeader>
@@ -64,49 +64,49 @@ export function Dashboard({ sessions }: DashboardProps) {
                                     </div>
                                 </CardContent>
                             </Card>
-                            <Card className="bg-slate-50/50 border-slate-200 shadow-sm hover:shadow-md transition-shadow">
+                            <Card className="bg-card border-border shadow-sm hover:shadow-md transition-shadow">
                                 <CardHeader className="p-4 pb-2">
-                                    <CardTitle className="text-sm font-medium text-slate-500">ממתינים</CardTitle>
+                                    <CardTitle className="text-sm font-medium text-muted-foreground">ממתינים</CardTitle>
                                 </CardHeader>
                                 <CardContent className="p-4 pt-0">
-                                    <div className="text-3xl font-bold text-slate-700">
+                                    <div className="text-3xl font-bold text-foreground">
                                         {pendingRegular}
                                         {pendingReplacements > 0 && <span className="text-lg opacity-80 font-normal"> (+{pendingReplacements})</span>}
                                     </div>
                                 </CardContent>
                             </Card>
-                            <Card className="bg-emerald-50 border-emerald-100 shadow-sm hover:shadow-md transition-shadow">
+                            <Card className="bg-emerald-50 dark:bg-emerald-950/30 border-emerald-100 dark:border-emerald-900 shadow-sm hover:shadow-md transition-shadow">
                                 <CardHeader className="p-4 pb-2">
-                                    <CardTitle className="text-sm font-medium text-emerald-600">נכחתי</CardTitle>
+                                    <CardTitle className="text-sm font-medium text-emerald-600 dark:text-emerald-400">נכחתי</CardTitle>
                                 </CardHeader>
                                 <CardContent className="p-4 pt-0">
-                                    <div className="text-3xl font-bold text-emerald-600">{present}</div>
+                                    <div className="text-3xl font-bold text-emerald-600 dark:text-emerald-400">{present}</div>
                                 </CardContent>
                             </Card>
-                            <Card className="bg-rose-50 border-rose-100 shadow-sm hover:shadow-md transition-shadow">
+                            <Card className="bg-rose-50 dark:bg-rose-950/30 border-rose-100 dark:border-rose-900 shadow-sm hover:shadow-md transition-shadow">
                                 <CardHeader className="p-4 pb-2">
-                                    <CardTitle className="text-sm font-medium text-rose-600">החסרתי</CardTitle>
+                                    <CardTitle className="text-sm font-medium text-rose-600 dark:text-rose-400">החסרתי</CardTitle>
                                 </CardHeader>
                                 <CardContent className="p-4 pt-0">
-                                    <div className="text-3xl font-bold text-rose-600">{absent}</div>
+                                    <div className="text-3xl font-bold text-rose-600 dark:text-rose-400">{absent}</div>
                                 </CardContent>
                             </Card>
 
                             {/* New Subscription Stats */}
-                            <Card className="bg-blue-50 border-blue-100 shadow-sm hover:shadow-md transition-shadow">
+                            <Card className="bg-blue-50 dark:bg-blue-950/30 border-blue-100 dark:border-blue-900 shadow-sm hover:shadow-md transition-shadow">
                                 <CardHeader className="p-4 pb-2">
-                                    <CardTitle className="text-sm font-medium text-blue-600">נוצל מהמנוי</CardTitle>
+                                    <CardTitle className="text-sm font-medium text-blue-600 dark:text-blue-400">נוצל מהמנוי</CardTitle>
                                 </CardHeader>
                                 <CardContent className="p-4 pt-0">
-                                    <div className="text-3xl font-bold text-blue-600">{used}</div>
+                                    <div className="text-3xl font-bold text-blue-600 dark:text-blue-400">{used}</div>
                                 </CardContent>
                             </Card>
-                            <Card className="bg-orange-50 border-orange-100 shadow-sm hover:shadow-md transition-shadow">
+                            <Card className="bg-orange-50 dark:bg-orange-950/30 border-orange-100 dark:border-orange-900 shadow-sm hover:shadow-md transition-shadow">
                                 <CardHeader className="p-4 pb-2">
-                                    <CardTitle className="text-sm font-medium text-orange-600">זכאי להשלמה</CardTitle>
+                                    <CardTitle className="text-sm font-medium text-orange-600 dark:text-orange-400">זכאי להשלמה</CardTitle>
                                 </CardHeader>
                                 <CardContent className="p-4 pt-0">
-                                    <div className="text-3xl font-bold text-orange-600">
+                                    <div className="text-3xl font-bold text-orange-600 dark:text-orange-400">
                                         {makeups}
                                         {replacementsCount > 0 && <span className="text-lg opacity-80 font-normal"> ({replacementsCount})</span>}
                                     </div>

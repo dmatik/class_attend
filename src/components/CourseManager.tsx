@@ -143,11 +143,11 @@ export function CourseManager({ courses, onAddCourse, onEditCourse, onDeleteCour
                 ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                         {courses.map(course => (
-                            <Card key={course.id} className="overflow-hidden bg-white border-slate-200 shadow-sm hover:shadow-md transition-shadow">
+                            <Card key={course.id} className="overflow-hidden bg-card border-border shadow-sm hover:shadow-md transition-shadow">
                                 <CardContent className="p-4 flex items-center justify-between">
                                     <div>
-                                        <h4 className="font-bold text-slate-800">{course.name}</h4>
-                                        <p className="text-sm text-slate-500">
+                                        <h4 className="font-bold text-foreground">{course.name}</h4>
+                                        <p className="text-sm text-muted-foreground">
                                             ימי {course.daysOfWeek.map(d => DAYS.find(day => day.value === d)?.label).join(', ')}
                                         </p>
                                     </div>

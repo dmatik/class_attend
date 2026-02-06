@@ -96,24 +96,24 @@ export function DailyView({ sessions, courses, onUpdateAttendance, onScheduleRep
                 {/* Mobile Toggle */}
                 <button
                     onClick={() => setIsFiltersOpen(!isFiltersOpen)}
-                    className="md:hidden w-full flex items-center justify-between bg-white p-3 rounded-xl shadow-sm border border-slate-200 mb-2 transition-colors active:bg-slate-50"
+                    className="md:hidden w-full flex items-center justify-between bg-card p-3 rounded-xl shadow-sm border border-border mb-2 transition-colors active:bg-accent"
                 >
-                    <div className="flex items-center gap-2 font-medium text-slate-700">
+                    <div className="flex items-center gap-2 font-medium text-foreground">
                         <Filter className="w-4 h-4" />
                         <span>סינון ותצוגה</span>
                     </div>
-                    {isFiltersOpen ? <ChevronUp className="w-4 h-4 text-slate-500" /> : <ChevronDown className="w-4 h-4 text-slate-500" />}
+                    {isFiltersOpen ? <ChevronUp className="w-4 h-4 text-muted-foreground" /> : <ChevronDown className="w-4 h-4 text-muted-foreground" />}
                 </button>
 
                 {/* Collapsible Container */}
                 <div className={cn(
-                    "bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden transition-all duration-300 ease-in-out",
-                    !isFiltersOpen ? "max-h-0 opacity-0 border-none md:max-h-[200px] md:opacity-100 md:border-slate-200 md:border" : "max-h-[500px] opacity-100"
+                    "bg-card rounded-xl shadow-sm border border-border overflow-hidden transition-all duration-300 ease-in-out",
+                    !isFiltersOpen ? "max-h-0 opacity-0 border-none md:max-h-[200px] md:opacity-100 md:border-border md:border" : "max-h-[500px] opacity-100"
                 )}>
                     <div className="p-4 flex flex-col md:flex-row gap-4 md:items-center md:justify-start">
                         <div className="w-full md:w-[200px]">
                             <Select value={selectedCourseId} onValueChange={setSelectedCourseId} dir="rtl">
-                                <SelectTrigger className="text-right bg-slate-50 border-slate-200 focus:ring-slate-200">
+                                <SelectTrigger className="text-right bg-muted/50 border-input focus:ring-ring">
                                     <SelectValue placeholder="סנן לפי חוג" />
                                 </SelectTrigger>
                                 <SelectContent>
@@ -126,7 +126,7 @@ export function DailyView({ sessions, courses, onUpdateAttendance, onScheduleRep
                         </div>
                         <div className="w-full md:w-[200px]">
                             <Select value={eventTypeFilter} onValueChange={(value) => setEventTypeFilter(value as 'all' | 'missed' | 'replacement')} dir="rtl">
-                                <SelectTrigger className="text-right bg-slate-50 border-slate-200 focus:ring-slate-200">
+                                <SelectTrigger className="text-right bg-muted/50 border-input focus:ring-ring">
                                     <SelectValue placeholder="סנן לפי סוג" />
                                 </SelectTrigger>
                                 <SelectContent>
@@ -142,7 +142,7 @@ export function DailyView({ sessions, courses, onUpdateAttendance, onScheduleRep
                                 checked={showFuture}
                                 onCheckedChange={setShowFuture}
                             />
-                            <Label htmlFor="future-mode" className="cursor-pointer whitespace-nowrap text-slate-600">הצג עתידיים</Label>
+                            <Label htmlFor="future-mode" className="cursor-pointer whitespace-nowrap text-muted-foreground">הצג עתידיים</Label>
                         </div>
                     </div>
                 </div>
@@ -156,7 +156,7 @@ export function DailyView({ sessions, courses, onUpdateAttendance, onScheduleRep
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
-                            className="col-span-full text-center py-10 text-slate-400"
+                            className="col-span-full text-center py-10 text-muted-foreground"
                         >
                             <CalendarIcon className="w-12 h-12 mx-auto mb-2 opacity-20" />
                             <p>לא נמצאו שיעורים</p>

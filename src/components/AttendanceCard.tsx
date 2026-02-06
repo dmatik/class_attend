@@ -160,20 +160,20 @@ export function AttendanceCard({ session, sessions, isNext, onUpdate, onSchedule
         >
             <Card className={cn(
                 "overflow-hidden transition-all duration-300 border-l-4 shadow-sm hover:shadow-md",
-                "bg-white border-slate-200", // Light mode base
+                "bg-card border-border",
                 session.isReplacement ? "border-l-orange-500" :
                     isPresent ? "border-l-emerald-500" :
-                        isAbsent ? "border-l-rose-500" : "border-l-slate-300"
+                        isAbsent ? "border-l-rose-500" : "border-l-slate-300 dark:border-l-slate-700"
             )}>
                 <CardContent className="p-5">
                     <div className="flex justify-between items-start mb-4">
                         <div>
                             <div className="flex items-center gap-2">
                                 <h3 className={cn("font-bold text-lg",
-                                    session.isReplacement ? "text-orange-700" : "text-slate-900"
+                                    session.isReplacement ? "text-orange-700 dark:text-orange-400" : "text-foreground"
                                 )}>
                                     {session.courseName}
-                                    {session.isReplacement && <span className="mr-2 text-xs font-normal text-orange-600 bg-orange-100 px-2 py-0.5 rounded-full">השלמה</span>}
+                                    {session.isReplacement && <span className="mr-2 text-xs font-normal text-orange-600 bg-orange-100 dark:text-orange-400 dark:bg-orange-950/50 px-2 py-0.5 rounded-full">השלמה</span>}
                                 </h3>
                                 {isNext && (
                                     <span className="text-[10px] font-extrabold bg-blue-600 text-white px-2 py-0.5 rounded-full animate-pulse shadow-sm">
@@ -187,7 +187,7 @@ export function AttendanceCard({ session, sessions, isNext, onUpdate, onSchedule
                                     setDate={(d) => {
                                         if (d) onUpdateSessionDate(session.id, format(d, 'yyyy-MM-dd'))
                                     }}
-                                    className="h-auto p-0 text-slate-500 border-none shadow-none hover:bg-transparent hover:text-blue-600 w-auto font-normal justify-start"
+                                    className="h-auto p-0 text-muted-foreground border-none shadow-none hover:bg-transparent hover:text-primary w-auto font-normal justify-start"
                                 />
                             </div>
                         </div>
@@ -212,11 +212,11 @@ export function AttendanceCard({ session, sessions, isNext, onUpdate, onSchedule
                             className={cn(
                                 "flex-1 flex items-center justify-center gap-2 py-3 rounded-xl font-bold transition-all border",
                                 isPresent
-                                    ? "bg-emerald-50 border-emerald-200 text-emerald-700 shadow-sm"
-                                    : "bg-slate-50 border-transparent text-slate-400 hover:bg-emerald-50 hover:text-emerald-600 hover:border-emerald-100"
+                                    ? "bg-emerald-50 dark:bg-emerald-950/30 border-emerald-200 dark:border-emerald-900 text-emerald-700 dark:text-emerald-400 shadow-sm"
+                                    : "bg-muted/50 border-transparent text-muted-foreground hover:bg-emerald-50 dark:hover:bg-emerald-950/20 hover:text-emerald-600 dark:hover:text-emerald-400 hover:border-emerald-100 dark:hover:border-emerald-900"
                             )}
                         >
-                            <div className={cn("w-6 h-6 rounded-full flex items-center justify-center", isPresent ? "bg-emerald-500 text-white" : "bg-slate-200 text-slate-400")}>
+                            <div className={cn("w-6 h-6 rounded-full flex items-center justify-center", isPresent ? "bg-emerald-500 text-white" : "bg-muted text-muted-foreground")}>
                                 <Check className="w-4 h-4" />
                             </div>
                             הייתי
@@ -228,11 +228,11 @@ export function AttendanceCard({ session, sessions, isNext, onUpdate, onSchedule
                             className={cn(
                                 "flex-1 flex items-center justify-center gap-2 py-3 rounded-xl font-bold transition-all border",
                                 isAbsent
-                                    ? "bg-rose-50 border-rose-200 text-rose-700 shadow-sm"
-                                    : "bg-slate-50 border-transparent text-slate-400 hover:bg-rose-50 hover:text-rose-600 hover:border-rose-100"
+                                    ? "bg-rose-50 dark:bg-rose-950/30 border-rose-200 dark:border-rose-900 text-rose-700 dark:text-rose-400 shadow-sm"
+                                    : "bg-muted/50 border-transparent text-muted-foreground hover:bg-rose-50 dark:hover:bg-rose-950/20 hover:text-rose-600 dark:hover:text-rose-400 hover:border-rose-100 dark:hover:border-rose-900"
                             )}
                         >
-                            <div className={cn("w-6 h-6 rounded-full flex items-center justify-center", isAbsent ? "bg-rose-500 text-white" : "bg-slate-200 text-slate-400")}>
+                            <div className={cn("w-6 h-6 rounded-full flex items-center justify-center", isAbsent ? "bg-rose-500 text-white" : "bg-muted text-muted-foreground")}>
                                 <X className="w-4 h-4" />
                             </div>
                             חסרתי
@@ -248,15 +248,15 @@ export function AttendanceCard({ session, sessions, isNext, onUpdate, onSchedule
                                 transition={{ duration: 0.2, ease: "easeInOut" }}
                                 className="overflow-hidden"
                             >
-                                <div className="space-y-3 pt-4 border-t border-slate-100 mt-2">
+                                <div className="space-y-3 pt-4 border-t border-border mt-2">
                                     <div>
-                                        <Label className="text-xs text-slate-500 mb-1.5 block font-medium">סיבת היעדרות</Label>
+                                        <Label className="text-xs text-muted-foreground mb-1.5 block font-medium">סיבת היעדרות</Label>
                                         <Select
                                             value={session.attendance?.reason || ""}
                                             onValueChange={handleReasonChange}
                                             dir="rtl"
                                         >
-                                            <SelectTrigger className="bg-slate-50 border-slate-200 focus:ring-slate-200 h-9 text-right">
+                                            <SelectTrigger className="bg-muted/50 border-input focus:ring-ring h-9 text-right">
                                                 <SelectValue placeholder="בחר סיבה..." />
                                             </SelectTrigger>
                                             <SelectContent>
@@ -267,12 +267,12 @@ export function AttendanceCard({ session, sessions, isNext, onUpdate, onSchedule
                                         </Select>
                                     </div>
                                     <div>
-                                        <Label className="text-xs text-slate-500 mb-1.5 block font-medium">פירוט (אופציונלי)</Label>
+                                        <Label className="text-xs text-muted-foreground mb-1.5 block font-medium">פירוט (אופציונלי)</Label>
                                         <Textarea
                                             value={session.attendance?.details || ""}
                                             onChange={handleDetailsChange}
                                             placeholder="הוסף פרטים..."
-                                            className="resize-none bg-slate-50 border-slate-200 focus:ring-slate-200 min-h-[60px]"
+                                            className="resize-none bg-muted/50 border-input focus:ring-ring min-h-[60px]"
                                             rows={2}
                                         />
                                     </div>
@@ -281,7 +281,7 @@ export function AttendanceCard({ session, sessions, isNext, onUpdate, onSchedule
                                 {/* Show replacement button or replacement info */}
                                 <div className="pt-3 pb-1">
                                     {session.replacementSessionId ? (
-                                        <div className="w-full py-2 px-3 text-sm font-medium text-orange-700 bg-orange-50 rounded-lg border border-orange-200 flex items-center justify-center gap-2">
+                                        <div className="w-full py-2 px-3 text-sm font-medium text-orange-700 dark:text-orange-400 bg-orange-50 dark:bg-orange-950/30 rounded-lg border border-orange-200 dark:border-orange-900 flex items-center justify-center gap-2">
                                             <CalendarIcon className="w-4 h-4" />
                                             השלמה נקבעה ל-{replacementSession && format(parseISO(replacementSession.date), 'd בMMMM yyyy', { locale: he })}
                                         </div>
@@ -290,8 +290,8 @@ export function AttendanceCard({ session, sessions, isNext, onUpdate, onSchedule
                                             onClick={() => onScheduleReplacement(session.id)}
                                             disabled={!canAddReplacement}
                                             className={`w-full py-2.5 text-sm font-medium rounded-lg border transition-all flex items-center justify-center gap-2 ${canAddReplacement
-                                                ? 'text-orange-700 bg-orange-50 hover:bg-orange-100 border-orange-200 cursor-pointer shadow-sm'
-                                                : 'text-slate-400 bg-slate-100 border-slate-200 cursor-not-allowed opacity-70'
+                                                ? 'text-orange-700 dark:text-orange-400 bg-orange-50 dark:bg-orange-950/30 hover:bg-orange-100 dark:hover:bg-orange-900/40 border-orange-200 dark:border-orange-900 cursor-pointer shadow-sm'
+                                                : 'text-muted-foreground bg-muted border-input cursor-not-allowed opacity-70'
                                                 }`}
                                             title={
                                                 canAddReplacement
@@ -312,7 +312,7 @@ export function AttendanceCard({ session, sessions, isNext, onUpdate, onSchedule
 
                     {/* Show original event info if this is a replacement */}
                     {session.isReplacement && originalSession && (
-                        <div className="mt-3 py-2 px-3 text-xs font-medium text-orange-700 bg-orange-50 rounded-lg border border-orange-200 flex items-center gap-2">
+                        <div className="mt-3 py-2 px-3 text-xs font-medium text-orange-700 dark:text-orange-400 bg-orange-50 dark:bg-orange-950/30 rounded-lg border border-orange-200 dark:border-orange-900 flex items-center gap-2">
                             <CalendarIcon className="w-3.5 h-3.5" />
                             <span>השלמה עבור שיעור מ-{format(parseISO(originalSession.date), 'd בMMMM yyyy', { locale: he })}</span>
                         </div>
