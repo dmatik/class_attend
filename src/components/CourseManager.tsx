@@ -152,10 +152,10 @@ export function CourseManager({ courses, onAddCourse, onEditCourse, onDeleteCour
                                         </p>
                                     </div>
                                     <div className="flex items-center gap-2">
-                                        <Button variant="ghost" size="icon" onClick={() => handleEditClick(course)} className="bg-primary/10 dark:bg-primary/15 text-primary hover:bg-primary/20 dark:hover:bg-primary/30 transition-colors">
+                                        <Button variant="ghost" size="icon" onClick={() => handleEditClick(course)} className="bg-primary/10 dark:bg-muted/80 text-primary hover:bg-primary/20 dark:hover:bg-muted transition-colors">
                                             <Edit className="w-5 h-5" />
                                         </Button>
-                                        <Button variant="ghost" size="icon" onClick={() => handleDeleteClick(course)} className="bg-destructive/10 dark:bg-destructive/30 text-destructive hover:bg-destructive/20 dark:hover:bg-destructive/40 transition-colors">
+                                        <Button variant="ghost" size="icon" onClick={() => handleDeleteClick(course)} className="bg-destructive/10 dark:bg-muted/80 text-destructive dark:text-red-400 hover:bg-destructive/20 dark:hover:bg-muted transition-colors">
                                             <Trash2 className="w-5 h-5" />
                                         </Button>
                                     </div>
@@ -168,7 +168,7 @@ export function CourseManager({ courses, onAddCourse, onEditCourse, onDeleteCour
 
             <Button
                 onClick={() => setIsDialogOpen(true)}
-                className="w-full md:w-auto text-base font-bold shadow-lg shadow-primary/20 gap-2"
+                className="w-full md:w-auto text-base font-bold shadow-lg shadow-primary/20 dark:shadow-blue-900/50 gap-2 dark:bg-blue-700 dark:text-white dark:hover:bg-blue-800"
             >
                 הוסף חוג חדש
             </Button>
@@ -261,7 +261,7 @@ export function CourseManager({ courses, onAddCourse, onEditCourse, onDeleteCour
 
                         <Button
                             type="submit"
-                            className="w-full mt-4 text-base font-bold shadow-lg shadow-primary/20 disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="w-full mt-4 text-base font-bold shadow-lg shadow-primary/20 dark:shadow-blue-900/50 disabled:opacity-50 disabled:cursor-not-allowed dark:bg-blue-700 dark:text-white dark:hover:bg-blue-800"
                             disabled={!isFormValid}
                         >
                             {editingCourse ? 'שמור שינויים' : 'הוסף חוג'}

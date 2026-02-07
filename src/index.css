@@ -35,7 +35,7 @@
     --radius: 0.75rem;
   }
 
-  .dark {
+  /* .dark {
     --background: 0 0% 3.9%;
     --foreground: 0 0% 98%;
 
@@ -63,6 +63,59 @@
     --border: 240 3.7% 15.9%;
     --input: 240 3.7% 15.9%;
     --ring: 0 0% 83.1%;
+  } */
+  .dark {
+    /* Main Background: Slate-900 (Instead of Black/Zinc-950)
+       This gives it that deep blue-grey look.
+    */
+    --background: 222.2 47.4% 11.2%;
+    --foreground: 210 40% 98%;
+
+    /* Cards: Slightly lighter than BG to create depth
+       (Slate-800 ish)
+    */
+    --card: 217.2 32.6% 17.5%;
+    --card-foreground: 210 40% 98%;
+
+    /* Popovers (Dropdowns, etc): Same as Card
+    */
+    --popover: 217.2 32.6% 17.5%;
+    --popover-foreground: 210 40% 98%;
+
+    /* Primary (Action buttons): White/Off-white 
+       to contrast against the blue-grey
+    */
+    --primary: 210 40% 98%;
+    --primary-foreground: 222.2 47.4% 11.2%;
+
+    /* Secondary (Muted buttons): 
+       Blending with the card background 
+    */
+    --secondary: 217.2 32.6% 22%;
+    /* Lighter than card */
+    --secondary-foreground: 210 40% 98%;
+
+    /* Muted text/backgrounds
+    */
+    --muted: 217.2 32.6% 22%;
+    --muted-foreground: 215 20.2% 65.1%;
+
+    /* Accents (Hover states)
+    */
+    --accent: 217.2 32.6% 22%;
+    --accent-foreground: 210 40% 98%;
+
+    /* Destructive (Error states) - Soft Red
+    */
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+
+    /* Borders: Distinct but not harsh 
+       (Slate-700)
+    */
+    --border: 217.2 32.6% 25%;
+    --input: 217.2 32.6% 25%;
+    --ring: 212.7 26.8% 83.9%;
   }
 }
 
@@ -74,8 +127,10 @@
   body {
     @apply bg-background text-foreground;
   }
-  
-  input, textarea, select {
+
+  input,
+  textarea,
+  select {
     @apply text-base;
   }
 }
