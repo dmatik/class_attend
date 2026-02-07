@@ -168,7 +168,7 @@ export function CourseManager({ courses, onAddCourse, onEditCourse, onDeleteCour
 
             <Button
                 onClick={() => setIsDialogOpen(true)}
-                className="w-full md:w-auto text-base font-bold shadow-lg shadow-primary/20 dark:shadow-blue-900/50 gap-2 dark:bg-blue-700 dark:text-white dark:hover:bg-blue-800"
+                className="w-full md:w-auto text-base font-bold shadow-lg shadow-blue-500/30 dark:shadow-blue-900/50 gap-2 bg-blue-600 text-white hover:bg-blue-700 dark:bg-blue-700 dark:text-white dark:hover:bg-blue-800"
             >
                 הוסף חוג חדש
             </Button>
@@ -261,7 +261,7 @@ export function CourseManager({ courses, onAddCourse, onEditCourse, onDeleteCour
 
                         <Button
                             type="submit"
-                            className="w-full mt-4 text-base font-bold shadow-lg shadow-primary/20 dark:shadow-blue-900/50 disabled:opacity-50 disabled:cursor-not-allowed dark:bg-blue-700 dark:text-white dark:hover:bg-blue-800"
+                            className="w-full mt-4 text-base font-bold shadow-lg shadow-blue-500/30 dark:shadow-blue-900/50 disabled:opacity-50 disabled:cursor-not-allowed bg-blue-600 text-white hover:bg-blue-700 dark:bg-blue-700 dark:text-white dark:hover:bg-blue-800"
                             disabled={!isFormValid}
                         >
                             {editingCourse ? 'שמור שינויים' : 'הוסף חוג'}

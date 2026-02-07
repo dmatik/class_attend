@@ -107,8 +107,8 @@ export function DailyView({ sessions, courses, onUpdateAttendance, onScheduleRep
 
                 {/* Collapsible Container */}
                 <div className={cn(
-                    "bg-card rounded-xl shadow-sm border border-border overflow-hidden transition-all duration-300 ease-in-out",
-                    !isFiltersOpen ? "max-h-0 opacity-0 border-none md:max-h-[200px] md:opacity-100 md:border-border md:border" : "max-h-[500px] opacity-100"
+                    "bg-card rounded-xl shadow-sm overflow-hidden transition-all duration-300 ease-in-out",
+                    !isFiltersOpen ? "max-h-0 opacity-0 md:max-h-[200px] md:opacity-100 md:border md:border-border" : "max-h-[500px] opacity-100 border border-border"
                 )}>
                     <div className="p-4 flex flex-col md:flex-row gap-4 md:items-center md:justify-start">
                         <div className="w-full md:w-[200px]">

@@ -425,13 +425,13 @@ function MenuButton({ active, onClick, icon: Icon, label }: { active: boolean; o
       className={cn(
         "flex items-center gap-3 w-full px-4 py-3 rounded-lg text-lg font-medium transition-all duration-200",
         active
-          ? "bg-primary/10 text-primary shadow-sm border border-primary/20"
+          ? "bg-blue-50 dark:bg-primary/10 text-blue-600 dark:text-primary shadow-sm border border-blue-100 dark:border-primary/20"
           : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
       )}
     >
       <Icon className={cn("w-5 h-5", active && "stroke-[2.5px]")} />
       <span>{label}</span>
-      {active && <motion.div layoutId="activeDesk" className="absolute left-0 w-1 h-6 bg-primary rounded-r-full" />}
+      {active && <motion.div layoutId="activeDesk" className="absolute left-0 w-1 h-6 bg-blue-600 dark:bg-primary rounded-r-full" />}
     </motion.button>
   )
 }
@@ -443,12 +443,12 @@ function MobileNavButton({ active, onClick, icon: Icon, label }: { active: boole
       onClick={onClick}
       className={cn(
         "flex flex-col items-center justify-center w-full h-full space-y-1 relative",
-        active ? "text-primary" : "text-muted-foreground"
+        active ? "text-blue-600 dark:text-primary" : "text-muted-foreground"
       )}
     >
       <div className={cn(
         "p-1.5 rounded-full transition-all duration-300",
-        active ? "bg-primary/10" : "bg-transparent"
+        active ? "bg-blue-50 dark:bg-primary/10" : "bg-transparent"
       )}>
         <Icon className={cn("w-6 h-6", active && "stroke-2")} />
       </div>
@@ -456,7 +456,7 @@ function MobileNavButton({ active, onClick, icon: Icon, label }: { active: boole
       {active && (
         <motion.div
           layoutId="activeTabMobile"
-          className="absolute -top-1 w-1 h-1 bg-primary rounded-full"
+          className="absolute -top-1 w-1 h-1 bg-blue-600 dark:bg-primary rounded-full"
         />
       )}
     </motion.button>
