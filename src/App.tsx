@@ -346,7 +346,7 @@ function App() {
         <header className="md:hidden bg-background/80 backdrop-blur-md border-b border-border sticky top-0 z-20 px-4 py-3 flex items-center justify-between shrink-0">
           <div className="w-10" /> {/* Spacer for centering if needed, or simply justify-between */}
           <div className="flex flex-row items-baseline gap-2">
-            <h1 className="text-xl font-bold text-foreground">
+            <h1 className="text-xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
               ניהול חוגים
             </h1>
             <span className="text-[10px] font-normal text-muted-foreground">
@@ -425,13 +425,13 @@ function MenuButton({ active, onClick, icon: Icon, label }: { active: boolean; o
       className={cn(
         "flex items-center gap-3 w-full px-4 py-3 rounded-lg text-lg font-medium transition-all duration-200",
         active
-          ? "bg-blue-50 dark:bg-primary/10 text-blue-600 dark:text-primary shadow-sm border border-blue-100 dark:border-primary/20"
+          ? "bg-primary/10 text-primary shadow-sm border border-primary/20"
           : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
       )}
     >
       <Icon className={cn("w-5 h-5", active && "stroke-[2.5px]")} />
       <span>{label}</span>
-      {active && <motion.div layoutId="activeDesk" className="absolute left-0 w-1 h-6 bg-blue-600 dark:bg-primary rounded-r-full" />}
+      {active && <motion.div layoutId="activeDesk" className="absolute left-0 w-1 h-6 bg-primary rounded-r-full" />}
     </motion.button>
   )
 }
@@ -443,12 +443,12 @@ function MobileNavButton({ active, onClick, icon: Icon, label }: { active: boole
       onClick={onClick}
       className={cn(
         "flex flex-col items-center justify-center w-full h-full space-y-1 relative",
-        active ? "text-blue-600 dark:text-primary" : "text-muted-foreground"
+        active ? "text-primary" : "text-muted-foreground"
       )}
     >
       <div className={cn(
         "p-1.5 rounded-full transition-all duration-300",
-        active ? "bg-blue-50 dark:bg-primary/10" : "bg-transparent"
+        active ? "bg-primary/10" : "bg-transparent"
       )}>
         <Icon className={cn("w-6 h-6", active && "stroke-2")} />
       </div>
@@ -456,7 +456,7 @@ function MobileNavButton({ active, onClick, icon: Icon, label }: { active: boole
       {active && (
         <motion.div
           layoutId="activeTabMobile"
-          className="absolute -top-1 w-1 h-1 bg-blue-600 dark:bg-primary rounded-full"
+          className="absolute -top-1 w-1 h-1 bg-primary rounded-full"
         />
       )}
     </motion.button>

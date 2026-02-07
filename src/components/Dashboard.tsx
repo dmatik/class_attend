@@ -49,7 +49,7 @@ export function Dashboard({ sessions }: DashboardProps) {
 
                 return (
                     <div key={name} className="space-y-3">
-                        <h3 className="font-bold text-xl text-primary border-b pb-2 mx-1 select-none">
+                        <h3 className="font-bold text-xl border-b pb-2 mx-1 select-none">
                             {name}
                         </h3>
                         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
