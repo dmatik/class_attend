@@ -20,7 +20,7 @@
 
 ## ✨ Key Features
 
-*   **📱 Mobile-First & PWA Ready:** Install natively on iOS and Android. detailed manifest and meta tags included.
+*   **📱 Mobile-First & PWA Ready:** Install natively on iOS and Android. Detailed manifest and meta tags included.
 *   **🎨 Premium Glassmorphism UI:** Built with **Shadcn UI** and **Tailwind CSS**, featuring a clean, airy aesthetic with dark/light mode capabilities.
 *   **⚡ Smooth Animations:** Powered by **Framer Motion** for fluid page transitions and interaction feedback.
 *   **⏱️ Efficient Tracking:** Quick start/stop attendance functionality with intuitive controls.

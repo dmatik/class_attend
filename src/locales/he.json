@@ -1,0 +1,53 @@
+{
+    "common": {
+        "dashboard": "לוח בקרה",
+        "calendar": "יומן",
+        "management": "ניהול",
+        "add_course": "הוסף חוג",
+        "present": "נוכח",
+        "absent": "חסר",
+        "reason": "סיבה",
+        "cancel": "ביטול",
+        "confirm": "אישור",
+        "delete": "מחק",
+        "edit": "ערוך",
+        "save": "שמור",
+        "app_title": "ניהול חוגים",
+        "loading": "טוען...",
+        "search": "חיפוש...",
+        "no_results": "לא נמצאו תוצאות",
+        "error": "שגיאה",
+        "success": "הצלחה",
+        "language": "שפה"
+    },
+    "attendance": {
+        "mark_all_present": "סמן את כולם כנוכחים",
+        "summary": "סיכום",
+        "total_students": "סה״כ תלמידים",
+        "attendance_rate": "אחוז נוכחות"
+    },
+    "reasons": {
+        "personal": "סיבה אישית",
+        "provider": "ביטול מדריך/חוג",
+        "holiday": "חג / חופשה",
+        "external": "אילוץ חיצוני",
+        "other": "אחר",
+        "placeholder": "בחר סיבה..."
+    },
+    "attendance_card": {
+        "replacement": "השלמה",
+        "next_lesson": "השיעור הבא",
+        "today": "היום",
+        "i_was_there": "הייתי",
+        "i_was_absent": "חסרתי",
+        "details_label": "פירוט (אופציונלי)",
+        "details_placeholder": "הוסף פרטים...",
+        "replacement_scheduled": "השלמה נקבעה ל-{{date}}",
+        "schedule_replacement": "קבע שיעור השלמה",
+        "replacement_limit": "הגעת למגבלת ההשלמות",
+        "replacement_requirement": "יש לבחור סיבת היעדרות (לא אישית) כדי לקבוע השלמה",
+        "replacement_for": "השלמה עבור שיעור מ-{{date}}",
+        "delete_replacement_title": "האם אתה בטוח?",
+        "delete_replacement_desc": "שיעור ההשלמה שנקבע ל-{{date}} יימחק."
+    }
+}

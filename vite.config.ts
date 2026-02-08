@@ -60,6 +60,7 @@ export default defineConfig({
     setupFiles: './src/tests/setup.ts',
   },
   build: {
+    chunkSizeWarningLimit: 1000,
     rollupOptions: {
       output: {
         manualChunks: (id) => {
@@ -67,14 +68,24 @@ export default defineConfig({
             if (id.includes("/recharts/")) {
               return "recharts";
             }
+            if (id.includes("/react/") || id.includes("/react-dom/")) {
+              return "react-vendor";
+            }
             if (
               id.includes("/@radix-ui/") ||
               id.includes("/framer-motion/") ||
-              id.includes("/lucide-react/")
+              id.includes("/lucide-react/") ||
+              id.includes("/class-variance-authority/") ||
+              id.includes("/clsx/") ||
+              id.includes("/tailwind-merge/") ||
+              id.includes("/react-day-picker/")
             ) {
               return "ui-vendor";
             }
-            return "vendor";
+            if (id.includes("/date-fns/") || id.includes("/i18next/")) {
+              return "utils-vendor";
+            }
+            // Let other dependencies be in the main vendor chunk or default
           }
         },
       },

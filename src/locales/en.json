@@ -1,0 +1,53 @@
+{
+    "common": {
+        "dashboard": "Dashboard",
+        "calendar": "Calendar",
+        "management": "Management",
+        "add_course": "Add Course",
+        "present": "Present",
+        "absent": "Absent",
+        "reason": "Reason",
+        "cancel": "Cancel",
+        "confirm": "Confirm",
+        "delete": "Delete",
+        "edit": "Edit",
+        "save": "Save",
+        "app_title": "Class Management",
+        "loading": "Loading...",
+        "search": "Search...",
+        "no_results": "No results found",
+        "error": "Error",
+        "success": "Success",
+        "language": "Language"
+    },
+    "attendance": {
+        "mark_all_present": "Mark All Present",
+        "summary": "Summary",
+        "total_students": "Total Students",
+        "attendance_rate": "Attendance Rate"
+    },
+    "reasons": {
+        "personal": "Personal Reason",
+        "provider": "Instructor/Course Cancelled",
+        "holiday": "Holiday / Vacation",
+        "external": "External Constraint",
+        "other": "Other",
+        "placeholder": "Select reason..."
+    },
+    "attendance_card": {
+        "replacement": "Replacement",
+        "next_lesson": "Next Lesson",
+        "today": "Today",
+        "i_was_there": "Present",
+        "i_was_absent": "Absent",
+        "details_label": "Details (Optional)",
+        "details_placeholder": "Add details...",
+        "replacement_scheduled": "Replacement scheduled for {{date}}",
+        "schedule_replacement": "Schedule Replacement",
+        "replacement_limit": "Replacement limit reached",
+        "replacement_requirement": "Select a non-personal reason to schedule replacement",
+        "replacement_for": "Replacement for lesson on {{date}}",
+        "delete_replacement_title": "Are you sure?",
+        "delete_replacement_desc": "The replacement lesson scheduled for {{date}} will be deleted."
+    }
+}

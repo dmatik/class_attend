@@ -42,10 +42,10 @@ describe('AttendanceCard', () => {
 
         // Check initial status (Present)
         // usage of "הייתי" button should have specific class/style or we can check the icon container bg
-        const presentBtn = screen.getByRole('button', { name: /הייתי/i })
+        const presentBtn = screen.getByRole('button', { name: 'attendance_card.i_was_there' })
         expect(presentBtn).toHaveClass('bg-emerald-50') // Active state class
 
-        const absentBtn = screen.getByRole('button', { name: /חסרתי/i })
+        const absentBtn = screen.getByRole('button', { name: 'attendance_card.i_was_absent' })
         expect(absentBtn).toHaveClass('bg-muted/50') // Inactive state
     })
 
@@ -53,7 +53,7 @@ describe('AttendanceCard', () => {
         const user = userEvent.setup()
         render(<AttendanceCard {...defaultProps} />)
 
-        const absentBtn = screen.getByRole('button', { name: /חסרתי/i })
+        const absentBtn = screen.getByRole('button', { name: 'attendance_card.i_was_absent' })
 
         await user.click(absentBtn)
 
@@ -65,7 +65,7 @@ describe('AttendanceCard', () => {
 
         // Wait for reason select to appear (it's in AnimatePresence/motion.div)
         await waitFor(() => {
-            expect(screen.getByText('סיבת היעדרות')).toBeInTheDocument()
+            expect(screen.getByText('common.reason')).toBeInTheDocument()
         })
 
         // Check input/select is visible
@@ -84,10 +84,10 @@ describe('AttendanceCard', () => {
         render(<AttendanceCard {...defaultProps} session={absentSession} />)
 
         // Form should be visible initially
-        expect(screen.getByText('סיבת היעדרות')).toBeInTheDocument()
+        expect(screen.getByText('common.reason')).toBeInTheDocument()
 
         // Click Present
-        const presentBtn = screen.getByRole('button', { name: /הייתי/i })
+        const presentBtn = screen.getByRole('button', { name: 'attendance_card.i_was_there' })
         await user.click(presentBtn)
 
         // onUpdate called
@@ -97,7 +97,7 @@ describe('AttendanceCard', () => {
 
         // Form should disappear
         await waitFor(() => {
-            expect(screen.queryByText('סיבת היעדרות')).not.toBeInTheDocument()
+            expect(screen.queryByText('common.reason')).not.toBeInTheDocument()
         })
     })
 })

@@ -2,7 +2,8 @@ import * as React from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { Check, X, Calendar as CalendarIcon, Trash2 } from "lucide-react"
 import { format, parseISO, isToday } from "date-fns"
-import { he } from "date-fns/locale"
+import { he, enUS } from "date-fns/locale"
+import { useTranslation } from "react-i18next"
 import { Card, CardContent } from "@/components/ui/card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Textarea } from "@/components/ui/textarea"
@@ -12,12 +13,12 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { cn } from "@/lib/utils"
 import type { Session, AbsenceReason } from "@/types"
 
-const REASONS: { value: AbsenceReason; label: string }[] = [
-    { value: "personal", label: "סיבה אישית" },
-    { value: "provider", label: "ביטול מדריך/חוג" },
-    { value: "holiday", label: "חג / חופשה" },
-    { value: "external", label: "אילוץ חיצוני" },
-    { value: "other", label: "אחר" },
+const REASONS: { value: AbsenceReason; labelKey: string }[] = [
+    { value: "personal", labelKey: "reasons.personal" },
+    { value: "provider", labelKey: "reasons.provider" },
+    { value: "holiday", labelKey: "reasons.holiday" },
+    { value: "external", labelKey: "reasons.external" },
+    { value: "other", labelKey: "reasons.other" },
 ]
 
 interface AttendanceCardProps {
@@ -31,6 +32,8 @@ interface AttendanceCardProps {
 }
 
 export function AttendanceCard({ session, sessions, isNext, onUpdate, onScheduleReplacement, onUpdateSessionDate, onDeleteSession }: AttendanceCardProps) {
+    const { t, i18n } = useTranslation()
+    const dateLocale = i18n.language === 'en' ? enUS : he
     // Use local state for immediate UI updates
     const [localAttendance, setLocalAttendance] = React.useState(session.attendance)
     const [showDeleteReplacementAlert, setShowDeleteReplacementAlert] = React.useState(false)
@@ -173,11 +176,11 @@ export function AttendanceCard({ session, sessions, isNext, onUpdate, onSchedule
                                     session.isReplacement ? "text-orange-700 dark:text-orange-400" : "text-foreground"
                                 )}>
                                     {session.courseName}
-                                    {session.isReplacement && <span className="mr-2 text-xs font-normal text-orange-600 bg-orange-100 dark:text-orange-400 dark:bg-orange-950/50 px-2 py-0.5 rounded-full">השלמה</span>}
+                                    {session.isReplacement && <span className="mr-2 text-xs font-normal text-orange-600 bg-orange-100 dark:text-orange-400 dark:bg-orange-950/50 px-2 py-0.5 rounded-full">{t('attendance_card.replacement')}</span>}
                                 </h3>
                                 {isNext && (
                                     <span className="text-[10px] font-extrabold bg-blue-600 text-white px-2 py-0.5 rounded-full animate-pulse shadow-sm">
-                                        השיעור הבא
+                                        {t('attendance_card.next_lesson')}
                                     </span>
                                 )}
                             </div>
@@ -192,7 +195,7 @@ export function AttendanceCard({ session, sessions, isNext, onUpdate, onSchedule
                             </div>
                         </div>
                         <div className="flex items-center gap-2">
-                            {isToday(dateObj) && <span className="text-xs font-bold px-2 py-1 bg-blue-50 text-blue-700 border border-blue-100 rounded-full">היום</span>}
+                            {isToday(dateObj) && <span className="text-xs font-bold px-2 py-1 bg-blue-50 text-blue-700 border border-blue-100 rounded-full">{t('attendance_card.today')}</span>}
                             {session.isReplacement && (
                                 <button
                                     onClick={() => onDeleteSession(session.id)}
@@ -219,7 +222,7 @@ export function AttendanceCard({ session, sessions, isNext, onUpdate, onSchedule
                             <div className={cn("w-6 h-6 rounded-full flex items-center justify-center", isPresent ? "bg-emerald-500 text-white" : "bg-muted text-muted-foreground")}>
                                 <Check className="w-4 h-4" />
                             </div>
-                            הייתי
+                            {t('attendance_card.i_was_there')}
                         </motion.button>
 
                         <motion.button
@@ -235,7 +238,7 @@ export function AttendanceCard({ session, sessions, isNext, onUpdate, onSchedule
                             <div className={cn("w-6 h-6 rounded-full flex items-center justify-center", isAbsent ? "bg-rose-500 text-white" : "bg-muted text-muted-foreground")}>
                                 <X className="w-4 h-4" />
                             </div>
-                            חסרתי
+                            {t('attendance_card.i_was_absent')}
                         </motion.button>
                     </div>
 
@@ -250,28 +253,28 @@ export function AttendanceCard({ session, sessions, isNext, onUpdate, onSchedule
                             >
                                 <div className="space-y-3 pt-4 border-t border-border mt-2">
                                     <div>
-                                        <Label className="text-xs text-muted-foreground mb-1.5 block font-medium">סיבת היעדרות</Label>
+                                        <Label className="text-xs text-muted-foreground mb-1.5 block font-medium">{t('common.reason')}</Label>
                                         <Select
                                             value={session.attendance?.reason || ""}
                                             onValueChange={handleReasonChange}
-                                            dir="rtl"
+                                            dir={i18n.dir()}
                                         >
-                                            <SelectTrigger className="bg-muted/50 border-input focus:ring-ring h-9 text-right">
-                                                <SelectValue placeholder="בחר סיבה..." />
+                                            <SelectTrigger className="bg-muted/50 border-input focus:ring-ring h-9 text-start">
+                                                <SelectValue placeholder={t('reasons.placeholder')} />
                                             </SelectTrigger>
                                             <SelectContent>
                                                 {REASONS.map(r => (
-                                                    <SelectItem key={r.value} value={r.value} className="text-right pr-8" style={{ direction: "rtl" }}>{r.label}</SelectItem>
+                                                    <SelectItem key={r.value} value={r.value} className="text-start ps-8 pe-2" style={{ direction: i18n.dir() }}>{t(r.labelKey)}</SelectItem>
                                                 ))}
                                             </SelectContent>
                                         </Select>
                                     </div>
                                     <div>
-                                        <Label className="text-xs text-muted-foreground mb-1.5 block font-medium">פירוט (אופציונלי)</Label>
+                                        <Label className="text-xs text-muted-foreground mb-1.5 block font-medium">{t('attendance_card.details_label')}</Label>
                                         <Textarea
                                             value={session.attendance?.details || ""}
                                             onChange={handleDetailsChange}
-                                            placeholder="הוסף פרטים..."
+                                            placeholder={t('attendance_card.details_placeholder')}
                                             className="resize-none bg-muted/50 border-input focus:ring-ring min-h-[60px]"
                                             rows={2}
                                         />
@@ -283,7 +286,7 @@ export function AttendanceCard({ session, sessions, isNext, onUpdate, onSchedule
                                     {session.replacementSessionId ? (
                                         <div className="w-full py-2 px-3 text-sm font-medium text-orange-700 dark:text-orange-400 bg-orange-50 dark:bg-orange-950/30 rounded-lg border border-orange-200 dark:border-orange-900 flex items-center justify-center gap-2">
                                             <CalendarIcon className="w-4 h-4" />
-                                            השלמה נקבעה ל-{replacementSession && format(parseISO(replacementSession.date), 'd בMMMM yyyy', { locale: he })}
+                                            {t('attendance_card.replacement_scheduled', { date: replacementSession ? format(parseISO(replacementSession.date), 'd MMMM yyyy', { locale: dateLocale }) : '' })}
                                         </div>
                                     ) : (
                                         <button
@@ -295,14 +298,14 @@ export function AttendanceCard({ session, sessions, isNext, onUpdate, onSchedule
                                                 }`}
                                             title={
                                                 canAddReplacement
-                                                    ? 'קבע שיעור השלמה'
+                                                    ? t('attendance_card.schedule_replacement')
                                                     : !thisSessionEligible
-                                                        ? 'יש לבחור סיבת היעדרות (לא אישית) כדי לקבוע השלמה'
-                                                        : 'הגעת למגבלת ההשלמות'
+                                                        ? t('attendance_card.replacement_requirement')
+                                                        : t('attendance_card.replacement_limit')
                                             }
                                         >
                                             <CalendarIcon className="w-4 h-4" />
-                                            קבע שיעור השלמה
+                                            {t('attendance_card.schedule_replacement')}
                                         </button>
                                     )}
                                 </div>
@@ -314,7 +317,7 @@ export function AttendanceCard({ session, sessions, isNext, onUpdate, onSchedule
                     {session.isReplacement && originalSession && (
                         <div className="mt-3 py-2 px-3 text-xs font-medium text-orange-700 dark:text-orange-400 bg-orange-50 dark:bg-orange-950/30 rounded-lg border border-orange-200 dark:border-orange-900 flex items-center gap-2">
                             <CalendarIcon className="w-3.5 h-3.5" />
-                            <span>השלמה עבור שיעור מ-{format(parseISO(originalSession.date), 'd בMMMM yyyy', { locale: he })}</span>
+                            <span>{t('attendance_card.replacement_for', { date: format(parseISO(originalSession.date), 'd MMMM yyyy', { locale: dateLocale }) })}</span>
                         </div>
                     )}
                 </CardContent>
@@ -323,17 +326,17 @@ export function AttendanceCard({ session, sessions, isNext, onUpdate, onSchedule
                 <AlertDialog open={showDeleteReplacementAlert} onOpenChange={setShowDeleteReplacementAlert}>
                     <AlertDialogContent>
                         <AlertDialogHeader>
-                            <AlertDialogTitle>האם אתה בטוח?</AlertDialogTitle>
+                            <AlertDialogTitle>{t('attendance_card.delete_replacement_title')}</AlertDialogTitle>
                             <AlertDialogDescription>
-                                שיעור ההשלמה שנקבע ל-{replacementSession && format(parseISO(replacementSession.date), 'd בMMMM yyyy', { locale: he })} יימחק.
+                                {t('attendance_card.delete_replacement_desc', { date: replacementSession ? format(parseISO(replacementSession.date), 'd MMMM yyyy', { locale: dateLocale }) : '' })}
                             </AlertDialogDescription>
                         </AlertDialogHeader>
                         <AlertDialogFooter>
                             <AlertDialogCancel onClick={() => {
                                 setPendingStatusChange(null)
                                 setShowDeleteReplacementAlert(false)
-                            }}>ביטול</AlertDialogCancel>
-                            <AlertDialogAction onClick={confirmDeleteReplacement} className="bg-red-600 hover:bg-red-700 text-white">אישור</AlertDialogAction>
+                            }}>{t('common.cancel')}</AlertDialogCancel>
+                            <AlertDialogAction onClick={confirmDeleteReplacement} className="bg-red-600 hover:bg-red-700 text-white">{t('common.confirm')}</AlertDialogAction>
                         </AlertDialogFooter>
                     </AlertDialogContent>
                 </AlertDialog>

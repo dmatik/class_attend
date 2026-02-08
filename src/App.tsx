@@ -1,15 +1,25 @@
-import { useState, useEffect } from "react"
+import { useState, useEffect, Suspense, lazy } from "react"
 import { motion, AnimatePresence } from "framer-motion"
-import { Calendar as CalendarIcon, LayoutDashboard, Settings, Filter } from "lucide-react"
+import { Calendar as CalendarIcon, LayoutDashboard, Settings, Filter, Loader2 } from "lucide-react"
 import { addDays, format, parseISO } from "date-fns"
-import { DailyView } from "@/components/DailyView"
-import { Dashboard } from "@/components/Dashboard"
-import { CourseManager } from "@/components/CourseManager"
 import { Toaster } from "@/components/ui/toaster"
 import { toast } from "@/hooks/use-toast"
 import { cn, uuidv4 } from "@/lib/utils"
 import type { Session, Course } from "@/types"
 import { ModeToggle } from "@/components/mode-toggle"
+import { LanguageSwitcher } from "@/components/LanguageSwitcher"
+
+// Lazy load components
+const DailyView = lazy(() => import("@/components/DailyView").then(module => ({ default: module.DailyView })))
+const Dashboard = lazy(() => import("@/components/Dashboard").then(module => ({ default: module.Dashboard })))
+const CourseManager = lazy(() => import("@/components/CourseManager").then(module => ({ default: module.CourseManager })))
+
+const LoadingSpinner = () => (
+  <div className="flex h-full w-full items-center justify-center">
+    <Loader2 className="h-8 w-8 animate-spin text-primary" />
+  </div>
+)
+
 
 function App() {
   const [activeTab, setActiveTab] = useState<'daily' | 'dashboard' | 'courses'>('dashboard')
@@ -381,7 +391,10 @@ function App() {
           />
         </nav>
         <div className="p-4 border-t border-border flex flex-col items-center gap-4">
-          <ModeToggle />
+          <div className="flex items-center gap-2">
+            <LanguageSwitcher />
+            <ModeToggle />
+          </div>
           <span className="text-xs text-muted-foreground">v{__APP_VERSION__}</span>
         </div>
       </aside>
@@ -399,7 +412,10 @@ function App() {
               v{__APP_VERSION__}
             </span>
           </div>
-          <ModeToggle />
+          <div className="flex items-center gap-2">
+            <LanguageSwitcher />
+            <ModeToggle />
+          </div>
         </header>
 
         {/* Scrollable Content Area */}
@@ -414,31 +430,33 @@ function App() {
                 transition={{ duration: 0.2 }}
                 className="h-full"
               >
-                {activeTab === 'daily' && (
-                  <DailyView
-                    sessions={sessions}
-                    courses={courses}
-                    onUpdateAttendance={handleUpdateAttendance}
-                    onScheduleReplacement={handleScheduleReplacement}
-                    onUpdateSessionDate={handleUpdateSessionDate}
-                    onDeleteSession={handleDeleteSession}
-                    // Filter Props
-                    showFuture={showFuture}
-                    setShowFuture={setShowFuture}
-                    selectedCourseId={selectedCourseId}
-                    setSelectedCourseId={setSelectedCourseId}
-                    eventTypeFilter={eventTypeFilter}
-                    setEventTypeFilter={setEventTypeFilter}
-                    isFiltersOpen={isFiltersOpen}
-                    setIsFiltersOpen={setIsFiltersOpen}
-                  />
-                )}
-                {activeTab === 'dashboard' && (
-                  <Dashboard sessions={sessions} />
-                )}
-                {activeTab === 'courses' && (
-                  <CourseManager courses={courses} onAddCourse={handleAddCourse} onEditCourse={handleEditCourse} onDeleteCourse={handleDeleteCourse} />
-                )}
+                <Suspense fallback={<LoadingSpinner />}>
+                  {activeTab === 'daily' && (
+                    <DailyView
+                      sessions={sessions}
+                      courses={courses}
+                      onUpdateAttendance={handleUpdateAttendance}
+                      onScheduleReplacement={handleScheduleReplacement}
+                      onUpdateSessionDate={handleUpdateSessionDate}
+                      onDeleteSession={handleDeleteSession}
+                      // Filter Props
+                      showFuture={showFuture}
+                      setShowFuture={setShowFuture}
+                      selectedCourseId={selectedCourseId}
+                      setSelectedCourseId={setSelectedCourseId}
+                      eventTypeFilter={eventTypeFilter}
+                      setEventTypeFilter={setEventTypeFilter}
+                      isFiltersOpen={isFiltersOpen}
+                      setIsFiltersOpen={setIsFiltersOpen}
+                    />
+                  )}
+                  {activeTab === 'dashboard' && (
+                    <Dashboard sessions={sessions} />
+                  )}
+                  {activeTab === 'courses' && (
+                    <CourseManager courses={courses} onAddCourse={handleAddCourse} onEditCourse={handleEditCourse} onDeleteCourse={handleDeleteCourse} />
+                  )}
+                </Suspense>
               </motion.div>
             </AnimatePresence>
           </div>
