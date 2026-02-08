@@ -24,7 +24,7 @@ export function Dashboard({ sessions }: DashboardProps) {
     }
 
     return (
-        <div className="space-y-8 pb-20">
+        <div className="h-full overflow-y-auto space-y-8 pb-24 p-4 md:p-8">
             {Object.entries(grouped).map(([name, courseSessions]) => {
                 const total = courseSessions.length
                 const replacementsCount = courseSessions.filter(s => s.isReplacement).length

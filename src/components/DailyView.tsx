@@ -1,12 +1,13 @@
 import * as React from "react"
 import { motion, AnimatePresence } from "framer-motion"
-import { Calendar as CalendarIcon, Filter, ChevronDown, ChevronUp } from "lucide-react"
+import { Calendar as CalendarIcon, Filter } from "lucide-react"
 import { format } from "date-fns"
 import { Switch } from "@/components/ui/switch"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Label } from "@/components/ui/label"
+import { Button } from "@/components/ui/button"
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import type { Session, Course } from "@/types"
-import { cn } from "@/lib/utils"
 import { AttendanceCard } from "@/components/AttendanceCard"
 
 interface DailyViewProps {
@@ -90,31 +91,91 @@ export function DailyView({ sessions, courses, onUpdateAttendance, onScheduleRep
         .sort((a, b) => b.date.localeCompare(a.date))
 
     return (
-        <div className="space-y-6 pb-20">
-            {/* Filter Section */}
-            <div className="sticky top-0 z-10 mb-4">
-                {/* Mobile Toggle */}
-                <button
-                    onClick={() => setIsFiltersOpen(!isFiltersOpen)}
-                    className="md:hidden w-full flex items-center justify-between bg-card p-3 rounded-xl shadow-sm border border-border mb-2 transition-colors active:bg-accent"
+        <div className="h-full flex flex-col bg-background">
+            {/* Header */}
+            <header className="flex-none relative z-20 flex items-center justify-between px-3 py-1 bg-background border-b-[0.5px] border-border/50 shadow-[0_1px_2px_0_rgba(0,0,0,0.05)]">
+                <div className="flex items-center gap-2">
+                    <h3 className="font-semibold text-lg px-2">יומן שיעורים</h3>
+                </div>
+                <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => setIsFiltersOpen(true)}
+                    className="hover:bg-accent/50 transition-colors relative h-8 w-8"
                 >
-                    <div className="flex items-center gap-2 font-medium text-foreground">
-                        <Filter className="w-4 h-4" />
-                        <span>סינון ותצוגה</span>
+                    <div className="relative">
+                        <Filter className="w-5 h-5" />
+                        {(eventTypeFilter !== 'all' || selectedCourseId !== 'all' || showFuture) && (
+                            <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-blue-500 rounded-full border-2 border-background" />
+                        )}
                     </div>
-                    {isFiltersOpen ? <ChevronUp className="w-4 h-4 text-muted-foreground" /> : <ChevronDown className="w-4 h-4 text-muted-foreground" />}
-                </button>
+                </Button>
+            </header>
 
-                {/* Collapsible Container */}
-                <div className={cn(
-                    "bg-card rounded-xl shadow-sm overflow-hidden transition-all duration-300 ease-in-out",
-                    !isFiltersOpen ? "max-h-0 opacity-0 md:max-h-[200px] md:opacity-100 md:border md:border-border" : "max-h-[500px] opacity-100 border border-border"
-                )}>
-                    <div className="p-4 flex flex-col md:flex-row gap-4 md:items-center md:justify-start">
-                        <div className="w-full md:w-[200px]">
+            {/* Content Area */}
+            <div className="flex-1 overflow-y-auto p-4 md:p-8 pb-24 space-y-6">
+                <motion.div layout className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                    <AnimatePresence mode="popLayout">
+                        {sortedSessions.length === 0 ? (
+                            <motion.div
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                exit={{ opacity: 0 }}
+                                className="col-span-full text-center py-10 text-muted-foreground flex flex-col items-center justify-center gap-4"
+                            >
+                                <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mb-2">
+                                    <CalendarIcon className="w-8 h-8 opacity-40" />
+                                </div>
+                                <div className="space-y-1">
+                                    <p className="font-medium text-lg">לא נמצאו שיעורים</p>
+                                    <p className="text-sm opacity-60">נסה לשנות את סינון החיפוש</p>
+                                </div>
+                                {(eventTypeFilter !== 'all' || selectedCourseId !== 'all') && (
+                                    <Button
+                                        variant="outline"
+                                        onClick={() => {
+                                            setEventTypeFilter('all')
+                                            setSelectedCourseId('all')
+                                            setShowFuture(false)
+                                        }}
+                                        className="mt-2"
+                                    >
+                                        נקה סינון
+                                    </Button>
+                                )}
+                            </motion.div>
+                        ) : (
+                            sortedSessions.map((session) => (
+                                <AttendanceCard
+                                    key={session.id}
+                                    session={session}
+                                    sessions={sessions}
+                                    isNext={nextSessionIds.has(session.id)}
+                                    onUpdate={onUpdateAttendance}
+                                    onScheduleReplacement={onScheduleReplacement}
+                                    onUpdateSessionDate={onUpdateSessionDate}
+                                    onDeleteSession={onDeleteSession}
+                                />
+                            ))
+                        )}
+                    </AnimatePresence>
+                </motion.div>
+            </div>
+
+            {/* Filter Modal */}
+            <Dialog open={isFiltersOpen} onOpenChange={setIsFiltersOpen}>
+                <DialogContent className="w-full h-full max-w-none max-h-none rounded-none p-4 gap-6 flex flex-col justify-start md:grid md:w-auto md:h-auto md:max-w-[425px] md:max-h-[90vh] md:rounded-lg md:p-6 md:gap-4 overflow-y-auto" dir="rtl">
+                    <DialogHeader className="text-right space-y-2">
+                        <DialogTitle className="text-xl">סינון ותצוגה</DialogTitle>
+                    </DialogHeader>
+
+                    <div className="grid gap-6 py-4">
+                        {/* Course Filter */}
+                        <div className="space-y-2">
+                            <Label className="text-right block">סינון לפי חוג</Label>
                             <Select value={selectedCourseId} onValueChange={setSelectedCourseId} dir="rtl">
-                                <SelectTrigger className="text-right bg-muted/50 border-input focus:ring-ring">
-                                    <SelectValue placeholder="סנן לפי חוג" />
+                                <SelectTrigger className="text-right bg-muted/30">
+                                    <SelectValue placeholder="בחר חוג" />
                                 </SelectTrigger>
                                 <SelectContent>
                                     <SelectItem value="all" className="text-right pr-8">כל החוגים</SelectItem>
@@ -124,10 +185,13 @@ export function DailyView({ sessions, courses, onUpdateAttendance, onScheduleRep
                                 </SelectContent>
                             </Select>
                         </div>
-                        <div className="w-full md:w-[200px]">
+
+                        {/* Event Type Filter */}
+                        <div className="space-y-2">
+                            <Label className="text-right block">סוג אירוע</Label>
                             <Select value={eventTypeFilter} onValueChange={(value) => setEventTypeFilter(value as 'all' | 'missed' | 'replacement')} dir="rtl">
-                                <SelectTrigger className="text-right bg-muted/50 border-input focus:ring-ring">
-                                    <SelectValue placeholder="סנן לפי סוג" />
+                                <SelectTrigger className="text-right bg-muted/30">
+                                    <SelectValue placeholder="בחר סוג" />
                                 </SelectTrigger>
                                 <SelectContent>
                                     <SelectItem value="all" className="text-right pr-8">כל האירועים</SelectItem>
@@ -136,47 +200,24 @@ export function DailyView({ sessions, courses, onUpdateAttendance, onScheduleRep
                                 </SelectContent>
                             </Select>
                         </div>
-                        <div className="flex items-center gap-2">
+
+                        {/* Future Toggle */}
+                        <div className="flex items-center justify-between p-3 rounded-lg border bg-muted/20">
+                            <Label htmlFor="future-mode" className="cursor-pointer">הצג שיעורים עתידיים</Label>
                             <Switch
                                 id="future-mode"
                                 checked={showFuture}
                                 onCheckedChange={setShowFuture}
                             />
-                            <Label htmlFor="future-mode" className="cursor-pointer whitespace-nowrap text-muted-foreground">הצג עתידיים</Label>
                         </div>
-                    </div>
-                </div>
-            </div>
 
-            {/* Session List */}
-            <motion.div layout className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                <AnimatePresence mode="popLayout">
-                    {sortedSessions.length === 0 ? (
-                        <motion.div
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            exit={{ opacity: 0 }}
-                            className="col-span-full text-center py-10 text-muted-foreground"
-                        >
-                            <CalendarIcon className="w-12 h-12 mx-auto mb-2 opacity-20" />
-                            <p>לא נמצאו שיעורים</p>
-                        </motion.div>
-                    ) : (
-                        sortedSessions.map((session) => (
-                            <AttendanceCard
-                                key={session.id}
-                                session={session}
-                                sessions={sessions}
-                                isNext={nextSessionIds.has(session.id)}
-                                onUpdate={onUpdateAttendance}
-                                onScheduleReplacement={onScheduleReplacement}
-                                onUpdateSessionDate={onUpdateSessionDate}
-                                onDeleteSession={onDeleteSession}
-                            />
-                        ))
-                    )}
-                </AnimatePresence>
-            </motion.div>
+                        {/* Apply Button (Optional, closes modal) */}
+                        <Button className="w-full mt-2 font-bold" onClick={() => setIsFiltersOpen(false)}>
+                            החזר לתוצאות
+                        </Button>
+                    </div>
+                </DialogContent>
+            </Dialog>
         </div>
     )
 }

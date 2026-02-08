@@ -135,7 +135,7 @@ export function CourseManager({ courses, onAddCourse, onEditCourse, onDeleteCour
     }
 
     return (
-        <div className="pb-20 space-y-6">
+        <div className="h-full overflow-y-auto pb-24 space-y-6 p-4 md:p-8">
             <div className="space-y-4">
                 <h3 className="font-semibold text-lg px-2">החוגים שלי</h3>
                 {courses.length === 0 ? (

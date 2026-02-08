@@ -357,8 +357,8 @@ function App() {
         </header>
 
         {/* Scrollable Content Area */}
-        <main className="flex-1 overflow-y-auto scrollbar-hide p-4 md:p-8 pb-24 md:pb-8">
-          <div className="max-w-7xl mx-auto">
+        <main className="flex-1 overflow-hidden relative flex flex-col">
+          <div className="w-full h-full max-w-7xl mx-auto">
             <AnimatePresence mode="wait">
               <motion.div
                 key={activeTab}
@@ -366,6 +366,7 @@ function App() {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -10 }}
                 transition={{ duration: 0.2 }}
+                className="h-full"
               >
                 {activeTab === 'daily' && (
                   <DailyView
