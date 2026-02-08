@@ -174,7 +174,7 @@ export function CourseManager({ courses, onAddCourse, onEditCourse, onDeleteCour
             </Button>
 
             <Dialog open={isDialogOpen} onOpenChange={handleDialogClose}>
-                <DialogContent className="w-full h-full max-w-none max-h-none rounded-none md:w-auto md:h-auto md:max-w-md md:max-h-[90vh] md:rounded-lg overflow-y-auto">
+                <DialogContent className="w-full h-full max-w-none max-h-none rounded-none p-4 gap-6 flex flex-col justify-start md:grid md:w-auto md:h-auto md:max-w-md md:max-h-[90vh] md:rounded-lg md:p-6 md:gap-4 overflow-y-auto">
                     <DialogHeader>
                         <DialogTitle className="text-xl text-primary">{editingCourse ? 'עריכת חוג' : 'הוספת חוג חדש'}</DialogTitle>
                         <DialogDescription>{editingCourse ? 'ערוך את פרטי החוג' : 'הזן את פרטי החוג כדי להתחיל במעקב'}</DialogDescription>
@@ -229,7 +229,7 @@ export function CourseManager({ courses, onAddCourse, onEditCourse, onDeleteCour
 
                         <div className="space-y-2">
                             <Label>משך הקורס</Label>
-                            <Tabs value={limitType} onValueChange={(v) => setLimitType(v as 'date' | 'count')} className="w-full">
+                            <Tabs dir="rtl" value={limitType} onValueChange={(v) => setLimitType(v as 'date' | 'count')} className="w-full">
                                 <TabsList className="grid w-full grid-cols-2">
                                     <TabsTrigger value="count">מספר שיעורים</TabsTrigger>
                                     <TabsTrigger value="date">תאריך סיום</TabsTrigger>
@@ -241,6 +241,7 @@ export function CourseManager({ courses, onAddCourse, onEditCourse, onDeleteCour
                                         value={lessonCount}
                                         onChange={(e) => setLessonCount(e.target.value)}
                                         min="1"
+                                        className="text-right"
                                     />
                                     <p className="text-xs text-muted-foreground mt-1">
                                         <span className="text-destructive">*</span> חובה להזין מספר שיעורים
