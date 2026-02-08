@@ -93,7 +93,7 @@ export function DailyView({ sessions, courses, onUpdateAttendance, onScheduleRep
     return (
         <div className="h-full flex flex-col bg-background">
             {/* Header */}
-            <header className="flex-none relative z-20 flex items-center justify-between px-3 py-1 bg-background border-b-[0.5px] border-border/50 shadow-[0_1px_2px_0_rgba(0,0,0,0.05)]">
+            <header className="flex-none relative z-20 flex items-center justify-between px-3 py-1 bg-background border-b border-border shadow-[0_1px_2px_0_rgba(0,0,0,0.05)]">
                 <div className="flex items-center gap-2">
                     <h3 className="font-semibold text-lg px-2">יומן שיעורים</h3>
                 </div>
