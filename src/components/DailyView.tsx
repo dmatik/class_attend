@@ -17,41 +17,49 @@ interface DailyViewProps {
     onScheduleReplacement: (sessionId: string) => void
     onUpdateSessionDate: (sessionId: string, newDate: string) => void
     onDeleteSession: (sessionId: string) => void
+
+    // Filter Props
+    showFuture: boolean
+    setShowFuture: (v: boolean) => void
+    selectedCourseId: string
+    setSelectedCourseId: (v: string) => void
+    eventTypeFilter: 'all' | 'missed' | 'replacement'
+    setEventTypeFilter: (v: 'all' | 'missed' | 'replacement') => void
+    isFiltersOpen: boolean
+    setIsFiltersOpen: (v: boolean) => void
 }
 
 
-export function DailyView({ sessions, courses, onUpdateAttendance, onScheduleReplacement, onUpdateSessionDate, onDeleteSession }: DailyViewProps) {
-    // Initialize state from sessionStorage
-    const [showFuture, setShowFuture] = React.useState(() => {
-        const saved = sessionStorage.getItem('dailyView.showFuture')
-        return saved ? JSON.parse(saved) : false
-    })
-    const [selectedCourseId, setSelectedCourseId] = React.useState<string>(() => {
-        const saved = sessionStorage.getItem('dailyView.selectedCourseId')
-        return saved || "all"
-    })
-    const [eventTypeFilter, setEventTypeFilter] = React.useState<'all' | 'missed' | 'replacement'>(() => {
-        const saved = sessionStorage.getItem('dailyView.eventTypeFilter')
-        return (saved as 'all' | 'missed' | 'replacement') || 'all'
-    })
+export function DailyView({
+    sessions,
+    courses,
+    onUpdateAttendance,
+    onScheduleReplacement,
+    onUpdateSessionDate,
+    onDeleteSession,
+    showFuture,
+    setShowFuture,
+    selectedCourseId,
+    setSelectedCourseId,
+    eventTypeFilter,
+    setEventTypeFilter,
+    isFiltersOpen,
+    setIsFiltersOpen
+}: DailyViewProps) {
 
-    // New state for mobile filters
-    const [isFiltersOpen, setIsFiltersOpen] = React.useState(false)
+    // Draft state for filter modal (using props as initial)
+    const [draftShowFuture, setDraftShowFuture] = React.useState(showFuture)
+    const [draftSelectedCourseId, setDraftSelectedCourseId] = React.useState(selectedCourseId)
+    const [draftEventTypeFilter, setDraftEventTypeFilter] = React.useState(eventTypeFilter)
 
-    // Persist showFuture to sessionStorage
+    // Sync draft state when modal opens
     React.useEffect(() => {
-        sessionStorage.setItem('dailyView.showFuture', JSON.stringify(showFuture))
-    }, [showFuture])
-
-    // Persist selectedCourseId to sessionStorage
-    React.useEffect(() => {
-        sessionStorage.setItem('dailyView.selectedCourseId', selectedCourseId)
-    }, [selectedCourseId])
-
-    // Persist eventTypeFilter to sessionStorage
-    React.useEffect(() => {
-        sessionStorage.setItem('dailyView.eventTypeFilter', eventTypeFilter)
-    }, [eventTypeFilter])
+        if (isFiltersOpen) {
+            setDraftShowFuture(showFuture)
+            setDraftSelectedCourseId(selectedCourseId)
+            setDraftEventTypeFilter(eventTypeFilter)
+        }
+    }, [isFiltersOpen, showFuture, selectedCourseId, eventTypeFilter])
 
     const todayStr = format(new Date(), 'yyyy-MM-dd')
 
@@ -93,7 +101,7 @@ export function DailyView({ sessions, courses, onUpdateAttendance, onScheduleRep
     return (
         <div className="h-full flex flex-col bg-background">
             {/* Header */}
-            <header className="flex-none relative z-20 flex items-center justify-between px-3 py-1 bg-background border-b border-border shadow-[0_1px_2px_0_rgba(0,0,0,0.05)]">
+            <header className="flex-none relative z-20 flex items-center justify-between px-3 py-1 bg-background border-b border-border shadow-[0_1px_2px_0_rgba(0,0,0,0.05)] md:hidden">
                 <div className="flex items-center gap-2">
                     <h3 className="font-semibold text-lg px-2">יומן שיעורים</h3>
                 </div>
@@ -164,60 +172,106 @@ export function DailyView({ sessions, courses, onUpdateAttendance, onScheduleRep
 
             {/* Filter Modal */}
             <Dialog open={isFiltersOpen} onOpenChange={setIsFiltersOpen}>
-                <DialogContent className="w-full h-full max-w-none max-h-none rounded-none p-4 gap-6 flex flex-col justify-start md:grid md:w-auto md:h-auto md:max-w-[425px] md:max-h-[90vh] md:rounded-lg md:p-6 md:gap-4 overflow-y-auto" dir="rtl">
+                <DialogContent className="w-full h-full max-w-none max-h-none rounded-none p-4 gap-6 flex flex-col justify-start md:grid md:w-auto md:h-auto md:max-w-xl md:max-h-[90vh] md:rounded-lg md:p-6 md:gap-4 overflow-y-auto" dir="rtl">
                     <DialogHeader className="text-right space-y-2">
                         <DialogTitle className="text-xl">סינון ותצוגה</DialogTitle>
                     </DialogHeader>
 
-                    <div className="grid gap-6 py-4">
-                        {/* Course Filter */}
-                        <div className="space-y-2">
-                            <Label className="text-right block">סינון לפי חוג</Label>
-                            <Select value={selectedCourseId} onValueChange={setSelectedCourseId} dir="rtl">
-                                <SelectTrigger className="text-right bg-muted/30">
-                                    <SelectValue placeholder="בחר חוג" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="all" className="text-right pr-8">כל החוגים</SelectItem>
-                                    {courses.map(course => (
-                                        <SelectItem key={course.id} value={course.id} className="text-right pr-8">{course.name}</SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                        </div>
-
-                        {/* Event Type Filter */}
-                        <div className="space-y-2">
-                            <Label className="text-right block">סוג אירוע</Label>
-                            <Select value={eventTypeFilter} onValueChange={(value) => setEventTypeFilter(value as 'all' | 'missed' | 'replacement')} dir="rtl">
-                                <SelectTrigger className="text-right bg-muted/30">
-                                    <SelectValue placeholder="בחר סוג" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="all" className="text-right pr-8">כל האירועים</SelectItem>
-                                    <SelectItem value="missed" className="text-right pr-8">רק חיסורים</SelectItem>
-                                    <SelectItem value="replacement" className="text-right pr-8">רק השלמות</SelectItem>
-                                </SelectContent>
-                            </Select>
-                        </div>
-
-                        {/* Future Toggle */}
-                        <div className="flex items-center justify-between p-3 rounded-lg border bg-muted/20">
-                            <Label htmlFor="future-mode" className="cursor-pointer">הצג שיעורים עתידיים</Label>
-                            <Switch
-                                id="future-mode"
-                                checked={showFuture}
-                                onCheckedChange={setShowFuture}
-                            />
-                        </div>
-
-                        {/* Apply Button (Optional, closes modal) */}
-                        <Button className="w-full mt-2 font-bold" onClick={() => setIsFiltersOpen(false)}>
-                            החזר לתוצאות
-                        </Button>
-                    </div>
+                    <FilterContent
+                        courses={courses}
+                        draftShowFuture={draftShowFuture}
+                        setDraftShowFuture={setDraftShowFuture}
+                        draftSelectedCourseId={draftSelectedCourseId}
+                        setDraftSelectedCourseId={setDraftSelectedCourseId}
+                        draftEventTypeFilter={draftEventTypeFilter}
+                        setDraftEventTypeFilter={setDraftEventTypeFilter}
+                        onApply={() => {
+                            setShowFuture(draftShowFuture)
+                            setSelectedCourseId(draftSelectedCourseId)
+                            setEventTypeFilter(draftEventTypeFilter)
+                            setIsFiltersOpen(false)
+                        }}
+                        onCancel={() => setIsFiltersOpen(false)}
+                    />
                 </DialogContent>
             </Dialog>
+        </div>
+    )
+}
+
+function FilterContent({
+    courses,
+    draftShowFuture,
+    setDraftShowFuture,
+    draftSelectedCourseId,
+    setDraftSelectedCourseId,
+    draftEventTypeFilter,
+    setDraftEventTypeFilter,
+    onApply,
+    onCancel
+}: {
+    courses: Course[],
+    draftShowFuture: boolean,
+    setDraftShowFuture: (v: boolean) => void,
+    draftSelectedCourseId: string,
+    setDraftSelectedCourseId: (v: string) => void,
+    draftEventTypeFilter: 'all' | 'missed' | 'replacement',
+    setDraftEventTypeFilter: (v: 'all' | 'missed' | 'replacement') => void,
+    onApply: () => void,
+    onCancel: () => void
+}) {
+    return (
+        <div className="grid gap-6 py-4">
+            {/* Course Filter */}
+            <div className="space-y-2">
+                <Label className="text-right block">סינון לפי חוג</Label>
+                <Select value={draftSelectedCourseId} onValueChange={setDraftSelectedCourseId} dir="rtl">
+                    <SelectTrigger className="text-right bg-muted/30">
+                        <SelectValue placeholder="בחר חוג" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="all" className="text-right pr-8">כל החוגים</SelectItem>
+                        {courses.map(course => (
+                            <SelectItem key={course.id} value={course.id} className="text-right pr-8">{course.name}</SelectItem>
+                        ))}
+                    </SelectContent>
+                </Select>
+            </div>
+
+            {/* Event Type Filter */}
+            <div className="space-y-2">
+                <Label className="text-right block">סוג אירוע</Label>
+                <Select value={draftEventTypeFilter} onValueChange={(value) => setDraftEventTypeFilter(value as 'all' | 'missed' | 'replacement')} dir="rtl">
+                    <SelectTrigger className="text-right bg-muted/30">
+                        <SelectValue placeholder="בחר סוג" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="all" className="text-right pr-8">כל האירועים</SelectItem>
+                        <SelectItem value="missed" className="text-right pr-8">רק חיסורים</SelectItem>
+                        <SelectItem value="replacement" className="text-right pr-8">רק השלמות</SelectItem>
+                    </SelectContent>
+                </Select>
+            </div>
+
+            {/* Future Toggle */}
+            <div className="flex items-center justify-between p-3 rounded-lg border bg-muted/20 gap-4">
+                <Label htmlFor="future-mode" className="cursor-pointer">הצג שיעורים עתידיים</Label>
+                <Switch
+                    id="future-mode"
+                    checked={draftShowFuture}
+                    onCheckedChange={setDraftShowFuture}
+                />
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex gap-3 mt-4">
+                <Button variant="outline" className="flex-1" onClick={onCancel}>
+                    ביטול
+                </Button>
+                <Button className="flex-1 font-bold" onClick={onApply}>
+                    אישור
+                </Button>
+            </div>
         </div>
     )
 }

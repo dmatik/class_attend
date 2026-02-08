@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
-import { Calendar as CalendarIcon, LayoutDashboard, Settings } from "lucide-react"
+import { Calendar as CalendarIcon, LayoutDashboard, Settings, Filter } from "lucide-react"
 import { addDays, format, parseISO } from "date-fns"
 import { DailyView } from "@/components/DailyView"
 import { Dashboard } from "@/components/Dashboard"
@@ -33,6 +33,33 @@ function App() {
         setLoading(false)
       })
   }, [])
+
+  // Filter State (Lifted from DailyView)
+  const [showFuture, setShowFuture] = useState(() => {
+    const saved = sessionStorage.getItem('dailyView.showFuture')
+    return saved ? JSON.parse(saved) : false
+  })
+  const [selectedCourseId, setSelectedCourseId] = useState<string>(() => {
+    const saved = sessionStorage.getItem('dailyView.selectedCourseId')
+    return saved || "all"
+  })
+  const [eventTypeFilter, setEventTypeFilter] = useState<'all' | 'missed' | 'replacement'>(() => {
+    const saved = sessionStorage.getItem('dailyView.eventTypeFilter')
+    return (saved as 'all' | 'missed' | 'replacement') || 'all'
+  })
+  const [isFiltersOpen, setIsFiltersOpen] = useState(false)
+
+  // Persist Filter State
+  useEffect(() => {
+    sessionStorage.setItem('dailyView.showFuture', JSON.stringify(showFuture))
+  }, [showFuture])
+  useEffect(() => {
+    sessionStorage.setItem('dailyView.selectedCourseId', selectedCourseId)
+  }, [selectedCourseId])
+  useEffect(() => {
+    sessionStorage.setItem('dailyView.eventTypeFilter', eventTypeFilter)
+  }, [eventTypeFilter])
+
 
   // Auto-Save Effect
   useEffect(() => {
@@ -314,6 +341,25 @@ function App() {
             ניהול חוגים
           </h1>
         </div>
+
+        {/* Desktop Daily Filter Header */}
+        {activeTab === 'daily' && (
+          <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-card/50">
+            <h3 className="font-semibold text-sm">יומן שיעורים</h3>
+            <button
+              onClick={() => setIsFiltersOpen(true)}
+              className="hover:bg-accent rounded-md p-1 relative transition-colors"
+            >
+              <div className="relative">
+                <Filter className="w-4 h-4" />
+                {(eventTypeFilter !== 'all' || selectedCourseId !== 'all' || showFuture) && (
+                  <span className="absolute -top-1 -right-1 w-2 h-2 bg-blue-500 rounded-full border-2 border-background" />
+                )}
+              </div>
+            </button>
+          </div>
+        )}
+
         <nav className="flex-1 p-4 space-y-2">
           <MenuButton
             active={activeTab === 'daily'}
@@ -376,6 +422,15 @@ function App() {
                     onScheduleReplacement={handleScheduleReplacement}
                     onUpdateSessionDate={handleUpdateSessionDate}
                     onDeleteSession={handleDeleteSession}
+                    // Filter Props
+                    showFuture={showFuture}
+                    setShowFuture={setShowFuture}
+                    selectedCourseId={selectedCourseId}
+                    setSelectedCourseId={setSelectedCourseId}
+                    eventTypeFilter={eventTypeFilter}
+                    setEventTypeFilter={setEventTypeFilter}
+                    isFiltersOpen={isFiltersOpen}
+                    setIsFiltersOpen={setIsFiltersOpen}
                   />
                 )}
                 {activeTab === 'dashboard' && (
