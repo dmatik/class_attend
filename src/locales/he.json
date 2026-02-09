@@ -18,7 +18,8 @@
         "no_results": "לא נמצאו תוצאות",
         "error": "שגיאה",
         "success": "הצלחה",
-        "language": "שפה"
+        "language": "שפה",
+        "no_data_to_display": "אין נתונים להצגה"
     },
     "attendance": {
         "mark_all_present": "סמן את כולם כנוכחים",
@@ -49,5 +50,16 @@
         "replacement_for": "השלמה עבור שיעור מ-{{date}}",
         "delete_replacement_title": "האם אתה בטוח?",
         "delete_replacement_desc": "שיעור ההשלמה שנקבע ל-{{date}} יימחק."
+    },
+    "calendar": {
+        "title": "יומן שיעורים"
+    },
+    "dashboard": {
+        "total": "סה״כ",
+        "present": "נכחתי",
+        "absent": "החסרתי",
+        "entitled_for_replacement": "זכאות להשלמה",
+        "used_in_subscription": "נוצל מהמנוי",
+        "remaining": "ממתינים"
     }
 }

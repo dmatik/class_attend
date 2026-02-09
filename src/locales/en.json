@@ -12,13 +12,14 @@
         "delete": "Delete",
         "edit": "Edit",
         "save": "Save",
-        "app_title": "Class Management",
+        "app_title": "Class Attend",
         "loading": "Loading...",
         "search": "Search...",
         "no_results": "No results found",
         "error": "Error",
         "success": "Success",
-        "language": "Language"
+        "language": "Language",
+        "no_data_to_display": "No data to display"
     },
     "attendance": {
         "mark_all_present": "Mark All Present",
@@ -49,5 +50,16 @@
         "replacement_for": "Replacement for lesson on {{date}}",
         "delete_replacement_title": "Are you sure?",
         "delete_replacement_desc": "The replacement lesson scheduled for {{date}} will be deleted."
+    },
+    "calendar": {
+        "title": "Calendar"
+    },
+    "dashboard": {
+        "total": "Total",
+        "present": "Present",
+        "absent": "Absent",
+        "entitled_for_replacement": "Entitled for replacement",
+        "used_in_subscription": "Used in subscription",
+        "remaining": "Remaining"
     }
 }

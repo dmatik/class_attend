@@ -1,5 +1,6 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { useTranslation } from "react-i18next"
 import type { Session } from "@/types"
 
 interface DashboardProps {
@@ -7,6 +8,7 @@ interface DashboardProps {
 }
 
 export function Dashboard({ sessions }: DashboardProps) {
+    const { t } = useTranslation()
     // Group sessions by course
     const grouped = sessions.reduce((acc, session) => {
         const name = session.courseName
@@ -18,7 +20,7 @@ export function Dashboard({ sessions }: DashboardProps) {
     if (Object.keys(grouped).length === 0) {
         return (
             <div className="text-center text-muted-foreground py-10">
-                אין נתונים להצגה
+                {t('common.no_data_to_display')}
             </div>
         )
     }
@@ -55,7 +57,7 @@ export function Dashboard({ sessions }: DashboardProps) {
                         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
                             <Card className="bg-gradient-to-br from-indigo-400 to-purple-500 dark:from-indigo-600 dark:to-purple-700 text-white border-none shadow-lg">
                                 <CardHeader className="p-4 pb-2">
-                                    <CardTitle className="text-sm font-medium opacity-90">סה״כ</CardTitle>
+                                    <CardTitle className="text-sm font-medium opacity-90">{t('dashboard.total')}</CardTitle>
                                 </CardHeader>
                                 <CardContent className="p-4 pt-0">
                                     <div className="text-3xl font-bold">
@@ -66,7 +68,7 @@ export function Dashboard({ sessions }: DashboardProps) {
                             </Card>
                             <Card className="bg-card border-border shadow-sm hover:shadow-md transition-shadow">
                                 <CardHeader className="p-4 pb-2">
-                                    <CardTitle className="text-sm font-medium text-muted-foreground">ממתינים</CardTitle>
+                                    <CardTitle className="text-sm font-medium text-muted-foreground">{t('dashboard.remaining')}</CardTitle>
                                 </CardHeader>
                                 <CardContent className="p-4 pt-0">
                                     <div className="text-3xl font-bold text-foreground">
@@ -77,7 +79,7 @@ export function Dashboard({ sessions }: DashboardProps) {
                             </Card>
                             <Card className="bg-emerald-50 dark:bg-emerald-950/30 border-emerald-100 dark:border-emerald-900 shadow-sm hover:shadow-md transition-shadow">
                                 <CardHeader className="p-4 pb-2">
-                                    <CardTitle className="text-sm font-medium text-emerald-600 dark:text-emerald-400">נכחתי</CardTitle>
+                                    <CardTitle className="text-sm font-medium text-emerald-600 dark:text-emerald-400">{t('dashboard.present')}</CardTitle>
                                 </CardHeader>
                                 <CardContent className="p-4 pt-0">
                                     <div className="text-3xl font-bold text-emerald-600 dark:text-emerald-400">{present}</div>
@@ -85,7 +87,7 @@ export function Dashboard({ sessions }: DashboardProps) {
                             </Card>
                             <Card className="bg-rose-50 dark:bg-rose-950/30 border-rose-100 dark:border-rose-900 shadow-sm hover:shadow-md transition-shadow">
                                 <CardHeader className="p-4 pb-2">
-                                    <CardTitle className="text-sm font-medium text-rose-600 dark:text-rose-400">החסרתי</CardTitle>
+                                    <CardTitle className="text-sm font-medium text-rose-600 dark:text-rose-400">{t('dashboard.absent')}</CardTitle>
                                 </CardHeader>
                                 <CardContent className="p-4 pt-0">
                                     <div className="text-3xl font-bold text-rose-600 dark:text-rose-400">{absent}</div>
@@ -95,7 +97,7 @@ export function Dashboard({ sessions }: DashboardProps) {
                             {/* New Subscription Stats */}
                             <Card className="bg-blue-50 dark:bg-blue-950/30 border-blue-100 dark:border-blue-900 shadow-sm hover:shadow-md transition-shadow">
                                 <CardHeader className="p-4 pb-2">
-                                    <CardTitle className="text-sm font-medium text-blue-600 dark:text-blue-400">נוצל מהמנוי</CardTitle>
+                                    <CardTitle className="text-sm font-medium text-blue-600 dark:text-blue-400">{t('dashboard.used_in_subscription')}</CardTitle>
                                 </CardHeader>
                                 <CardContent className="p-4 pt-0">
                                     <div className="text-3xl font-bold text-blue-600 dark:text-blue-400">{used}</div>
@@ -103,7 +105,7 @@ export function Dashboard({ sessions }: DashboardProps) {
                             </Card>
                             <Card className="bg-orange-50 dark:bg-orange-950/30 border-orange-100 dark:border-orange-900 shadow-sm hover:shadow-md transition-shadow">
                                 <CardHeader className="p-4 pb-2">
-                                    <CardTitle className="text-sm font-medium text-orange-600 dark:text-orange-400">זכאי להשלמה</CardTitle>
+                                    <CardTitle className="text-sm font-medium text-orange-600 dark:text-orange-400">{t('dashboard.entitled_for_replacement')}</CardTitle>
                                 </CardHeader>
                                 <CardContent className="p-4 pt-0">
                                     <div className="text-3xl font-bold text-orange-600 dark:text-orange-400">

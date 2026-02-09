@@ -7,18 +7,7 @@ import en from './locales/en.json';
 
 i18n
     .use(LanguageDetector)
-    .use(initReactI18next)
-    .init({
-        resources: {
-            he: { translation: he },
-            en: { translation: en }
-        },
-        lng: 'he', // Default language as requested
-        fallbackLng: 'he',
-        interpolation: {
-            escapeValue: false // React already safes from xss
-        }
-    });
+    .use(initReactI18next);
 
 // Critical: Direction Logic
 i18n.on('languageChanged', (lng) => {
@@ -31,8 +20,19 @@ i18n.on('languageChanged', (lng) => {
     }
 });
 
-// Set initial direction
-document.documentElement.dir = 'rtl';
-document.documentElement.lang = 'he';
+i18n.init({
+    resources: {
+        he: { translation: he },
+        en: { translation: en }
+    },
+    fallbackLng: 'he',
+    detection: {
+        order: ['localStorage', 'navigator'],
+        caches: ['localStorage'],
+    },
+    interpolation: {
+        escapeValue: false // React already safes from xss
+    }
+});
 
 export default i18n;

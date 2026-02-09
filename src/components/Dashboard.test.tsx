@@ -1,7 +1,14 @@
-import { describe, it, expect, beforeAll } from 'vitest'
+import { describe, it, expect, beforeAll, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import { Dashboard } from './Dashboard'
 import type { Session } from '@/types'
+
+// Mock react-i18next
+vi.mock('react-i18next', () => ({
+    useTranslation: () => ({
+        t: (key: string) => key,
+    }),
+}))
 
 // Setup window.scrollTo mock to avoid jsdom errors
 beforeAll(() => {
@@ -61,7 +68,7 @@ describe('Dashboard Component', () => {
 
     it('renders "No data" message when sessions list is empty', () => {
         render(<Dashboard sessions={[]} />)
-        expect(screen.getByText('אין נתונים להצגה')).toBeInTheDocument()
+        expect(screen.getByText('common.no_data_to_display')).toBeInTheDocument()
     })
 
     it('groups sessions by course name', () => {
@@ -76,17 +83,7 @@ describe('Dashboard Component', () => {
         // Display format: "{regularCount} (+{replacementsCount})"
         // Should see "4" and "(+2)"
 
-        // We can look for the "Sah-hak" card content
-        // The card title is "סה״כ"
-        // The content is inside a .text-3xl div
-
-        // Let's find the card by text 'סה״כ' and check numbers nearby
-        // We can look for the "Sah-hak" card content
-        // Testing-library philosophy prefers accessible queries. 
-        // We can just search for the text "4 (+2)" if it's rendered as such, 
-        // or separated. The component renders: 
-        // {regularCount} <span> (+{replacementsCount})</span>
-
+        // We can just search for the text "4" and "(+2)"
         expect(screen.getByText('4')).toBeInTheDocument()
         expect(screen.getByText('(+2)')).toBeInTheDocument()
     })
@@ -97,55 +94,22 @@ describe('Dashboard Component', () => {
         // Regular pending: 1, Replacement pending: 1
         // Display: "1 (+1)"
 
-        // Display: "1 (+1)"
-        // We expect to find '1' and '(+1)'
-        // Note: '1' might match multiple times, so be careful.
-        // We can scope it to the "Pending" card if needed, but checking text presence is a good start.
-
-        // Since '4' was checked above, checking '1' and '(+1)' specifically for this context might strictly require within-card checks
-        // but for now verifying text existence is okay.
         expect(screen.getAllByText('(+1)')).toHaveLength(1) // Only one pending replacement
     })
 
     it('calculates present sessions correctly', () => {
         render(<Dashboard sessions={mockSessions} />)
         // Present: id 1 (reg), id 5 (rep). Total 2.
-        // Card "נכחתי"
+        // Card "dashboard.present"
 
-        // Card "נכחתי"
-        // The value '2' should be in the card
-        // We can try to traverse up to the card then down to content
-        // Or simply expect to find '2' in the document, ensuring it's not ambiguous if other cards default to 0
-
-        // Given our data:
-        // Regular=4, Rep=2 -> "4 (+2)"
-        // Pending=1, Rep=1 -> "1 (+1)"
-        // Present=2        -> "2"
-        // Absent=2         -> "2"
-        // Used=2 (id 1 present + id 3 personal) -> "2"
-        // Makeups=1 (id 2 sick) -> "1 (+2)" wait, makeup logic:
-        // makeups count = absent && reason && reason!=personal.
-        // logic:
-        /*
-            const makeups = courseSessions.filter(s =>
-                s.attendance?.status === 'absent' &&
-                s.attendance.reason &&
-                s.attendance.reason !== 'personal'
-            ).length
-        */
-        // id 2 is absent/sick -> counts.
-        // id 3 is absent/personal -> doesn't count.
-        // makeups = 1.
-        // Display: "{makeups} ({replacementsCount})" -> "1 (2)"
-
-        expect(screen.getByText('נכחתי').parentElement?.parentElement).toHaveTextContent('2')
+        expect(screen.getByText('dashboard.present').parentElement?.parentElement).toHaveTextContent('2')
     })
 
     it('calculates subscription usage correctly', () => {
         render(<Dashboard sessions={mockSessions} />)
         // Used = Present (2) + Personal Absences (1 [id 3]) = 3
 
-        const usedLabel = screen.getByText('נוצל מהמנוי')
+        const usedLabel = screen.getByText('dashboard.used_in_subscription')
         expect(usedLabel.parentElement?.parentElement).toHaveTextContent('3')
     })
 
@@ -155,7 +119,7 @@ describe('Dashboard Component', () => {
         // Plus replacements count displayed in parens: "(2)"
         // Expect "1 (2)"
 
-        const makeupLabel = screen.getByText('זכאי להשלמה')
+        const makeupLabel = screen.getByText('dashboard.entitled_for_replacement')
         const card = makeupLabel.parentElement?.parentElement
         expect(card).toHaveTextContent('1')
         expect(card).toHaveTextContent('(2)')

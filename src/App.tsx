@@ -20,8 +20,10 @@ const LoadingSpinner = () => (
   </div>
 )
 
+import { useTranslation } from "react-i18next"
 
 function App() {
+  const { t } = useTranslation()
   const [activeTab, setActiveTab] = useState<'daily' | 'dashboard' | 'courses'>('dashboard')
 
   /* API Sync Logic */
@@ -348,14 +350,14 @@ function App() {
       <aside className="hidden md:flex flex-col w-64 bg-card border-l border-border h-screen sticky top-0 z-20 shadow-sm">
         <div className="p-6 border-b border-border">
           <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
-            ניהול חוגים
+            {t('common.app_title')}
           </h1>
         </div>
 
         {/* Desktop Daily Filter Header */}
         {activeTab === 'daily' && (
           <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-card/50">
-            <h3 className="font-semibold text-sm">יומן שיעורים</h3>
+            <h3 className="font-semibold text-sm">{t('calendar.title')}</h3>
             <button
               onClick={() => setIsFiltersOpen(true)}
               className="hover:bg-accent rounded-md p-1 relative transition-colors"
@@ -375,19 +377,19 @@ function App() {
             active={activeTab === 'daily'}
             onClick={() => setActiveTab('daily')}
             icon={CalendarIcon}
-            label="יומן"
+            label={t('common.calendar')}
           />
           <MenuButton
             active={activeTab === 'dashboard'}
             onClick={() => setActiveTab('dashboard')}
             icon={LayoutDashboard}
-            label="דשבורד"
+            label={t('common.dashboard')}
           />
           <MenuButton
             active={activeTab === 'courses'}
             onClick={() => setActiveTab('courses')}
             icon={Settings}
-            label="ניהול"
+            label={t('common.management')}
           />
         </nav>
         <div className="p-4 border-t border-border flex flex-col items-center gap-4">
@@ -406,7 +408,7 @@ function App() {
           <div className="w-10" /> {/* Spacer for centering if needed, or simply justify-between */}
           <div className="flex flex-row items-baseline gap-2">
             <h1 className="text-xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
-              ניהול חוגים
+              {t('common.app_title')}
             </h1>
             <span className="text-[10px] font-normal text-muted-foreground">
               v{__APP_VERSION__}
@@ -470,19 +472,19 @@ function App() {
             active={activeTab === 'daily'}
             onClick={() => setActiveTab('daily')}
             icon={CalendarIcon}
-            label="יומן"
+            label={t('common.calendar')}
           />
           <MobileNavButton
             active={activeTab === 'dashboard'}
             onClick={() => setActiveTab('dashboard')}
             icon={LayoutDashboard}
-            label="דשבורד"
+            label={t('common.dashboard')}
           />
           <MobileNavButton
             active={activeTab === 'courses'}
             onClick={() => setActiveTab('courses')}
             icon={Settings}
-            label="ניהול"
+            label={t('common.management')}
           />
         </div>
       </nav>
