@@ -56,7 +56,7 @@
     },
     "dashboard": {
         "total": "סה״כ",
-        "present": "נכחתי",
+        "attended": "נכחתי",
         "absent": "החסרתי",
         "entitled_for_replacement": "זכאות להשלמה",
         "used_in_subscription": "נוצל מהמנוי",

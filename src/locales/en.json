@@ -56,7 +56,7 @@
     },
     "dashboard": {
         "total": "Total",
-        "present": "Present",
+        "attended": "Attended",
         "absent": "Absent",
         "entitled_for_replacement": "Entitled for replacement",
         "used_in_subscription": "Used in subscription",

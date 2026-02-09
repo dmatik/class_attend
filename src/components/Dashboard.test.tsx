@@ -97,12 +97,12 @@ describe('Dashboard Component', () => {
         expect(screen.getAllByText('(+1)')).toHaveLength(1) // Only one pending replacement
     })
 
-    it('calculates present sessions correctly', () => {
+    it('calculates attended sessions correctly', () => {
         render(<Dashboard sessions={mockSessions} />)
         // Present: id 1 (reg), id 5 (rep). Total 2.
-        // Card "dashboard.present"
+        // Card "dashboard.attended"
 
-        expect(screen.getByText('dashboard.present').parentElement?.parentElement).toHaveTextContent('2')
+        expect(screen.getByText('dashboard.attended').parentElement?.parentElement).toHaveTextContent('2')
     })
 
     it('calculates subscription usage correctly', () => {

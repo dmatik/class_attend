@@ -79,7 +79,7 @@ export function Dashboard({ sessions }: DashboardProps) {
                             </Card>
                             <Card className="bg-emerald-50 dark:bg-emerald-950/30 border-emerald-100 dark:border-emerald-900 shadow-sm hover:shadow-md transition-shadow">
                                 <CardHeader className="p-4 pb-2">
-                                    <CardTitle className="text-sm font-medium text-emerald-600 dark:text-emerald-400">{t('dashboard.present')}</CardTitle>
+                                    <CardTitle className="text-sm font-medium text-emerald-600 dark:text-emerald-400">{t('dashboard.attended')}</CardTitle>
                                 </CardHeader>
                                 <CardContent className="p-4 pt-0">
                                     <div className="text-3xl font-bold text-emerald-600 dark:text-emerald-400">{present}</div>
