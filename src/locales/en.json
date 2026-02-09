@@ -52,8 +52,8 @@
         "delete_replacement_title": "Are you sure?",
         "delete_replacement_desc": "The replacement lesson scheduled for {{date}} will be deleted."
     },
-    "calendar": {
-        "title": "Calendar"
+    "daily_view": {
+        "title": "Lessons Calendar"
     },
     "dashboard": {
         "total": "Total",

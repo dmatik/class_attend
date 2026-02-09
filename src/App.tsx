@@ -357,7 +357,7 @@ function App() {
         {/* Desktop Daily Filter Header */}
         {activeTab === 'daily' && (
           <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-card/50">
-            <h3 className="font-semibold text-sm">{t('calendar.title')}</h3>
+            <h3 className="font-semibold text-sm">{t('daily_view.title')}</h3>
             <button
               onClick={() => setIsFiltersOpen(true)}
               className="hover:bg-accent rounded-md p-1 relative transition-colors"

@@ -52,7 +52,7 @@
         "delete_replacement_title": "האם אתה בטוח?",
         "delete_replacement_desc": "שיעור ההשלמה שנקבע ל-{{date}} יימחק."
     },
-    "calendar": {
+    "daily_view": {
         "title": "יומן שיעורים"
     },
     "dashboard": {

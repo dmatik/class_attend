@@ -1,4 +1,5 @@
 import * as React from "react"
+import { useTranslation } from 'react-i18next'
 import { motion, AnimatePresence } from "framer-motion"
 import { Calendar as CalendarIcon, Filter } from "lucide-react"
 import { format } from "date-fns"
@@ -46,6 +47,7 @@ export function DailyView({
     isFiltersOpen,
     setIsFiltersOpen
 }: DailyViewProps) {
+    const { t } = useTranslation()
 
     // Draft state for filter modal (using props as initial)
     const [draftShowFuture, setDraftShowFuture] = React.useState(showFuture)
@@ -103,7 +105,7 @@ export function DailyView({
             {/* Header */}
             <header className="flex-none relative z-20 flex items-center justify-between px-3 py-1 bg-background border-b border-border shadow-[0_1px_2px_0_rgba(0,0,0,0.05)] md:hidden">
                 <div className="flex items-center gap-2">
-                    <h3 className="font-semibold text-lg px-2">יומן שיעורים</h3>
+                    <h3 className="font-semibold text-lg px-2">{t('daily_view.title')}</h3>
                 </div>
                 <Button
                     variant="ghost"
