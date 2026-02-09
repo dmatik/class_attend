@@ -61,5 +61,45 @@
         "entitled_for_replacement": "Entitled for replacement",
         "used_in_subscription": "Used in subscription",
         "remaining": "Remaining"
+    },
+    "management": {
+        "title": "My Courses",
+        "add_course": "Add Course",
+        "edit_course": "Edit Course",
+        "course_name": "Course Name",
+        "start_date": "Start Date",
+        "days_of_week": "Days of Week",
+        "course_duration": "Course Duration",
+        "end_date": "End Date",
+        "total_lessons": "Total Lessons",
+        "add_course_button": "Add Course",
+        "save_course_button": "Save Changes",
+        "delete_course_description": "This action will delete the course {{courseName}} and all related lessons. This action cannot be undone.",
+        "course_deleted": "Course deleted successfully",
+        "course_added": "Course added successfully",
+        "course_updated": "Course updated successfully",
+        "are_you_sure": "Are you sure?",
+        "no_courses": "No courses added yet",
+        "add_course_description": "Enter the course details to start tracking",
+        "edit_course_description": "Edit the course details",
+        "days_of_week_options": {
+            "sunday": "s",
+            "monday": "m",
+            "tuesday": "t",
+            "wednesday": "w",
+            "thursday": "t",
+            "friday": "f",
+            "saturday": "s"
+        },
+        "days_of_week_options_full": {
+            "sunday": "Sun",
+            "monday": "Mon",
+            "tuesday": "Tue",
+            "wednesday": "Wed",
+            "thursday": "Thu",
+            "friday": "Fri",
+            "saturday": "Sat"
+        },
+        "days": "Days:"
     }
 }

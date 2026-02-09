@@ -1,4 +1,5 @@
 import * as React from "react"
+import { useTranslation } from "react-i18next"
 import { format, parseISO } from "date-fns"
 import { DatePicker } from "@/components/ui/date-picker"
 import { Trash2, Edit } from "lucide-react"
@@ -19,17 +20,29 @@ interface CourseManagerProps {
     onDeleteCourse: (id: string) => void
 }
 
-const DAYS = [
-    { label: "א", value: 0 },
-    { label: "ב", value: 1 },
-    { label: "ג", value: 2 },
-    { label: "ד", value: 3 },
-    { label: "ה", value: 4 },
-    { label: "ו", value: 5 },
-    { label: "ש", value: 6 },
-]
+
 
 export function CourseManager({ courses, onAddCourse, onEditCourse, onDeleteCourse }: CourseManagerProps) {
+    const { t } = useTranslation()
+
+    const DAYS = [
+        { label: t('management.days_of_week_options.sunday'), value: 0 },
+        { label: t('management.days_of_week_options.monday'), value: 1 },
+        { label: t('management.days_of_week_options.tuesday'), value: 2 },
+        { label: t('management.days_of_week_options.wednesday'), value: 3 },
+        { label: t('management.days_of_week_options.thursday'), value: 4 },
+        { label: t('management.days_of_week_options.friday'), value: 5 },
+        { label: t('management.days_of_week_options.saturday'), value: 6 },
+    ]
+    const DAYS_FULL = [
+        { label: t('management.days_of_week_options_full.sunday'), value: 0 },
+        { label: t('management.days_of_week_options_full.monday'), value: 1 },
+        { label: t('management.days_of_week_options_full.tuesday'), value: 2 },
+        { label: t('management.days_of_week_options_full.wednesday'), value: 3 },
+        { label: t('management.days_of_week_options_full.thursday'), value: 4 },
+        { label: t('management.days_of_week_options_full.friday'), value: 5 },
+        { label: t('management.days_of_week_options_full.saturday'), value: 6 },
+    ]
     const [isDialogOpen, setIsDialogOpen] = React.useState(false)
     const [editingCourse, setEditingCourse] = React.useState<Course | null>(null)
     const [courseToDelete, setCourseToDelete] = React.useState<Course | null>(null)
@@ -137,9 +150,9 @@ export function CourseManager({ courses, onAddCourse, onEditCourse, onDeleteCour
     return (
         <div className="h-full overflow-y-auto pb-24 space-y-6 p-4 md:p-8">
             <div className="space-y-4">
-                <h3 className="font-semibold text-lg px-2">החוגים שלי</h3>
+                <h3 className="font-semibold text-lg px-2">{t('management.title')}</h3>
                 {courses.length === 0 ? (
-                    <p className="text-muted-foreground text-center py-8">עדיין לא הוספת חוגים</p>
+                    <p className="text-muted-foreground text-center py-8">{t('management.no_courses')}</p>
                 ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                         {courses.map(course => (
@@ -148,7 +161,7 @@ export function CourseManager({ courses, onAddCourse, onEditCourse, onDeleteCour
                                     <div>
                                         <h4 className="font-bold text-foreground">{course.name}</h4>
                                         <p className="text-sm text-muted-foreground">
-                                            ימי {course.daysOfWeek.map(d => DAYS.find(day => day.value === d)?.label).join(', ')}
+                                            {t('management.days')} {course.daysOfWeek.map(d => DAYS_FULL.find(day => day.value === d)?.label).join(', ')}
                                         </p>
                                     </div>
                                     <div className="flex items-center gap-2">
@@ -170,19 +183,19 @@ export function CourseManager({ courses, onAddCourse, onEditCourse, onDeleteCour
                 onClick={() => setIsDialogOpen(true)}
                 className="w-full md:w-auto text-base font-bold shadow-lg shadow-primary/20 gap-2 bg-primary text-primary-foreground hover:bg-primary/90"
             >
-                הוסף חוג חדש
+                {t('management.add_course_button')}
             </Button>
 
             <Dialog open={isDialogOpen} onOpenChange={handleDialogClose}>
                 <DialogContent className="w-full h-full max-w-none max-h-none rounded-none p-4 gap-6 flex flex-col justify-start md:grid md:w-auto md:h-auto md:max-w-md md:max-h-[90vh] md:rounded-lg md:p-6 md:gap-4 overflow-y-auto">
                     <DialogHeader>
-                        <DialogTitle className="text-xl text-primary">{editingCourse ? 'עריכת חוג' : 'הוספת חוג חדש'}</DialogTitle>
-                        <DialogDescription>{editingCourse ? 'ערוך את פרטי החוג' : 'הזן את פרטי החוג כדי להתחיל במעקב'}</DialogDescription>
+                        <DialogTitle className="text-xl text-primary">{editingCourse ? t('management.edit_course') : t('management.add_course')}</DialogTitle>
+                        <DialogDescription>{editingCourse ? t('management.edit_course_description') : t('management.add_course_description')}</DialogDescription>
                     </DialogHeader>
                     <form onSubmit={handleSubmit} className="space-y-4">
                         <div className="space-y-2">
                             <Label htmlFor="name">
-                                שם החוג <span className="text-destructive">*</span>
+                                {t('management.course_name')} <span className="text-destructive">*</span>
                             </Label>
                             <Input
                                 id="name"
@@ -195,7 +208,7 @@ export function CourseManager({ courses, onAddCourse, onEditCourse, onDeleteCour
 
                         <div className="space-y-2">
                             <Label htmlFor="date">
-                                תאריך התחלה <span className="text-destructive">*</span>
+                                {t('management.start_date')} <span className="text-destructive">*</span>
                             </Label>
                             <DatePicker
                                 date={startDate ? parseISO(startDate) : undefined}
@@ -206,7 +219,7 @@ export function CourseManager({ courses, onAddCourse, onEditCourse, onDeleteCour
 
                         <div className="space-y-2">
                             <Label>
-                                ימי פעילות <span className="text-destructive">*</span>
+                                {t('management.days_of_week')} <span className="text-destructive">*</span>
                             </Label>
                             <div className="flex flex-wrap gap-2 justify-start">
                                 {DAYS.map((day) => (
@@ -228,11 +241,11 @@ export function CourseManager({ courses, onAddCourse, onEditCourse, onDeleteCour
                         </div>
 
                         <div className="space-y-2">
-                            <Label>משך הקורס</Label>
+                            <Label>{t('management.course_duration')}</Label>
                             <Tabs dir="rtl" value={limitType} onValueChange={(v) => setLimitType(v as 'date' | 'count')} className="w-full">
                                 <TabsList className="grid w-full grid-cols-2">
-                                    <TabsTrigger value="count">מספר שיעורים</TabsTrigger>
-                                    <TabsTrigger value="date">תאריך סיום</TabsTrigger>
+                                    <TabsTrigger value="count">{t('management.total_lessons')}</TabsTrigger>
+                                    <TabsTrigger value="date">{t('management.end_date')}</TabsTrigger>
                                 </TabsList>
                                 <TabsContent value="count">
                                     <Input
@@ -265,7 +278,7 @@ export function CourseManager({ courses, onAddCourse, onEditCourse, onDeleteCour
                             className="w-full mt-4 text-base font-bold shadow-lg shadow-primary/20 disabled:opacity-50 disabled:cursor-not-allowed bg-primary text-primary-foreground hover:bg-primary/90"
                             disabled={!isFormValid}
                         >
-                            {editingCourse ? 'שמור שינויים' : 'הוסף חוג'}
+                            {editingCourse ? t('management.save_course_button') : t('management.add_course_button')}
                         </Button>
                     </form>
                 </DialogContent>
@@ -274,9 +287,9 @@ export function CourseManager({ courses, onAddCourse, onEditCourse, onDeleteCour
             <AlertDialog open={!!courseToDelete} onOpenChange={(open) => !open && setCourseToDelete(null)}>
                 <AlertDialogContent>
                     <AlertDialogHeader>
-                        <AlertDialogTitle>האם אתה בטוח?</AlertDialogTitle>
+                        <AlertDialogTitle>{t('management.are_you_sure')}</AlertDialogTitle>
                         <AlertDialogDescription>
-                            פעולה זו תמחק את החוג "{courseToDelete?.name}" וכל השיעורים הקשורים אליו. לא ניתן לבטל פעולה זו.
+                            {t('management.delete_course_description', { courseName: courseToDelete?.name })}
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>

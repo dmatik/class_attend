@@ -61,5 +61,45 @@
         "entitled_for_replacement": "זכאות להשלמה",
         "used_in_subscription": "נוצל מהמנוי",
         "remaining": "ממתינים"
+    },
+    "management": {
+        "title": "החוגים שלי",
+        "add_course": "הוספת חוג חדש",
+        "edit_course": "עריכת חוג",
+        "course_name": "שם החוג",
+        "start_date": "תאריך התחלה",
+        "days_of_week": "ימי פעילות",
+        "course_duration": "משך החוג",
+        "end_date": "תאריך סיום",
+        "total_lessons": "מספר שיעורים",
+        "add_course_button": "הוסף חוג",
+        "save_course_button": "שמור שינויים",
+        "delete_course_description": "פעולה זו תמחק את החוג {{courseName}} וכל השיעורים הקשורים אליו. לא ניתן לבטל פעולה זו.",
+        "course_deleted": "Course deleted successfully",
+        "course_added": "Course added successfully",
+        "course_updated": "Course updated successfully",
+        "are_you_sure": "האם אתה בטוח?",
+        "no_courses": "עדיין לא הוספת חוגים",
+        "add_course_description": "הזן את פרטי החוג כדי להתחיל במעקב",
+        "edit_course_description": "ערוך את פרטי החוג",
+        "days_of_week_options": {
+            "sunday": "א",
+            "monday": "ב",
+            "tuesday": "ג",
+            "wednesday": "ד",
+            "thursday": "ה",
+            "friday": "ו",
+            "saturday": "ש"
+        },
+        "days_of_week_options_full": {
+            "sunday": "א",
+            "monday": "ב",
+            "tuesday": "ג",
+            "wednesday": "ד",
+            "thursday": "ה",
+            "friday": "ו",
+            "saturday": "ש"
+        },
+        "days": "ימי"
     }
 }
