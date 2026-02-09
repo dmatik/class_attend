@@ -19,7 +19,8 @@
         "error": "Error",
         "success": "Success",
         "language": "Language",
-        "no_data_to_display": "No data to display"
+        "no_data_to_display": "No data to display",
+        "select_date": "Select date"
     },
     "attendance": {
         "mark_all_present": "Mark All Present",
@@ -67,11 +68,17 @@
         "add_course": "Add Course",
         "edit_course": "Edit Course",
         "course_name": "Course Name",
+        "course_name_placeholder": "Example: Swimming",
         "start_date": "Start Date",
+        "start_date_placeholder": "Select start date",
         "days_of_week": "Days of Week",
         "course_duration": "Course Duration",
         "end_date": "End Date",
+        "end_date_placeholder": "Select end date",
+        "end_date_mandatory": "You must select an end date",
         "total_lessons": "Total Lessons",
+        "total_lessons_placeholder": "Total lessons (example: 10)",
+        "total_lessons_mandatory": "You must enter the number of lessons",
         "add_course_button": "Add Course",
         "save_course_button": "Save Changes",
         "delete_course_description": "This action will delete the course {{courseName}} and all related lessons. This action cannot be undone.",
@@ -100,6 +107,14 @@
             "friday": "Fri",
             "saturday": "Sat"
         },
-        "days": "Days:"
+        "days": "Days:",
+        "toast": {
+            "course_added_success": "Course added successfully",
+            "course_added_success_description": "Total of {{sessionsAdded}} lessons created for {{courseName}}",
+            "course_added_error": "Error adding course",
+            "course_added_error_description": "An error occurred while adding the course. Please try again.",
+            "course_deleted": "Course deleted",
+            "course_deleted_success_description": "{{courseName}} deleted successfully"
+        }
     }
 }

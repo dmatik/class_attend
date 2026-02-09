@@ -19,7 +19,8 @@
         "error": "שגיאה",
         "success": "הצלחה",
         "language": "שפה",
-        "no_data_to_display": "אין נתונים להצגה"
+        "no_data_to_display": "אין נתונים להצגה",
+        "select_date": "בחר תאריך"
     },
     "attendance": {
         "mark_all_present": "סמן את כולם כנוכחים",
@@ -67,11 +68,17 @@
         "add_course": "הוספת חוג חדש",
         "edit_course": "עריכת חוג",
         "course_name": "שם החוג",
+        "course_name_placeholder": "לדוגמה: שחייה",
         "start_date": "תאריך התחלה",
+        "start_date_placeholder": "בחר תאריך התחלה",
         "days_of_week": "ימי פעילות",
         "course_duration": "משך החוג",
         "end_date": "תאריך סיום",
+        "end_date_placeholder": "בחר תאריך סיום",
+        "end_date_mandatory": "חובה לבחור תאריך סיום",
         "total_lessons": "מספר שיעורים",
+        "total_lessons_placeholder": "סה״כ שיעורים (לדוגמה: 10)",
+        "total_lessons_mandatory": "חובה להזין מספר שיעורים",
         "add_course_button": "הוסף חוג",
         "save_course_button": "שמור שינויים",
         "delete_course_description": "פעולה זו תמחק את החוג {{courseName}} וכל השיעורים הקשורים אליו. לא ניתן לבטל פעולה זו.",
@@ -100,6 +107,14 @@
             "friday": "ו",
             "saturday": "ש"
         },
-        "days": "ימי"
+        "days": "ימי",
+        "toast": {
+            "course_added_success": "החוג נוצר בהצלחה",
+            "course_added_success_description": "נוצרו {{sessionsAdded}} שיעורים עבור {{courseName}}",
+            "course_added_error": "שגיאה ביצירת חוג",
+            "course_added_error_description": "אירעה שגיאה בעת יצירת החוג. נסה שוב.",
+            "course_deleted": "החוג נמחק",
+            "course_deleted_success_description": "{{courseName}} נמחק בהצלחה"
+        }
     }
 }

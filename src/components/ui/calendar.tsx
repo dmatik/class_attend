@@ -3,7 +3,8 @@
 import * as React from "react"
 import { ChevronLeft, ChevronRight } from "lucide-react"
 import { DayPicker } from "react-day-picker"
-import { he } from "date-fns/locale"
+import { he, enUS } from "date-fns/locale"
+import { useTranslation } from "react-i18next"
 
 import { cn } from "@/lib/utils"
 import { buttonVariants } from "@/components/ui/button"
@@ -16,10 +17,13 @@ function Calendar({
     showOutsideDays = true,
     ...props
 }: CalendarProps) {
+    const { i18n } = useTranslation()
+    const isRtl = i18n.dir() === 'rtl'
+
     return (
         <DayPicker
-            locale={he}
-            dir="rtl"
+            locale={isRtl ? he : enUS}
+            dir={isRtl ? 'rtl' : 'ltr'}
             showOutsideDays={showOutsideDays}
             className={cn("p-3 pointer-events-auto", className)}
             classNames={{
@@ -31,12 +35,14 @@ function Calendar({
                 button_previous: cn(
                     buttonVariants({ variant: "outline" }),
                     "h-7 w-7 bg-transparent p-0 opacity-50 hover:opacity-100",
-                    "absolute right-2 top-2 z-10"
+                    "absolute top-2 z-10",
+                    isRtl ? "right-2" : "left-2" // Logical start
                 ),
                 button_next: cn(
                     buttonVariants({ variant: "outline" }),
                     "h-7 w-7 bg-transparent p-0 opacity-50 hover:opacity-100",
-                    "absolute left-2 top-2 z-10"
+                    "absolute top-2 z-10",
+                    isRtl ? "left-2" : "right-2" // Logical end
                 ),
                 month_grid: "w-full border-collapse space-y-1",
                 weekdays: "flex",
@@ -62,7 +68,9 @@ function Calendar({
             }}
             components={{
                 Chevron: ({ orientation }) => {
-                    const Icon = orientation === "left" ? ChevronRight : ChevronLeft
+                    const Icon = orientation === "left"
+                        ? (isRtl ? ChevronRight : ChevronLeft)
+                        : (isRtl ? ChevronLeft : ChevronRight)
                     return <Icon className="h-4 w-4" />
                 },
             }}

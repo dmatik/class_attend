@@ -2,7 +2,8 @@
 
 import * as React from "react"
 import { format } from "date-fns"
-import { he } from "date-fns/locale"
+import { he, enUS } from "date-fns/locale"
+import { useTranslation } from "react-i18next"
 import { Calendar as CalendarIcon } from "lucide-react"
 
 import { cn } from "@/lib/utils"
@@ -21,7 +22,9 @@ interface DatePickerProps {
     className?: string
 }
 
-export function DatePicker({ date, setDate, placeholder = "בחר תאריך", className }: DatePickerProps) {
+export function DatePicker({ date, setDate, placeholder, className }: DatePickerProps) {
+    const { t, i18n } = useTranslation()
+    const isRtl = i18n.dir() === 'rtl'
     const [isPopoverOpen, setIsPopoverOpen] = React.useState(false)
 
     const handleSelect = (newDate: Date | undefined) => {
@@ -35,13 +38,14 @@ export function DatePicker({ date, setDate, placeholder = "בחר תאריך", c
                 <Button
                     variant={"outline"}
                     className={cn(
-                        "w-full justify-start text-right font-normal",
+                        "w-full justify-start text-left font-normal gap-2",
+                        isRtl && "text-right",
                         !date && "text-muted-foreground",
                         className
                     )}
                 >
-                    <CalendarIcon className="ml-2 h-4 w-4" />
-                    {date ? format(date, "EEEE, d בMMMM yyyy", { locale: he }) : <span>{placeholder}</span>}
+                    <CalendarIcon className="h-4 w-4" />
+                    {date ? format(date, isRtl ? "EEEE, d בMMMM yyyy" : "PPP", { locale: isRtl ? he : enUS }) : <span>{placeholder || t('common.select_date')}</span>}
                 </Button>
             </PopoverTrigger>
             <PopoverContent className="w-auto p-0" align="start">

@@ -23,7 +23,7 @@ interface CourseManagerProps {
 
 
 export function CourseManager({ courses, onAddCourse, onEditCourse, onDeleteCourse }: CourseManagerProps) {
-    const { t } = useTranslation()
+    const { t, i18n } = useTranslation()
 
     const DAYS = [
         { label: t('management.days_of_week_options.sunday'), value: 0 },
@@ -201,7 +201,7 @@ export function CourseManager({ courses, onAddCourse, onEditCourse, onDeleteCour
                                 id="name"
                                 value={name}
                                 onChange={(e) => setName(e.target.value)}
-                                placeholder="לדוגמה: שחייה"
+                                placeholder={t('management.course_name_placeholder')}
                                 required
                             />
                         </div>
@@ -213,7 +213,7 @@ export function CourseManager({ courses, onAddCourse, onEditCourse, onDeleteCour
                             <DatePicker
                                 date={startDate ? parseISO(startDate) : undefined}
                                 setDate={(d) => setStartDate(d ? format(d, 'yyyy-MM-dd') : "")}
-                                placeholder="בחר תאריך התחלה"
+                                placeholder={t('management.start_date_placeholder')}
                             />
                         </div>
 
@@ -242,7 +242,7 @@ export function CourseManager({ courses, onAddCourse, onEditCourse, onDeleteCour
 
                         <div className="space-y-2">
                             <Label>{t('management.course_duration')}</Label>
-                            <Tabs dir="rtl" value={limitType} onValueChange={(v) => setLimitType(v as 'date' | 'count')} className="w-full">
+                            <Tabs dir={i18n.dir()} value={limitType} onValueChange={(v) => setLimitType(v as 'date' | 'count')} className="w-full">
                                 <TabsList className="grid w-full grid-cols-2">
                                     <TabsTrigger value="count">{t('management.total_lessons')}</TabsTrigger>
                                     <TabsTrigger value="date">{t('management.end_date')}</TabsTrigger>
@@ -250,24 +250,24 @@ export function CourseManager({ courses, onAddCourse, onEditCourse, onDeleteCour
                                 <TabsContent value="count">
                                     <Input
                                         type="number"
-                                        placeholder="סה״כ שיעורים (לדוגמה: 10)"
+                                        placeholder={t('management.total_lessons_placeholder')}
                                         value={lessonCount}
                                         onChange={(e) => setLessonCount(e.target.value)}
                                         min="1"
-                                        className="text-right"
+                                        className={i18n.dir() === 'rtl' ? "text-right" : "text-left"}
                                     />
                                     <p className="text-xs text-muted-foreground mt-1">
-                                        <span className="text-destructive">*</span> חובה להזין מספר שיעורים
+                                        <span className="text-destructive">*</span> {t('management.total_lessons_mandatory')}
                                     </p>
                                 </TabsContent>
                                 <TabsContent value="date">
                                     <DatePicker
                                         date={endDate ? parseISO(endDate) : undefined}
                                         setDate={(d) => setEndDate(d ? format(d, 'yyyy-MM-dd') : "")}
-                                        placeholder="בחר תאריך סיום"
+                                        placeholder={t('management.end_date_placeholder')}
                                     />
                                     <p className="text-xs text-muted-foreground mt-1">
-                                        <span className="text-destructive">*</span> חובה לבחור תאריך סיום
+                                        <span className="text-destructive">*</span> {t('management.end_date_mandatory')}
                                     </p>
                                 </TabsContent>
                             </Tabs>
@@ -293,8 +293,8 @@ export function CourseManager({ courses, onAddCourse, onEditCourse, onDeleteCour
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
-                        <AlertDialogCancel onClick={() => setCourseToDelete(null)}>ביטול</AlertDialogCancel>
-                        <AlertDialogAction onClick={confirmDelete}>מחק</AlertDialogAction>
+                        <AlertDialogCancel onClick={() => setCourseToDelete(null)}>{t('common.cancel')}</AlertDialogCancel>
+                        <AlertDialogAction onClick={confirmDelete}>{t('common.delete')}</AlertDialogAction>
                     </AlertDialogFooter>
                 </AlertDialogContent>
             </AlertDialog>

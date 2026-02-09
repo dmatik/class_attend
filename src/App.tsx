@@ -122,14 +122,14 @@ function App() {
 
       toast({
         variant: "success",
-        title: "החוג נוצר בהצלחה",
-        description: `נוצרו ${sessionsAdded} שיעורים עבור ${course.name}`,
+        title: t("management.toast.course_added_success"),
+        description: t("management.toast.course_added_success_description", { sessionsAdded, courseName: course.name }),
       })
     } catch (error) {
       toast({
         variant: "destructive",
-        title: "שגיאה ביצירת חוג",
-        description: "אירעה שגיאה בעת יצירת החוג. נסה שוב.",
+        title: t("management.toast.course_added_error"),
+        description: t("management.toast.course_added_error_description"),
       })
     }
   }
@@ -142,8 +142,8 @@ function App() {
     if (courseToDelete) {
       toast({
         variant: "success",
-        title: "החוג נמחק",
-        description: `${courseToDelete.name} נמחק בהצלחה`,
+        title: t("management.toast.course_deleted"),
+        description: t("management.toast.course_deleted_success_description", { courseName: courseToDelete.name }),
       })
     }
   }
