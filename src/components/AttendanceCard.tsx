@@ -200,7 +200,7 @@ export function AttendanceCard({ session, sessions, isNext, onUpdate, onSchedule
                                 <button
                                     onClick={() => onDeleteSession(session.id)}
                                     className="p-1.5 rounded-lg text-rose-500 hover:bg-rose-50 transition-colors"
-                                    title="מחק שיעור השלמה"
+                                    title={t('attendance_card.delete_replacement')}
                                 >
                                     <Trash2 className="w-4 h-4" />
                                 </button>

@@ -3,7 +3,10 @@ import { vi } from 'vitest'
 
 vi.mock('react-i18next', () => ({
     useTranslation: () => ({
-        t: (key: string) => key,
+        t: (key: string) => {
+            if (key === 'common.date_format') return 'yyyy-MM-dd'; // Return a safe format string for tests
+            return key;
+        },
         i18n: {
             changeLanguage: () => new Promise(() => { }),
             language: 'en',

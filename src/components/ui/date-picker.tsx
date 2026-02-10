@@ -45,7 +45,7 @@ export function DatePicker({ date, setDate, placeholder, className }: DatePicker
                     )}
                 >
                     <CalendarIcon className="h-4 w-4" />
-                    {date ? format(date, isRtl ? "EEEE, d בMMMM yyyy" : "PPP", { locale: isRtl ? he : enUS }) : <span>{placeholder || t('common.select_date')}</span>}
+                    {date ? format(date, t('common.date_format'), { locale: isRtl ? he : enUS }) : <span>{placeholder || t('common.select_date')}</span>}
                 </Button>
             </PopoverTrigger>
             <PopoverContent className="w-auto p-0" align="start">

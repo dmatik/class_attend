@@ -13,20 +13,17 @@
         "edit": "ערוך",
         "save": "שמור",
         "app_title": "ניהול חוגים",
-        "loading": "טוען...",
-        "search": "חיפוש...",
-        "no_results": "לא נמצאו תוצאות",
-        "error": "שגיאה",
-        "success": "הצלחה",
-        "language": "שפה",
         "no_data_to_display": "אין נתונים להצגה",
-        "select_date": "בחר תאריך"
-    },
-    "attendance": {
-        "mark_all_present": "סמן את כולם כנוכחים",
-        "summary": "סיכום",
-        "total_students": "סה״כ תלמידים",
-        "attendance_rate": "אחוז נוכחות"
+        "select_date": "בחר תאריך",
+        "toggle_language": "החלף שפה",
+        "toggle_theme": "החלף ערכת נושא",
+        "light": "בהיר",
+        "dark": "כהה",
+        "system": "מערכת",
+        "close": "סגור",
+        "date_format": "EEEE, d בMMMM yyyy",
+        "english": "אנגלית",
+        "hebrew": "עברית"
     },
     "reasons": {
         "personal": "סיבה אישית",
@@ -50,7 +47,8 @@
         "replacement_requirement": "יש לבחור סיבת היעדרות (לא אישית) כדי לקבוע השלמה",
         "replacement_for": "השלמה עבור שיעור מ-{{date}}",
         "delete_replacement_title": "האם אתה בטוח?",
-        "delete_replacement_desc": "שיעור ההשלמה שנקבע ל-{{date}} יימחק."
+        "delete_replacement_desc": "שיעור ההשלמה שנקבע ל-{{date}} יימחק.",
+        "delete_replacement": "מחק שיעור השלמה"
     },
     "daily_view": {
         "title": "יומן שיעורים",
@@ -98,9 +96,6 @@
         "add_course_button": "הוסף חוג",
         "save_course_button": "שמור שינויים",
         "delete_course_description": "פעולה זו תמחק את החוג {{courseName}} וכל השיעורים הקשורים אליו. לא ניתן לבטל פעולה זו.",
-        "course_deleted": "Course deleted successfully",
-        "course_added": "Course added successfully",
-        "course_updated": "Course updated successfully",
         "are_you_sure": "האם אתה בטוח?",
         "no_courses": "עדיין לא הוספת חוגים",
         "add_course_description": "הזן את פרטי החוג כדי להתחיל במעקב",

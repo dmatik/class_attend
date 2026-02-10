@@ -9,22 +9,22 @@ import {
 import { Globe } from "lucide-react";
 
 export function LanguageSwitcher() {
-    const { i18n } = useTranslation();
+    const { i18n, t } = useTranslation();
 
     return (
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="icon">
                     <Globe className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all" />
-                    <span className="sr-only">Toggle language</span>
+                    <span className="sr-only">{t('common.toggle_language')}</span>
                 </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
                 <DropdownMenuItem onClick={() => i18n.changeLanguage("he")}>
-                    עברית
+                    {t('common.hebrew')}
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => i18n.changeLanguage("en")}>
-                    English
+                    {t('common.english')}
                 </DropdownMenuItem>
             </DropdownMenuContent>
         </DropdownMenu>
