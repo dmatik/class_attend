@@ -12,14 +12,14 @@ export function LanguageSwitcher() {
     const { i18n, t } = useTranslation();
 
     return (
-        <DropdownMenu>
+        <DropdownMenu dir={i18n.dir()}>
             <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="icon">
                     <Globe className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all" />
                     <span className="sr-only">{t('common.toggle_language')}</span>
                 </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
+            <DropdownMenuContent align="start" className="min-w-[6rem]">
                 <DropdownMenuItem onClick={() => i18n.changeLanguage("he")}>
                     {t('common.hebrew')}
                 </DropdownMenuItem>

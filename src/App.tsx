@@ -345,7 +345,7 @@ function App() {
 
 
   return (
-    <div className="flex bg-background text-foreground font-sans rtl min-h-screen">
+    <div className="flex bg-background text-foreground font-sans min-h-screen">
       {/* Desktop Sidebar */}
       <aside className="hidden md:flex flex-col w-64 bg-card border-l border-border h-screen sticky top-0 z-20 shadow-sm">
         <div className="p-6 border-b border-border">

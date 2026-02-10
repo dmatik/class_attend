@@ -12,10 +12,10 @@ import {
 
 export function ModeToggle() {
     const { setTheme, theme } = useTheme()
-    const { t } = useTranslation()
+    const { t, i18n } = useTranslation()
 
     return (
-        <DropdownMenu>
+        <DropdownMenu dir={i18n.dir()}>
             <DropdownMenuTrigger asChild>
                 <Button variant="outline" size="icon">
                     {theme === 'system' ? (
@@ -29,7 +29,7 @@ export function ModeToggle() {
                     <span className="sr-only">{t('common.toggle_theme')}</span>
                 </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
+            <DropdownMenuContent align="start" className="min-w-[6rem]">
                 <DropdownMenuItem onClick={() => setTheme("light")}>
                     {t('common.light')}
                 </DropdownMenuItem>
