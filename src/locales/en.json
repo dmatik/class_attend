@@ -4,7 +4,7 @@
         "calendar": "Calendar",
         "management": "Management",
         "add_course": "Add Course",
-        "present": "Present",
+        "present": "Attended",
         "absent": "Absent",
         "reason": "Reason",
         "cancel": "Cancel",
@@ -23,7 +23,7 @@
         "select_date": "Select date"
     },
     "attendance": {
-        "mark_all_present": "Mark All Present",
+        "mark_all_present": "Mark All Attended",
         "summary": "Summary",
         "total_students": "Total Students",
         "attendance_rate": "Attendance Rate"
@@ -40,7 +40,7 @@
         "replacement": "Replacement",
         "next_lesson": "Next Lesson",
         "today": "Today",
-        "i_was_there": "Present",
+        "i_was_there": "Attended",
         "i_was_absent": "Absent",
         "details_label": "Details (Optional)",
         "details_placeholder": "Add details...",
@@ -53,7 +53,22 @@
         "delete_replacement_desc": "The replacement lesson scheduled for {{date}} will be deleted."
     },
     "daily_view": {
-        "title": "Lessons Calendar"
+        "title": "Lessons Calendar",
+        "filter_modal": {
+            "title": "Filter & View",
+            "filter_by_course": "Filter by Course",
+            "select_course": "Select Course",
+            "all_courses": "All Courses",
+            "event_type": "Event Type",
+            "select_type": "Select Type",
+            "all_events": "All Events",
+            "only_missed": "Absent Only",
+            "only_replacements": "Replacements Only",
+            "show_future": "Future Lessons",
+            "no_classes": "No classes found",
+            "try_changing_filters": "Try changing the search filters",
+            "clear_filters": "Clear Filters"
+        }
     },
     "dashboard": {
         "total": "Total",
@@ -114,7 +129,11 @@
             "course_added_error": "Error adding course",
             "course_added_error_description": "An error occurred while adding the course. Please try again.",
             "course_deleted": "Course deleted",
-            "course_deleted_success_description": "{{courseName}} deleted successfully"
+            "course_deleted_success_description": "{{courseName}} deleted successfully",
+            "replacement_created_success": "Replacement lesson scheduled",
+            "replacement_created_success_description": "Replacement lesson scheduled for {{date}}",
+            "lesson_deleted_success": "Lesson deleted",
+            "replacement_deleted_success": "Replacement lesson deleted"
         }
     }
 }

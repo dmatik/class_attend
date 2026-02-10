@@ -299,8 +299,8 @@ function App() {
 
         toast({
           variant: "success",
-          title: "שיעור השלמה נקבע",
-          description: `שיעור ההשלמה נקבע ל-${format(currentDate, 'd/M/yyyy')}`,
+          title: t('toasts.replacement_created_success'),
+          description: t('toasts.replacement_created_success_description', { date: format(currentDate, 'd/M/yyyy') }),
         })
         found = true
       }
@@ -329,13 +329,13 @@ function App() {
         )
         toast({
           variant: "success",
-          title: "שיעור ההשלמה נמחק",
+          title: t('toasts.replacement_deleted_success'),
         })
       } else {
         setSessions(sessions.filter(s => s.id !== sessionId))
         toast({
           variant: "success",
-          title: "השיעור נמחק",
+          title: t('toasts.lesson_deleted_success'),
         })
       }
     } else {

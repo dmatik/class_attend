@@ -47,7 +47,8 @@ export function DailyView({
     isFiltersOpen,
     setIsFiltersOpen
 }: DailyViewProps) {
-    const { t } = useTranslation()
+    const { t, i18n } = useTranslation()
+    const dir = i18n.dir()
 
     // Draft state for filter modal (using props as initial)
     const [draftShowFuture, setDraftShowFuture] = React.useState(showFuture)
@@ -137,8 +138,8 @@ export function DailyView({
                                     <CalendarIcon className="w-8 h-8 opacity-40" />
                                 </div>
                                 <div className="space-y-1">
-                                    <p className="font-medium text-lg">לא נמצאו שיעורים</p>
-                                    <p className="text-sm opacity-60">נסה לשנות את סינון החיפוש</p>
+                                    <p className="font-medium text-lg">{t('daily_view.filter_modal.no_classes')}</p>
+                                    <p className="text-sm opacity-60">{t('daily_view.filter_modal.try_changing_filters')}</p>
                                 </div>
                                 {(eventTypeFilter !== 'all' || selectedCourseId !== 'all') && (
                                     <Button
@@ -150,7 +151,7 @@ export function DailyView({
                                         }}
                                         className="mt-2"
                                     >
-                                        נקה סינון
+                                        {t('daily_view.filter_modal.clear_filters')}
                                     </Button>
                                 )}
                             </motion.div>
@@ -174,9 +175,12 @@ export function DailyView({
 
             {/* Filter Modal */}
             <Dialog open={isFiltersOpen} onOpenChange={setIsFiltersOpen}>
-                <DialogContent className="w-full h-full max-w-none max-h-none rounded-none p-4 gap-6 flex flex-col justify-start md:grid md:w-auto md:h-auto md:max-w-xl md:max-h-[90vh] md:rounded-lg md:p-6 md:gap-4 overflow-y-auto" dir="rtl">
-                    <DialogHeader className="text-right space-y-2">
-                        <DialogTitle className="text-xl">סינון ותצוגה</DialogTitle>
+                <DialogContent
+                    className="w-full h-full max-w-none max-h-none rounded-none p-4 gap-6 flex flex-col justify-start md:grid md:w-auto md:h-auto md:max-w-xl md:max-h-[90vh] md:rounded-lg md:p-6 md:gap-4 overflow-y-auto"
+                    dir={dir}
+                >
+                    <DialogHeader className="text-start space-y-2">
+                        <DialogTitle className="text-xl">{t('daily_view.filter_modal.title')}</DialogTitle>
                     </DialogHeader>
 
                     <FilterContent
@@ -194,6 +198,8 @@ export function DailyView({
                             setIsFiltersOpen(false)
                         }}
                         onCancel={() => setIsFiltersOpen(false)}
+                        t={t}
+                        dir={dir}
                     />
                 </DialogContent>
             </Dialog>
@@ -210,7 +216,9 @@ function FilterContent({
     draftEventTypeFilter,
     setDraftEventTypeFilter,
     onApply,
-    onCancel
+    onCancel,
+    t,
+    dir
 }: {
     courses: Course[],
     draftShowFuture: boolean,
@@ -220,21 +228,23 @@ function FilterContent({
     draftEventTypeFilter: 'all' | 'missed' | 'replacement',
     setDraftEventTypeFilter: (v: 'all' | 'missed' | 'replacement') => void,
     onApply: () => void,
-    onCancel: () => void
+    onCancel: () => void,
+    t: any,
+    dir: string
 }) {
     return (
         <div className="grid gap-6 py-4">
             {/* Course Filter */}
             <div className="space-y-2">
-                <Label className="text-right block">סינון לפי חוג</Label>
-                <Select value={draftSelectedCourseId} onValueChange={setDraftSelectedCourseId} dir="rtl">
-                    <SelectTrigger className="text-right bg-muted/30">
-                        <SelectValue placeholder="בחר חוג" />
+                <Label className="text-start block">{t('daily_view.filter_modal.filter_by_course')}</Label>
+                <Select value={draftSelectedCourseId} onValueChange={setDraftSelectedCourseId} dir={dir as "ltr" | "rtl"}>
+                    <SelectTrigger className="text-start bg-muted/30">
+                        <SelectValue placeholder={t('daily_view.filter_modal.select_course')} />
                     </SelectTrigger>
                     <SelectContent>
-                        <SelectItem value="all" className="text-right pr-8">כל החוגים</SelectItem>
+                        <SelectItem value="all" className="text-start rtl:pr-8 ltr:pl-8">{t('daily_view.filter_modal.all_courses')}</SelectItem>
                         {courses.map(course => (
-                            <SelectItem key={course.id} value={course.id} className="text-right pr-8">{course.name}</SelectItem>
+                            <SelectItem key={course.id} value={course.id} className="text-start rtl:pr-8 ltr:pl-8">{course.name}</SelectItem>
                         ))}
                     </SelectContent>
                 </Select>
@@ -242,22 +252,22 @@ function FilterContent({
 
             {/* Event Type Filter */}
             <div className="space-y-2">
-                <Label className="text-right block">סוג אירוע</Label>
-                <Select value={draftEventTypeFilter} onValueChange={(value) => setDraftEventTypeFilter(value as 'all' | 'missed' | 'replacement')} dir="rtl">
-                    <SelectTrigger className="text-right bg-muted/30">
-                        <SelectValue placeholder="בחר סוג" />
+                <Label className="text-start block">{t('daily_view.filter_modal.event_type')}</Label>
+                <Select value={draftEventTypeFilter} onValueChange={(value) => setDraftEventTypeFilter(value as 'all' | 'missed' | 'replacement')} dir={dir as "ltr" | "rtl"}>
+                    <SelectTrigger className="text-start bg-muted/30">
+                        <SelectValue placeholder={t('daily_view.filter_modal.select_type')} />
                     </SelectTrigger>
                     <SelectContent>
-                        <SelectItem value="all" className="text-right pr-8">כל האירועים</SelectItem>
-                        <SelectItem value="missed" className="text-right pr-8">רק חיסורים</SelectItem>
-                        <SelectItem value="replacement" className="text-right pr-8">רק השלמות</SelectItem>
+                        <SelectItem value="all" className="text-start rtl:pr-8 ltr:pl-8">{t('daily_view.filter_modal.all_events')}</SelectItem>
+                        <SelectItem value="missed" className="text-start rtl:pr-8 ltr:pl-8">{t('daily_view.filter_modal.only_missed')}</SelectItem>
+                        <SelectItem value="replacement" className="text-start rtl:pr-8 ltr:pl-8">{t('daily_view.filter_modal.only_replacements')}</SelectItem>
                     </SelectContent>
                 </Select>
             </div>
 
             {/* Future Toggle */}
             <div className="flex items-center justify-between p-3 rounded-lg border bg-muted/20 gap-4">
-                <Label htmlFor="future-mode" className="cursor-pointer">הצג שיעורים עתידיים</Label>
+                <Label htmlFor="future-mode" className="cursor-pointer">{t('daily_view.filter_modal.show_future')}</Label>
                 <Switch
                     id="future-mode"
                     checked={draftShowFuture}
@@ -268,10 +278,10 @@ function FilterContent({
             {/* Action Buttons */}
             <div className="flex gap-3 mt-4">
                 <Button variant="outline" className="flex-1" onClick={onCancel}>
-                    ביטול
+                    {t('common.cancel')}
                 </Button>
                 <Button className="flex-1 font-bold" onClick={onApply}>
-                    אישור
+                    {t('common.confirm')}
                 </Button>
             </div>
         </div>

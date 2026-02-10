@@ -75,5 +75,11 @@ export default {
       },
     },
   },
-  plugins: [require("tailwindcss-animate")],
+  plugins: [
+    require("tailwindcss-animate"),
+    require('tailwindcss/plugin')(function ({ addVariant }) {
+      addVariant('rtl', '[dir="rtl"] &')
+      addVariant('ltr', '[dir="ltr"] &')
+    })
+  ],
 }

@@ -53,7 +53,22 @@
         "delete_replacement_desc": "שיעור ההשלמה שנקבע ל-{{date}} יימחק."
     },
     "daily_view": {
-        "title": "יומן שיעורים"
+        "title": "יומן שיעורים",
+        "filter_modal": {
+            "title": "סינון ותצוגה",
+            "filter_by_course": "סינון לפי חוג",
+            "select_course": "בחר חוג",
+            "all_courses": "כל החוגים",
+            "event_type": "סוג אירוע",
+            "select_type": "בחר סוג",
+            "all_events": "כל האירועים",
+            "only_missed": "רק חיסורים",
+            "only_replacements": "רק השלמות",
+            "show_future": "שיעורים עתידיים",
+            "no_classes": "לא נמצאו שיעורים",
+            "try_changing_filters": "נסה לשנות את סינון החיפוש",
+            "clear_filters": "נקה סינון"
+        }
     },
     "dashboard": {
         "total": "סה״כ",
@@ -114,7 +129,11 @@
             "course_added_error": "שגיאה ביצירת חוג",
             "course_added_error_description": "אירעה שגיאה בעת יצירת החוג. נסה שוב.",
             "course_deleted": "החוג נמחק",
-            "course_deleted_success_description": "{{courseName}} נמחק בהצלחה"
+            "course_deleted_success_description": "{{courseName}} נמחק בהצלחה",
+            "replacement_created_success": "שיעור השלמה נקבע",
+            "replacement_created_success_description": "שיעור ההשלמה נקבע ל-{{date}}",
+            "lesson_deleted_success": "השיעור נמחק",
+            "replacement_deleted_success": "שיעור השלמה נמחק"
         }
     }
 }
