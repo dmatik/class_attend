@@ -7,7 +7,7 @@ import { Switch } from "@/components/ui/switch"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
 import type { Session, Course } from "@/types"
 import { AttendanceCard } from "@/components/AttendanceCard"
 
@@ -181,6 +181,9 @@ export function DailyView({
                 >
                     <DialogHeader className="text-start space-y-2">
                         <DialogTitle className="text-xl">{t('daily_view.filter_modal.title')}</DialogTitle>
+                        <DialogDescription className="sr-only">
+                            {t('daily_view.filter_modal.dialog_description')}
+                        </DialogDescription>
                     </DialogHeader>
 
                     <FilterContent

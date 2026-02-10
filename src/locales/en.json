@@ -56,6 +56,7 @@
         "title": "Lessons Calendar",
         "filter_modal": {
             "title": "Filter & View",
+            "dialog_description": "Set filters to view specific lessons.",
             "filter_by_course": "Filter by Course",
             "select_course": "Select Course",
             "all_courses": "All Courses",

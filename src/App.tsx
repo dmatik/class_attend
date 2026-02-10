@@ -354,23 +354,29 @@ function App() {
           </h1>
         </div>
 
-        {/* Desktop Daily Filter Header */}
-        {activeTab === 'daily' && (
-          <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-card/50">
-            <h3 className="font-semibold text-sm">{t('daily_view.title')}</h3>
-            <button
-              onClick={() => setIsFiltersOpen(true)}
-              className="hover:bg-accent rounded-md p-1 relative transition-colors"
-            >
-              <div className="relative">
-                <Filter className="w-4 h-4" />
-                {(eventTypeFilter !== 'all' || selectedCourseId !== 'all' || showFuture) && (
-                  <span className="absolute -top-1 -right-1 w-2 h-2 bg-blue-500 rounded-full border-2 border-background" />
-                )}
-              </div>
-            </button>
-          </div>
-        )}
+        {/* Desktop Sidebar Header (Always visible to prevent jumping) */}
+        <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-card/50">
+          <h3 className="font-semibold text-sm">
+            {activeTab === 'daily' ? t('daily_view.title') :
+              activeTab === 'dashboard' ? t('common.dashboard') :
+                t('common.management')}
+          </h3>
+          <button
+            onClick={() => setIsFiltersOpen(true)}
+            className={cn(
+              "hover:bg-accent rounded-md p-1 relative transition-colors",
+              activeTab !== 'daily' && "invisible pointer-events-none opacity-0"
+            )}
+          >
+            <div className="relative">
+              <Filter className="w-4 h-4" />
+              {(eventTypeFilter !== 'all' || selectedCourseId !== 'all' || showFuture) && (
+                <span className="absolute -top-1 -right-1 w-2 h-2 bg-blue-500 rounded-full border-2 border-background" />
+              )}
+            </div>
+          </button>
+        </div>
+
 
         <nav className="flex-1 p-4 space-y-2">
           <MenuButton
@@ -405,7 +411,6 @@ function App() {
       <div className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden">
         {/* Mobile Header */}
         <header className="md:hidden bg-background/80 backdrop-blur-md border-b border-border sticky top-0 z-20 px-4 py-3 flex items-center justify-between shrink-0">
-          <div className="w-10" /> {/* Spacer for centering if needed, or simply justify-between */}
           <div className="flex flex-row items-baseline gap-2">
             <h1 className="text-xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
               {t('common.app_title')}
