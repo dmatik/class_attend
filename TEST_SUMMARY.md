@@ -107,7 +107,58 @@ This document summarizes the comprehensive test suite created for the Class Atte
 
 ---
 
-### 5. Integration Tests: Dashboard Flow (`src/pages/DashboardIntegration.test.tsx`)
+### 5. Component Tests: DailyView (`src/components/DailyView.test.tsx`)
+
+**Purpose:** Verify the DailyView component correctly displays, filters, and manages daily attendance sessions.
+
+**Test Scenarios:**
+
+**Rendering (4 tests):**
+- Scenario 1: Displays all past sessions by default (showFuture=false)
+- Scenario 2: Shows empty state when no sessions match filters
+- Scenario 3: Displays filter button in mobile header
+- Scenario 4: Shows filter indicator badge when filters are active
+
+**Filtering by Course (2 tests):**
+- Scenario 5: Filters sessions by selected course
+- Scenario 6: Shows all courses when "all" is selected
+
+**Filtering by Event Type (2 tests):**
+- Scenario 7: Shows only missed sessions when eventTypeFilter is "missed"
+- Scenario 8: Shows only replacement sessions when eventTypeFilter is "replacement"
+
+**Show Future Toggle (1 test):**
+- Scenario 9: Shows all sessions including future when showFuture is true
+
+**Filter Modal (6 tests):**
+- Scenario 10: Opens filter modal when filter button is clicked
+- Scenario 11: Filter modal displays all filter options
+- Scenario 12: Can select a specific course in filter modal
+- Scenario 13: Can select event type filter in modal
+- Scenario 14: Can toggle "Show Future" switch in filter modal
+- Scenario 15: Cancel button closes modal without applying changes
+
+**Empty State with Active Filters (2 tests):**
+- Scenario 16: Shows "Clear Filters" button when no results with active filters
+- Scenario 17: Clear Filters button resets all filters
+
+**Session Sorting and Next Session Logic (1 test):**
+- Scenario 18: Marks next upcoming session for each course with isNext prop
+
+**Key Technical Details:**
+- Mocked AttendanceCard to focus on filtering logic
+- Mocked framer-motion to avoid animation timing issues
+- Fixed "today" date (2023-06-15) for consistent test results
+- Mocked date-fns format function for predictable date handling
+- Tested all three filter types: course, event type, show future
+- Verified modal state management (draft vs applied filters)
+- Tested "next session" logic that identifies upcoming sessions per course
+
+**Status:** ✅ All 18 tests passing
+
+---
+
+### 6. Integration Tests: Dashboard Flow (`src/pages/DashboardIntegration.test.tsx`)
 
 **Purpose:** End-to-end test of the main Dashboard workflow.
 
@@ -181,6 +232,7 @@ npm test -- src/components/AttendanceCard.test.tsx
 npm test -- src/components/Dashboard.test.tsx
 npm test -- src/components/LanguageSwitcher.test.tsx
 npm test -- src/components/CourseManager.test.tsx
+npm test -- src/components/DailyView.test.tsx
 npm test -- src/pages/DashboardIntegration.test.tsx
 ```
 
@@ -199,9 +251,10 @@ npm test -- --watch
 | Dashboard Stats     | 7     | ✅     |
 | LanguageSwitcher    | 5     | ✅     |
 | CourseManager       | 16    | ✅     |
+| DailyView           | 18    | ✅     |
 | Integration Flow    | 1     | ✅     |
 | Utils               | 3     | ✅     |
-| **Total**           | **37**| **✅** |
+| **Total**           | **55**| **✅** |
 
 ---
 
