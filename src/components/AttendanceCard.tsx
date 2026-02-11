@@ -255,7 +255,7 @@ export function AttendanceCard({ session, sessions, isNext, onUpdate, onSchedule
                                     <div>
                                         <Label className="text-xs text-muted-foreground mb-1.5 block font-medium">{t('common.reason')}</Label>
                                         <Select
-                                            value={session.attendance?.reason || ""}
+                                            value={localAttendance?.reason || ""}
                                             onValueChange={handleReasonChange}
                                             dir={i18n.dir()}
                                         >
@@ -272,7 +272,7 @@ export function AttendanceCard({ session, sessions, isNext, onUpdate, onSchedule
                                     <div>
                                         <Label className="text-xs text-muted-foreground mb-1.5 block font-medium">{t('attendance_card.details_label')}</Label>
                                         <Textarea
-                                            value={session.attendance?.details || ""}
+                                            value={localAttendance?.details || ""}
                                             onChange={handleDetailsChange}
                                             placeholder={t('attendance_card.details_placeholder')}
                                             className="resize-none bg-muted/50 border-input focus:ring-ring min-h-[60px]"

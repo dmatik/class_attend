@@ -4,8 +4,47 @@ import userEvent from '@testing-library/user-event'
 import { AttendanceCard } from './AttendanceCard'
 import type { Session } from '@/types'
 
-// Mock icons to avoid rendering issues if any (though usually fine with shallow rendering or jsdom)
-// But lucide-react should be fine.
+// Mock UI components to simplify testing logic and avoid Radix UI portal issues
+vi.mock('@/components/ui/select', () => ({
+    Select: ({ children, onValueChange, value }: any) => (
+        <select
+            data-testid="mock-select"
+            value={value}
+            onChange={(e) => onValueChange(e.target.value)}
+        >
+            {children}
+        </select>
+    ),
+    SelectTrigger: ({ children }: any) => <div>{children}</div>,
+    SelectValue: () => null,
+    SelectContent: ({ children }: any) => <>{children}</>,
+    SelectItem: ({ value, children }: any) => <option value={value}>{children}</option>,
+}))
+
+// Mock framer-motion to avoid animation issues in tests
+vi.mock('framer-motion', async () => {
+    const actual = await vi.importActual('framer-motion')
+    return {
+        ...actual,
+        AnimatePresence: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+        motion: {
+            div: ({ children, ...props }: any) => <div {...props}>{children}</div>,
+            button: ({ children, ...props }: any) => <button {...props}>{children}</button>,
+        }
+    }
+})
+
+// Mock icons
+vi.mock('lucide-react', () => ({
+    Check: () => <span data-testid="icon-check" />,
+    X: () => <span data-testid="icon-x" />,
+    Calendar: () => <span data-testid="icon-calendar" />,
+    Trash2: () => <span data-testid="icon-trash" />,
+    ChevronDown: () => <span />,
+    ChevronUp: () => <span />,
+    ChevronLeft: () => <span />,
+    ChevronRight: () => <span />,
+}))
 
 const mockSession: Session = {
     id: '1',
@@ -34,48 +73,83 @@ describe('AttendanceCard', () => {
         onDeleteSession: mockOnDelete
     }
 
-    it('Test Case 1: Renders correctly with the class name and initial status', () => {
+    it('Scenario 1: Render State - Verifies class name and date are correct', () => {
         render(<AttendanceCard {...defaultProps} />)
 
-        // Check course name
+        // Verify Class Name
         expect(screen.getByText('Test Course')).toBeInTheDocument()
 
-        // Check initial status (Present)
-        // usage of "הייתי" button should have specific class/style or we can check the icon container bg
-        const presentBtn = screen.getByRole('button', { name: 'attendance_card.i_was_there' })
-        expect(presentBtn).toHaveClass('bg-emerald-50') // Active state class
+        // Verify Date
+        // Based on setup.ts mock, t('common.date_format') returns 'yyyy-MM-dd'
+        // So 2023-10-10 should be rendered as "2023-10-10"
+        expect(screen.getByText('2023-10-10')).toBeInTheDocument()
 
-        const absentBtn = screen.getByRole('button', { name: 'attendance_card.i_was_absent' })
-        expect(absentBtn).toHaveClass('bg-muted/50') // Inactive state
+        // Verify initial status (Present)
+        const presentBtn = screen.getByRole('button', { name: 'attendance_card.i_was_there' })
+        expect(presentBtn).toHaveClass('bg-emerald-50')
     })
 
-    it('Test Case 2: Toggling status to Absent', async () => {
+    it('Scenario 2: Interaction (Happy Path) - Toggle Absent and verify Reason Form appears', async () => {
         const user = userEvent.setup()
         render(<AttendanceCard {...defaultProps} />)
 
         const absentBtn = screen.getByRole('button', { name: 'attendance_card.i_was_absent' })
 
+        // Click Absent
         await user.click(absentBtn)
 
-        // onUpdate should be called with status: 'absent'
+        // Verify onUpdate called with absent
         expect(mockOnUpdate).toHaveBeenCalledWith('1', expect.objectContaining({
             status: 'absent',
             reason: undefined
         }))
 
-        // Wait for reason select to appear (it's in AnimatePresence/motion.div)
+        // Verify Reason Form appears (waiting for animation)
         await waitFor(() => {
-            expect(screen.getByText('common.reason')).toBeInTheDocument()
+            expect(screen.getByText('common.reason')).toBeVisible()
         })
-
-        // Check input/select is visible
-        expect(screen.getByRole('combobox')).toBeInTheDocument() // Select trigger
+        expect(screen.getByText('attendance_card.details_label')).toBeVisible()
     })
 
-    it('Test Case 3: Toggling back to Present', async () => {
+    it('Scenario 3: Interaction (Form Fill) - Select reason and type in text area', async () => {
         const user = userEvent.setup()
+        render(<AttendanceCard {...defaultProps} />)
 
-        // Start with absent state
+        // 1. Click Absent
+        await user.click(screen.getByRole('button', { name: 'attendance_card.i_was_absent' }))
+
+        // Wait for form
+        await waitFor(() => expect(screen.getByTestId('mock-select')).toBeVisible())
+
+        // 2. Select "Reason" (Personal) using the mocked select
+        const select = screen.getByTestId('mock-select')
+        await user.selectOptions(select, 'personal')
+
+        // Verify onUpdate called with reason
+        expect(mockOnUpdate).toHaveBeenCalledWith('1', expect.objectContaining({
+            status: 'absent',
+            reason: 'personal' // 'value' from REASONS array
+        }))
+
+        // Verify local state update
+        expect(select).toHaveValue('personal')
+
+        // 3. Type in Textarea
+        const textarea = screen.getByPlaceholderText('attendance_card.details_placeholder')
+        await user.type(textarea, 'My extra details')
+
+        // Verify onUpdate called with details
+        expect(mockOnUpdate).toHaveBeenCalledWith('1', expect.objectContaining({
+            status: 'absent',
+            details: 'My extra details'
+        }))
+
+        // Verify value in textarea
+        expect(textarea).toHaveValue('My extra details')
+    })
+
+    it('Scenario 4: Interaction (Toggle Back) - Click Present and verify Reason Form disappears', async () => {
+        const user = userEvent.setup()
         const absentSession: Session = {
             ...mockSession,
             attendance: { status: 'absent', reason: 'personal' }
@@ -83,21 +157,35 @@ describe('AttendanceCard', () => {
 
         render(<AttendanceCard {...defaultProps} session={absentSession} />)
 
-        // Form should be visible initially
-        expect(screen.getByText('common.reason')).toBeInTheDocument()
+        // Verify Form is initially visible
+        expect(screen.getByText('common.reason')).toBeVisible()
 
         // Click Present
         const presentBtn = screen.getByRole('button', { name: 'attendance_card.i_was_there' })
         await user.click(presentBtn)
 
-        // onUpdate called
+        // Verify onUpdate
         expect(mockOnUpdate).toHaveBeenCalledWith('1', expect.objectContaining({
             status: 'present'
         }))
 
-        // Form should disappear
+        // Verify Form disappears
         await waitFor(() => {
             expect(screen.queryByText('common.reason')).not.toBeInTheDocument()
         })
+    })
+
+    it('Scenario 5: Accessibility - Ensure buttons can be found by accessible roles', () => {
+        render(<AttendanceCard {...defaultProps} />)
+
+        // Present Button
+        expect(screen.getByRole('button', { name: 'attendance_card.i_was_there' })).toBeInTheDocument()
+
+        // Absent Button
+        expect(screen.getByRole('button', { name: 'attendance_card.i_was_absent' })).toBeInTheDocument()
+
+        // Date Picker (it's a button)
+        // Note: The DatePicker button usually has the date text as its accessible name if date is selected
+        expect(screen.getByRole('button', { name: '2023-10-10' })).toBeInTheDocument()
     })
 })
