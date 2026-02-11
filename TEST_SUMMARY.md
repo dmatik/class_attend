@@ -62,7 +62,52 @@ This document summarizes the comprehensive test suite created for the Class Atte
 
 ---
 
-### 4. Integration Tests: Dashboard Flow (`src/pages/DashboardIntegration.test.tsx`)
+### 4. Component Tests: CourseManager (`src/components/CourseManager.test.tsx`)
+
+**Purpose:** Verify the CourseManager component correctly handles course creation, editing, and deletion.
+
+**Test Scenarios:**
+
+**Rendering (3 tests):**
+- Scenario 1: Displays course cards with correct information
+- Scenario 2: Shows empty state when no courses exist
+- Scenario 3: Each course card has Edit and Delete buttons
+
+**Adding a Course (5 tests):**
+- Scenario 4: Opens dialog when Add Course button is clicked
+- Scenario 5: Form validation - Submit button disabled when form is incomplete
+- Scenario 6: Successfully adds course with Total Lessons limit
+- Scenario 7: Successfully adds course with End Date limit
+- Scenario 8: Can toggle days of week selection
+
+**Editing a Course (3 tests):**
+- Scenario 9: Opens dialog in edit mode when Edit button clicked
+- Scenario 10: Successfully edits course
+- Scenario 11: Dialog resets form when closed without saving
+
+**Deleting a Course (3 tests):**
+- Scenario 12: Opens confirmation dialog when Delete button clicked
+- Scenario 13: Deletes course when confirmed
+- Scenario 14: Cancels deletion when cancel button clicked
+
+**Form Validation (2 tests):**
+- Scenario 15: Submit button disabled when course name is empty
+- Scenario 16: Submit button disabled when no days are selected
+
+**Key Technical Details:**
+- Mocked DatePicker as simple HTML input
+- Mocked Tabs component to simplify tab switching tests
+- Mocked lucide-react icons (Edit, Trash2, X)
+- Used fireEvent.change for controlled inputs
+- Tested both "Total Lessons" and "End Date" course types
+- Verified form validation prevents invalid submissions
+- Tested confirmation dialog flow for deletions
+
+**Status:** ✅ All 16 tests passing
+
+---
+
+### 5. Integration Tests: Dashboard Flow (`src/pages/DashboardIntegration.test.tsx`)
 
 **Purpose:** End-to-end test of the main Dashboard workflow.
 
@@ -135,6 +180,7 @@ npm test
 npm test -- src/components/AttendanceCard.test.tsx
 npm test -- src/components/Dashboard.test.tsx
 npm test -- src/components/LanguageSwitcher.test.tsx
+npm test -- src/components/CourseManager.test.tsx
 npm test -- src/pages/DashboardIntegration.test.tsx
 ```
 
@@ -152,8 +198,10 @@ npm test -- --watch
 | AttendanceCard      | 5     | ✅     |
 | Dashboard Stats     | 7     | ✅     |
 | LanguageSwitcher    | 5     | ✅     |
+| CourseManager       | 16    | ✅     |
 | Integration Flow    | 1     | ✅     |
-| **Total**           | **21**| **✅** |
+| Utils               | 3     | ✅     |
+| **Total**           | **37**| **✅** |
 
 ---
 
