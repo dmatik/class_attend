@@ -107,10 +107,7 @@ describe('Dashboard Integration Flow', () => {
         // Click Save (Add Course)
         const saveBtn = buttons[buttons.length - 1]
 
-        // Check if disabled - useful for debugging
-        if (saveBtn.hasAttribute('disabled')) {
-            console.log('Save button is disabled!')
-        }
+
         await user.click(saveBtn)
 
         // Wait for Success Toast
@@ -138,8 +135,7 @@ describe('Dashboard Integration Flow', () => {
         if (!correctSave) throw new Error('Save call not found')
         const savedData = JSON.parse((correctSave as any)[1].body)
 
-        console.log('Saved Data Courses:', JSON.stringify(savedData.courses, null, 2))
-        console.log('Saved Data Sessions count:', savedData.sessions?.length || 0)
+
 
         expect(savedData.courses).toHaveLength(1)
         expect(savedData.courses[0].name).toBe('Integration Class')

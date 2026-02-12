@@ -23,8 +23,13 @@ const LoadingSpinner = () => (
 import { useTranslation } from "react-i18next"
 
 function App() {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const [activeTab, setActiveTab] = useState<'daily' | 'dashboard' | 'courses'>('dashboard')
+
+  // Update document title on language change
+  useEffect(() => {
+    document.title = t('common.app_title')
+  }, [t, i18n.language])
 
   /* API Sync Logic */
   const [courses, setCourses] = useState<Course[]>([])

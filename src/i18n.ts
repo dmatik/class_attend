@@ -26,6 +26,7 @@ i18n.init({
         en: { translation: en }
     },
     fallbackLng: 'he',
+    debug: false, // Suppress promotional messages in console
     detection: {
         order: ['localStorage', 'navigator'],
         caches: ['localStorage'],
