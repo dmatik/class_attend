@@ -67,6 +67,12 @@
             "no_classes": "No classes found",
             "try_changing_filters": "Try changing the search filters",
             "clear_filters": "Clear Filters"
+        },
+        "toast": {
+            "replacement_created_success": "Replacement lesson scheduled",
+            "replacement_created_success_description": "Replacement lesson scheduled for {{date}}",
+            "lesson_deleted_success": "Lesson deleted",
+            "replacement_deleted_success": "Replacement lesson deleted"
         }
     },
     "dashboard": {
@@ -125,11 +131,7 @@
             "course_added_error": "Error adding course",
             "course_added_error_description": "An error occurred while adding the course. Please try again.",
             "course_deleted": "Course deleted",
-            "course_deleted_success_description": "{{courseName}} deleted successfully",
-            "replacement_created_success": "Replacement lesson scheduled",
-            "replacement_created_success_description": "Replacement lesson scheduled for {{date}}",
-            "lesson_deleted_success": "Lesson deleted",
-            "replacement_deleted_success": "Replacement lesson deleted"
+            "course_deleted_success_description": "{{courseName}} deleted successfully"
         }
     }
 }

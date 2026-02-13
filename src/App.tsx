@@ -304,8 +304,8 @@ function App() {
 
         toast({
           variant: "success",
-          title: t('toasts.replacement_created_success'),
-          description: t('toasts.replacement_created_success_description', { date: format(currentDate, 'd/M/yyyy') }),
+          title: t('daily_view.toast.replacement_created_success'),
+          description: t('daily_view.toast.replacement_created_success_description', { date: format(currentDate, 'd/M/yyyy') }),
         })
         found = true
       }
@@ -334,13 +334,13 @@ function App() {
         )
         toast({
           variant: "success",
-          title: t('toasts.replacement_deleted_success'),
+          title: t('daily_view.toast.replacement_deleted_success'),
         })
       } else {
         setSessions(sessions.filter(s => s.id !== sessionId))
         toast({
           variant: "success",
-          title: t('toasts.lesson_deleted_success'),
+          title: t('daily_view.toast.lesson_deleted_success'),
         })
       }
     } else {
