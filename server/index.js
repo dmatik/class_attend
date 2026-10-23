@@ -36,6 +36,9 @@ async function ensureDb() {
 // Get data
 app.get('/api/data', async (req, res) => {
     try {
+        res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+        res.setHeader('Pragma', 'no-cache');
+        res.setHeader('Expires', '0');
         await ensureDb();
         const data = await fs.readFile(DB_FILE, 'utf-8');
         res.json(JSON.parse(data));

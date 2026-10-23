@@ -52,3 +52,14 @@ vi.mock('next-themes', () => ({
     }),
     ThemeProvider: ({ children }: { children: unknown }) => children,
 }))
+
+// 5. Suppress Happy-DOM Animation cancellation AbortError
+if (typeof window !== 'undefined' && window.Animation) {
+    const originalCancel = window.Animation.prototype.cancel
+    window.Animation.prototype.cancel = function () {
+        if (this.finished) {
+            this.finished.catch(() => {})
+        }
+        return originalCancel.call(this)
+    }
+}

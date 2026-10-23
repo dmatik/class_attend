@@ -23,7 +23,10 @@
         "close": "סגור",
         "date_format": "EEEE, d בMMMM yyyy",
         "english": "English",
-        "hebrew": "עברית"
+        "hebrew": "עברית",
+        "error_loading": "שגיאה בטעינת נתונים",
+        "session_expired_hint": "ייתכן שתוקף החיבור פג או שאירעה שגיאת תקשורת. לחץ כדי להתחבר מחדש ולרענן.",
+        "retry": "התחבר מחדש / רענן"
     },
     "reasons": {
         "personal": "סיבה אישית",
