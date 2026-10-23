@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { CourseManager } from './CourseManager'
+import { CoursesPage } from './CoursesPage'
 import type { Course } from '@/types'
 
 // Mock react-i18next
@@ -70,7 +70,7 @@ const mockCourses: Course[] = [
     }
 ]
 
-describe('CourseManager Component', () => {
+describe('CoursesPage Component', () => {
     const mockOnAddCourse = vi.fn()
     const mockOnEditCourse = vi.fn()
     const mockOnDeleteCourse = vi.fn()
@@ -88,7 +88,7 @@ describe('CourseManager Component', () => {
 
     describe('Rendering', () => {
         it('Scenario 1: Displays course cards with correct information', () => {
-            render(<CourseManager {...defaultProps} />)
+            render(<CoursesPage {...defaultProps} />)
 
             // Verify title
             expect(screen.getByText('management.title')).toBeInTheDocument()
@@ -102,13 +102,13 @@ describe('CourseManager Component', () => {
         })
 
         it('Scenario 2: Shows empty state when no courses exist', () => {
-            render(<CourseManager {...defaultProps} courses={[]} />)
+            render(<CoursesPage {...defaultProps} courses={[]} />)
 
             expect(screen.getByText('management.no_courses')).toBeInTheDocument()
         })
 
         it('Scenario 3: Each course card has Edit and Delete buttons', () => {
-            render(<CourseManager {...defaultProps} />)
+            render(<CoursesPage {...defaultProps} />)
 
             const editIcons = screen.getAllByTestId('icon-edit')
             const deleteIcons = screen.getAllByTestId('icon-trash')
@@ -121,7 +121,7 @@ describe('CourseManager Component', () => {
     describe('Adding a Course', () => {
         it('Scenario 4: Opens dialog when Add Course button is clicked', async () => {
             const user = userEvent.setup()
-            render(<CourseManager {...defaultProps} />)
+            render(<CoursesPage {...defaultProps} />)
 
             const addButton = screen.getByText('management.add_course_button')
             await user.click(addButton)
@@ -135,7 +135,7 @@ describe('CourseManager Component', () => {
 
         it('Scenario 5: Form validation - Submit button disabled when form is incomplete', async () => {
             const user = userEvent.setup()
-            render(<CourseManager {...defaultProps} />)
+            render(<CoursesPage {...defaultProps} />)
 
             // Open dialog
             await user.click(screen.getByText('management.add_course_button'))
@@ -150,7 +150,7 @@ describe('CourseManager Component', () => {
         it('Scenario 6: Successfully adds course with Total Lessons limit', async () => {
             const user = userEvent.setup()
             const { fireEvent } = await import('@testing-library/react')
-            render(<CourseManager {...defaultProps} />)
+            render(<CoursesPage {...defaultProps} />)
 
             // Open dialog
             await user.click(screen.getByText('management.add_course_button'))
@@ -193,7 +193,7 @@ describe('CourseManager Component', () => {
         it('Scenario 7: Successfully adds course with End Date limit', async () => {
             const user = userEvent.setup()
             const { fireEvent } = await import('@testing-library/react')
-            render(<CourseManager {...defaultProps} />)
+            render(<CoursesPage {...defaultProps} />)
 
             // Open dialog
             await user.click(screen.getByText('management.add_course_button'))
@@ -248,7 +248,7 @@ describe('CourseManager Component', () => {
 
         it('Scenario 8: Can toggle days of week selection', async () => {
             const user = userEvent.setup()
-            render(<CourseManager {...defaultProps} />)
+            render(<CoursesPage {...defaultProps} />)
 
             await user.click(screen.getByText('management.add_course_button'))
 
@@ -272,7 +272,7 @@ describe('CourseManager Component', () => {
     describe('Editing a Course', () => {
         it('Scenario 9: Opens dialog in edit mode when Edit button clicked', async () => {
             const user = userEvent.setup()
-            render(<CourseManager {...defaultProps} />)
+            render(<CoursesPage {...defaultProps} />)
 
             const editButtons = screen.getAllByTestId('icon-edit')
             const firstEditButton = editButtons[0].closest('button')!
@@ -292,7 +292,7 @@ describe('CourseManager Component', () => {
 
         it('Scenario 10: Successfully edits course', async () => {
             const user = userEvent.setup()
-            render(<CourseManager {...defaultProps} />)
+            render(<CoursesPage {...defaultProps} />)
 
             // Click edit on first course
             const editButtons = screen.getAllByTestId('icon-edit')
@@ -325,7 +325,7 @@ describe('CourseManager Component', () => {
 
         it('Scenario 11: Dialog resets form when closed without saving', async () => {
             const user = userEvent.setup()
-            render(<CourseManager {...defaultProps} />)
+            render(<CoursesPage {...defaultProps} />)
 
             // Open add dialog
             await user.click(screen.getByText('management.add_course_button'))
@@ -347,7 +347,7 @@ describe('CourseManager Component', () => {
     describe('Deleting a Course', () => {
         it('Scenario 12: Opens confirmation dialog when Delete button clicked', async () => {
             const user = userEvent.setup()
-            render(<CourseManager {...defaultProps} />)
+            render(<CoursesPage {...defaultProps} />)
 
             const deleteButtons = screen.getAllByTestId('icon-trash')
             const firstDeleteButton = deleteButtons[0].closest('button')!
@@ -363,7 +363,7 @@ describe('CourseManager Component', () => {
 
         it('Scenario 13: Deletes course when confirmed', async () => {
             const user = userEvent.setup()
-            render(<CourseManager {...defaultProps} />)
+            render(<CoursesPage {...defaultProps} />)
 
             // Click delete on first course
             const deleteButtons = screen.getAllByTestId('icon-trash')
@@ -387,7 +387,7 @@ describe('CourseManager Component', () => {
 
         it('Scenario 14: Cancels deletion when cancel button clicked', async () => {
             const user = userEvent.setup()
-            render(<CourseManager {...defaultProps} />)
+            render(<CoursesPage {...defaultProps} />)
 
             // Click delete
             const deleteButtons = screen.getAllByTestId('icon-trash')
@@ -416,7 +416,7 @@ describe('CourseManager Component', () => {
         it('Scenario 15: Submit button disabled when course name is empty', async () => {
             const user = userEvent.setup()
             const { fireEvent } = await import('@testing-library/react')
-            render(<CourseManager {...defaultProps} />)
+            render(<CoursesPage {...defaultProps} />)
 
             await user.click(screen.getByText('management.add_course_button'))
 
@@ -438,7 +438,7 @@ describe('CourseManager Component', () => {
         it('Scenario 16: Submit button disabled when no days are selected', async () => {
             const user = userEvent.setup()
             const { fireEvent } = await import('@testing-library/react')
-            render(<CourseManager {...defaultProps} />)
+            render(<CoursesPage {...defaultProps} />)
 
             await user.click(screen.getByText('management.add_course_button'))
 

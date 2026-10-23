@@ -13,16 +13,14 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import type { Course } from "@/types"
 
-interface CourseManagerProps {
+export interface CoursesPageProps {
     courses: Course[]
     onAddCourse: (course: Course) => void
     onEditCourse: (course: Course) => void
     onDeleteCourse: (id: string) => void
 }
 
-
-
-export function CourseManager({ courses, onAddCourse, onEditCourse, onDeleteCourse }: CourseManagerProps) {
+export function CoursesPage({ courses, onAddCourse, onEditCourse, onDeleteCourse }: CoursesPageProps) {
     const { t, i18n } = useTranslation()
 
     const DAYS = [
@@ -66,12 +64,10 @@ export function CourseManager({ courses, onAddCourse, onEditCourse, onDeleteCour
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault()
         if (!name || !startDate || selectedDays.length === 0) return
-        // Optional validation for limit
         if (limitType === 'date' && !endDate) return
         if (limitType === 'count' && !lessonCount) return
 
         if (editingCourse) {
-            // Edit mode
             onEditCourse({
                 id: editingCourse.id,
                 name,
@@ -81,7 +77,6 @@ export function CourseManager({ courses, onAddCourse, onEditCourse, onDeleteCour
                 totalLessons: limitType === 'count' ? parseInt(lessonCount) : undefined
             })
         } else {
-            // Add mode
             onAddCourse({
                 id: uuidv4(),
                 name,
@@ -126,7 +121,6 @@ export function CourseManager({ courses, onAddCourse, onEditCourse, onDeleteCour
     const handleDialogClose = (open: boolean) => {
         setIsDialogOpen(open)
         if (!open) {
-            // Reset form when closing
             setEditingCourse(null)
             setName("")
             setStartDate("")
@@ -301,3 +295,7 @@ export function CourseManager({ courses, onAddCourse, onEditCourse, onDeleteCour
         </div >
     )
 }
+
+// Backward-compatible alias
+export const CourseManager = CoursesPage
+

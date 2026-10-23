@@ -2,7 +2,8 @@
     "common": {
         "dashboard": "Dashboard",
         "calendar": "Calendar",
-        "management": "Management",
+        "courses": "Courses",
+        "management": "Courses",
         "add_course": "Add Course",
         "present": "Attended",
         "absent": "Absent",

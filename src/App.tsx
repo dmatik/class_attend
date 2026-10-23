@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "framer-motion"
 import {
   Calendar as CalendarIcon,
   LayoutDashboard,
-  Settings,
+  GraduationCap,
   Filter,
   Loader2,
   AlertCircle,
@@ -24,7 +24,7 @@ import { LoginView } from "@/components/LoginView"
 // Lazy load components
 const DailyView = lazy(() => import("@/components/DailyView").then(module => ({ default: module.DailyView })))
 const Dashboard = lazy(() => import("@/components/Dashboard").then(module => ({ default: module.Dashboard })))
-const CourseManager = lazy(() => import("@/components/CourseManager").then(module => ({ default: module.CourseManager })))
+const CoursesPage = lazy(() => import("@/components/CoursesPage").then(module => ({ default: module.CoursesPage })))
 const AccountPage = lazy(() => import("@/components/AccountPage").then(module => ({ default: module.AccountPage })))
 const AdminPage = lazy(() => import("@/components/AdminPage").then(module => ({ default: module.AdminPage })))
 
@@ -467,7 +467,7 @@ function App() {
           <h3 className="font-semibold text-sm">
             {activeTab === 'daily' ? t('daily_view.title') :
               activeTab === 'dashboard' ? t('common.dashboard') :
-                activeTab === 'courses' ? t('common.management') :
+                activeTab === 'courses' ? t('common.courses') :
                   activeTab === 'admin' ? t('common.admin') :
                     t('common.account')}
           </h3>
@@ -504,8 +504,8 @@ function App() {
           <MenuButton
             active={activeTab === 'courses'}
             onClick={() => setActiveTab('courses')}
-            icon={Settings}
-            label={t('common.management')}
+            icon={GraduationCap}
+            label={t('common.courses')}
           />
           {currentUser.role === 'admin' && (
             <MenuButton
@@ -631,7 +631,7 @@ function App() {
                           <Dashboard sessions={sessions} />
                         )}
                         {activeTab === 'courses' && (
-                          <CourseManager
+                          <CoursesPage
                             courses={courses}
                             onAddCourse={handleAddCourse}
                             onEditCourse={handleEditCourse}
@@ -680,8 +680,8 @@ function App() {
           <MobileNavButton
             active={activeTab === 'courses'}
             onClick={() => setActiveTab('courses')}
-            icon={Settings}
-            label={t('common.management')}
+            icon={GraduationCap}
+            label={t('common.courses')}
           />
           {currentUser.role === 'admin' && (
             <MobileNavButton

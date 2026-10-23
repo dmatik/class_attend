@@ -66,9 +66,9 @@ describe('Dashboard Integration Flow', () => {
         })
 
         // 2. Add Class Flow
-        // Navigate to Management
-        const managementTabs = screen.getAllByText('common.management')
-        await user.click(managementTabs[0])
+        // Navigate to Courses
+        const courseTabs = screen.getAllByText(/common\.(courses|management)/)
+        await user.click(courseTabs[0])
 
         // Check if we are on management page
         expect(await screen.findByText('management.title')).toBeInTheDocument()
