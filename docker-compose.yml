@@ -7,6 +7,9 @@ services:
         APP_VERSION: "local"
     ports:
       - "8080:5173"
+    environment:
+      - USERNAME
+      - PASSWORD
     volumes:
       - ./data:/app/data
     restart: always
