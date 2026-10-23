@@ -1,9 +1,10 @@
 import { useState, useEffect, Suspense, lazy } from "react"
 import { motion, AnimatePresence } from "framer-motion"
-import { Calendar as CalendarIcon, LayoutDashboard, Settings, Filter, Loader2 } from "lucide-react"
+import { Calendar as CalendarIcon, LayoutDashboard, Settings, Filter, Loader2, AlertCircle, RefreshCw } from "lucide-react"
 import { addDays, format, parseISO } from "date-fns"
 import { Toaster } from "@/components/ui/toaster"
 import { toast } from "@/hooks/use-toast"
+import { Button } from "@/components/ui/button"
 import { cn, uuidv4 } from "@/lib/utils"
 import type { Session, Course } from "@/types"
 import { ModeToggle } from "@/components/mode-toggle"
@@ -35,18 +36,42 @@ function App() {
   const [courses, setCourses] = useState<Course[]>([])
   const [sessions, setSessions] = useState<Session[]>([])
   const [loading, setLoading] = useState(true)
+  const [isInitialized, setIsInitialized] = useState(false)
+  const [fetchError, setFetchError] = useState<string | null>(null)
 
   // Initial Fetch
   useEffect(() => {
     fetch('/api/data')
-      .then(res => res.json())
-      .then(data => {
+      .then(async (res) => {
+        const contentType = res.headers?.get?.('content-type') || ''
+        const isUnauthorized = res.status === 401 || res.status === 403
+        const isRedirect = res.redirected || (res.status >= 300 && res.status < 400)
+        const isHtml = typeof contentType === 'string' && contentType.includes('text/html')
+
+        // If Cloudflare Access session expired or redirected to auth login
+        if (res.redirected || isUnauthorized || (isRedirect && !res.ok) || isHtml) {
+          if (typeof window !== 'undefined' && window.location) {
+            window.location.reload()
+          }
+          return null
+        }
+
+        if (res.ok === false || (res.status && (res.status < 200 || res.status >= 300))) {
+          throw new Error(`HTTP error! status: ${res.status}`)
+        }
+
+        return res.json()
+      })
+      .then((data) => {
+        if (!data) return
         setCourses(data.courses || [])
         setSessions(data.sessions || [])
+        setIsInitialized(true)
         setLoading(false)
       })
-      .catch(err => {
+      .catch((err) => {
         console.error("Failed to fetch data:", err)
+        setFetchError(err.message || 'Connection error')
         setLoading(false)
       })
   }, [])
@@ -80,21 +105,32 @@ function App() {
 
   // Auto-Save Effect
   useEffect(() => {
-    if (loading) return
+    if (!isInitialized || loading) return
     const saveData = async () => {
       try {
-        await fetch('/api/data', {
+        const res = await fetch('/api/data', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ courses, sessions })
         })
+        if (!res) return
+        const contentType = res.headers?.get?.('content-type') || ''
+        const isUnauthorized = res.status === 401 || res.status === 403
+        const isRedirect = res.redirected || (res.status >= 300 && res.status < 400)
+        const isHtml = typeof contentType === 'string' && contentType.includes('text/html')
+
+        if (res.redirected || isUnauthorized || (isRedirect && !res.ok) || isHtml) {
+          if (typeof window !== 'undefined' && window.location) {
+            window.location.reload()
+          }
+        }
       } catch (err) {
         console.error("Failed to save data", err)
       }
     }
     const timeout = setTimeout(saveData, 500)
     return () => clearTimeout(timeout)
-  }, [courses, sessions, loading])
+  }, [courses, sessions, loading, isInitialized])
 
   const handleAddCourse = (course: Course) => {
     try {
@@ -433,44 +469,60 @@ function App() {
         {/* Scrollable Content Area */}
         <main className="flex-1 overflow-hidden relative flex flex-col">
           <div className="w-full h-full max-w-7xl mx-auto">
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={activeTab}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                transition={{ duration: 0.2 }}
-                className="h-full"
-              >
-                <Suspense fallback={<LoadingSpinner />}>
-                  {activeTab === 'daily' && (
-                    <DailyView
-                      sessions={sessions}
-                      courses={courses}
-                      onUpdateAttendance={handleUpdateAttendance}
-                      onScheduleReplacement={handleScheduleReplacement}
-                      onUpdateSessionDate={handleUpdateSessionDate}
-                      onDeleteSession={handleDeleteSession}
-                      // Filter Props
-                      showFuture={showFuture}
-                      setShowFuture={setShowFuture}
-                      selectedCourseId={selectedCourseId}
-                      setSelectedCourseId={setSelectedCourseId}
-                      eventTypeFilter={eventTypeFilter}
-                      setEventTypeFilter={setEventTypeFilter}
-                      isFiltersOpen={isFiltersOpen}
-                      setIsFiltersOpen={setIsFiltersOpen}
-                    />
-                  )}
-                  {activeTab === 'dashboard' && (
-                    <Dashboard sessions={sessions} />
-                  )}
-                  {activeTab === 'courses' && (
-                    <CourseManager courses={courses} onAddCourse={handleAddCourse} onEditCourse={handleEditCourse} onDeleteCourse={handleDeleteCourse} />
-                  )}
-                </Suspense>
-              </motion.div>
-            </AnimatePresence>
+            {fetchError ? (
+              <div className="flex h-full w-full flex-col items-center justify-center p-6 text-center">
+                <AlertCircle className="h-12 w-12 text-destructive mb-4" />
+                <h2 className="text-xl font-bold mb-2">{t('common.error_loading')}</h2>
+                <p className="text-muted-foreground mb-6 max-w-sm">
+                  {t('common.session_expired_hint')}
+                </p>
+                <Button onClick={() => window.location.reload()} className="flex items-center gap-2">
+                  <RefreshCw className="h-4 w-4" />
+                  {t('common.retry')}
+                </Button>
+              </div>
+            ) : loading ? (
+              <LoadingSpinner />
+            ) : (
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={activeTab}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  transition={{ duration: 0.2 }}
+                  className="h-full"
+                >
+                  <Suspense fallback={<LoadingSpinner />}>
+                    {activeTab === 'daily' && (
+                      <DailyView
+                        sessions={sessions}
+                        courses={courses}
+                        onUpdateAttendance={handleUpdateAttendance}
+                        onScheduleReplacement={handleScheduleReplacement}
+                        onUpdateSessionDate={handleUpdateSessionDate}
+                        onDeleteSession={handleDeleteSession}
+                        // Filter Props
+                        showFuture={showFuture}
+                        setShowFuture={setShowFuture}
+                        selectedCourseId={selectedCourseId}
+                        setSelectedCourseId={setSelectedCourseId}
+                        eventTypeFilter={eventTypeFilter}
+                        setEventTypeFilter={setEventTypeFilter}
+                        isFiltersOpen={isFiltersOpen}
+                        setIsFiltersOpen={setIsFiltersOpen}
+                      />
+                    )}
+                    {activeTab === 'dashboard' && (
+                      <Dashboard sessions={sessions} />
+                    )}
+                    {activeTab === 'courses' && (
+                      <CourseManager courses={courses} onAddCourse={handleAddCourse} onEditCourse={handleEditCourse} onDeleteCourse={handleDeleteCourse} />
+                    )}
+                  </Suspense>
+                </motion.div>
+              </AnimatePresence>
+            )}
           </div>
         </main>
       </div>

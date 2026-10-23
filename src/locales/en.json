@@ -23,7 +23,10 @@
         "close": "Close",
         "date_format": "PPP",
         "english": "English",
-        "hebrew": "עברית"
+        "hebrew": "עברית",
+        "error_loading": "Failed to load data",
+        "session_expired_hint": "Your session may have expired or a network error occurred. Click to reconnect and reload.",
+        "retry": "Reconnect / Reload"
     },
     "reasons": {
         "personal": "Personal Reason",
