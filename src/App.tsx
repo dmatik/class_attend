@@ -481,8 +481,6 @@ function App() {
                   {t('common.retry')}
                 </Button>
               </div>
-            ) : loading ? (
-              <LoadingSpinner />
             ) : (
               <AnimatePresence mode="wait">
                 <motion.div
@@ -494,30 +492,36 @@ function App() {
                   className="h-full"
                 >
                   <Suspense fallback={<LoadingSpinner />}>
-                    {activeTab === 'daily' && (
-                      <DailyView
-                        sessions={sessions}
-                        courses={courses}
-                        onUpdateAttendance={handleUpdateAttendance}
-                        onScheduleReplacement={handleScheduleReplacement}
-                        onUpdateSessionDate={handleUpdateSessionDate}
-                        onDeleteSession={handleDeleteSession}
-                        // Filter Props
-                        showFuture={showFuture}
-                        setShowFuture={setShowFuture}
-                        selectedCourseId={selectedCourseId}
-                        setSelectedCourseId={setSelectedCourseId}
-                        eventTypeFilter={eventTypeFilter}
-                        setEventTypeFilter={setEventTypeFilter}
-                        isFiltersOpen={isFiltersOpen}
-                        setIsFiltersOpen={setIsFiltersOpen}
-                      />
-                    )}
-                    {activeTab === 'dashboard' && (
-                      <Dashboard sessions={sessions} />
-                    )}
-                    {activeTab === 'courses' && (
-                      <CourseManager courses={courses} onAddCourse={handleAddCourse} onEditCourse={handleEditCourse} onDeleteCourse={handleDeleteCourse} />
+                    {loading ? (
+                      <LoadingSpinner />
+                    ) : (
+                      <>
+                        {activeTab === 'daily' && (
+                          <DailyView
+                            sessions={sessions}
+                            courses={courses}
+                            onUpdateAttendance={handleUpdateAttendance}
+                            onScheduleReplacement={handleScheduleReplacement}
+                            onUpdateSessionDate={handleUpdateSessionDate}
+                            onDeleteSession={handleDeleteSession}
+                            // Filter Props
+                            showFuture={showFuture}
+                            setShowFuture={setShowFuture}
+                            selectedCourseId={selectedCourseId}
+                            setSelectedCourseId={setSelectedCourseId}
+                            eventTypeFilter={eventTypeFilter}
+                            setEventTypeFilter={setEventTypeFilter}
+                            isFiltersOpen={isFiltersOpen}
+                            setIsFiltersOpen={setIsFiltersOpen}
+                          />
+                        )}
+                        {activeTab === 'dashboard' && (
+                          <Dashboard sessions={sessions} />
+                        )}
+                        {activeTab === 'courses' && (
+                          <CourseManager courses={courses} onAddCourse={handleAddCourse} onEditCourse={handleEditCourse} onDeleteCourse={handleDeleteCourse} />
+                        )}
+                      </>
                     )}
                   </Suspense>
                 </motion.div>
