@@ -1,5 +1,5 @@
 # Stage 1: The Builder
-FROM node:20-alpine AS builder
+FROM node:22-alpine AS builder
 WORKDIR /app
 COPY package.json package-lock.json ./
 RUN npm ci
@@ -7,7 +7,7 @@ COPY . .
 RUN npm run build
 
 # Stage 2: The Final Production Image
-FROM node:20-alpine
+FROM node:22-alpine
 WORKDIR /app
 
 # optimization: We DO NOT copy the main package.json because it contains frontend deps (React, etc)

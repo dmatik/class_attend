@@ -58,6 +58,8 @@ export default defineConfig({
     globals: true,
     environment: 'happy-dom',
     setupFiles: './src/tests/setup.ts',
+    pool: 'threads',
+    maxWorkers: 1,
     fileParallelism: false,
   },
   build: {
