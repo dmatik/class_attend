@@ -1,14 +1,26 @@
-import { describe, it, expect, beforeAll } from 'vitest'
+import { describe, it, expect, beforeAll, afterAll } from 'vitest'
 import db, { initDb } from '../../server/db.js'
 import bcrypt from 'bcryptjs'
 
 describe('SQLite Database & Auth System', () => {
   beforeAll(() => {
+    // Ensure database and tables are created first
+    initDb()
     // Clean up any leftovers from prior runs
     db.prepare("DELETE FROM users WHERE id IN ('u1', 'test-user-1', 'test-user-2', 'temp-user')").run()
     db.prepare("UPDATE users SET username = 'admin', password_hash = ? WHERE id = 'admin-default'")
       .run(bcrypt.hashSync('admin', 10))
-    initDb()
+  })
+
+  afterAll(() => {
+    try {
+      db.prepare("DELETE FROM users WHERE id IN ('u1', 'test-user-1', 'test-user-2', 'temp-user')").run()
+      if (db.open) {
+        db.close()
+      }
+    } catch {
+      // ignore
+    }
   })
 
   it('initializes database with default admin user (admin / admin)', () => {
