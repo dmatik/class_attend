@@ -515,12 +515,6 @@ function App() {
               label={t('common.admin')}
             />
           )}
-          <MenuButton
-            active={activeTab === 'account'}
-            onClick={() => setActiveTab('account')}
-            icon={UserIcon}
-            label={t('common.account')}
-          />
         </nav>
 
         {/* Desktop Footer Controls */}
@@ -691,12 +685,6 @@ function App() {
               label={t('common.admin_short')}
             />
           )}
-          <MobileNavButton
-            active={activeTab === 'account'}
-            onClick={() => setActiveTab('account')}
-            icon={UserIcon}
-            label={t('common.account')}
-          />
         </div>
       </nav>
       <Toaster />
