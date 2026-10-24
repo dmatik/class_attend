@@ -58,6 +58,7 @@ export default defineConfig({
     globals: true,
     environment: 'happy-dom',
     setupFiles: './src/tests/setup.ts',
+    fileParallelism: false,
   },
   build: {
     chunkSizeWarningLimit: 1000,

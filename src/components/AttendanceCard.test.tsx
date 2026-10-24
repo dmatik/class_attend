@@ -15,7 +15,7 @@ vi.mock('@/components/ui/select', () => ({
             {children}
         </select>
     ),
-    SelectTrigger: ({ children }: any) => <div>{children}</div>,
+    SelectTrigger: () => null,
     SelectValue: () => null,
     SelectContent: ({ children }: any) => <>{children}</>,
     SelectItem: ({ value, children }: any) => <option value={value}>{children}</option>,
@@ -28,8 +28,8 @@ vi.mock('framer-motion', async () => {
         ...actual,
         AnimatePresence: ({ children }: { children: React.ReactNode }) => <>{children}</>,
         motion: {
-            div: ({ children, ...props }: any) => <div {...props}>{children}</div>,
-            button: ({ children, ...props }: any) => <button {...props}>{children}</button>,
+            div: ({ children, layout, whileTap, whileHover, ...props }: any) => <div {...props}>{children}</div>,
+            button: ({ children, layout, whileTap, whileHover, ...props }: any) => <button {...props}>{children}</button>,
         }
     }
 })
