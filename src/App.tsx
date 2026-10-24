@@ -706,7 +706,12 @@ function MenuButton({ active, onClick, icon: Icon, label }: { active: boolean; o
     >
       <Icon className={cn("w-5 h-5", active && "stroke-[2.5px]")} />
       <span>{label}</span>
-      {active && <motion.div layoutId="activeDesk" className="absolute left-0 w-1 h-6 bg-primary rounded-r-full" />}
+      {active && (
+        <motion.div
+          layoutId="activeDesk"
+          className="absolute start-0 ltr:left-0 rtl:right-0 w-1 h-6 bg-primary ltr:rounded-r-full rtl:rounded-l-full"
+        />
+      )}
     </motion.button>
   )
 }
