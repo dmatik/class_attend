@@ -194,8 +194,8 @@
         "password_changed_title": "הסיסמה שונתה בהצלחה",
         "password_changed_desc": "תוכל להשתמש בסיסמה החדשה בהתחברות הבאה",
         "password_change_failed": "שגיאה בשינוי הסיסמה",
-        "passkeys_title": "מפתחות גישה וזיהוי ביומטרי",
-        "passkeys_desc": "התחבר בצורה מהירה ומאובטחת באמצעות טביעת אצבע, זיהוי פנים או מפתח אבטחה",
+        "passkeys_title": "מפתחות גישה",
+        "passkeys_desc": "התחברות מהירה ומאובטחת ללא סיסמה",
         "add_passkey": "הוסף מפתח גישה",
         "adding_passkey": "יוצר מפתח גישה...",
         "no_passkeys": "טרם הוגדרו מפתחות גישה",
@@ -208,8 +208,8 @@
         "passkey_deleted_desc": "מפתח הגישה נמחק בהצלחה",
         "delete_passkey_confirm": "האם אתה בטוח שברצונך להסיר מפתח גישה זה?",
         "passkey_not_supported": "מפתחות גישה אינם נתמכים במכשיר או בדפדפן זה",
-        "created_on": "נוסף ב-{{date}}",
-        "last_used": "שימוש אחרון ב-{{date}}",
+        "created_on": "נוסף: {{date}}",
+        "last_used": "שימוש אחרון: {{date}}",
         "never_used": "טרם נעשה שימוש"
     },
     "admin": {

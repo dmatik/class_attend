@@ -474,19 +474,21 @@ export function AccountPage({ user, token, onUpdateUser, onLogout }: AccountPage
 
         {/* Passkeys Card */}
         <Card className="shadow-sm md:col-span-2">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
-            <div className="space-y-1">
-              <CardTitle className="text-lg flex items-center gap-2">
-                <Fingerprint className="w-5 h-5 text-primary" />
-                {t("account.passkeys_title")}
+          <CardHeader className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-4">
+            <div className="space-y-1 min-w-0">
+              <CardTitle className="text-base sm:text-lg flex items-center gap-2">
+                <Fingerprint className="w-5 h-5 text-primary shrink-0" />
+                <span>{t("account.passkeys_title")}</span>
               </CardTitle>
-              <CardDescription>{t("account.passkeys_desc")}</CardDescription>
+              <CardDescription className="text-xs sm:text-sm">
+                {t("account.passkeys_desc")}
+              </CardDescription>
             </div>
             <Button
               type="button"
               size="sm"
               onClick={handleStartAddPasskey}
-              className="flex items-center gap-1.5 shrink-0"
+              className="w-full sm:w-auto flex items-center justify-center gap-1.5 shrink-0 h-9"
             >
               <Plus className="w-4 h-4" />
               <span>{t("account.add_passkey")}</span>
@@ -498,9 +500,9 @@ export function AccountPage({ user, token, onUpdateUser, onLogout }: AccountPage
                 <Loader2 className="w-6 h-6 animate-spin" />
               </div>
             ) : passkeys.length === 0 ? (
-              <div className="text-center py-8 px-4 border border-dashed rounded-xl bg-muted/20">
-                <div className="w-12 h-12 rounded-full bg-primary/10 text-primary flex items-center justify-center mx-auto mb-3">
-                  <Fingerprint className="w-6 h-6" />
+              <div className="text-center py-6 sm:py-8 px-4 border border-dashed rounded-xl bg-muted/20">
+                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-primary/10 text-primary flex items-center justify-center mx-auto mb-2 sm:mb-3">
+                  <Fingerprint className="w-5 h-5 sm:w-6 sm:h-6" />
                 </div>
                 <p className="font-semibold text-sm">{t("account.no_passkeys")}</p>
                 <p className="text-xs text-muted-foreground mt-1 max-w-sm mx-auto">
@@ -511,7 +513,7 @@ export function AccountPage({ user, token, onUpdateUser, onLogout }: AccountPage
                   variant="outline"
                   size="sm"
                   onClick={handleStartAddPasskey}
-                  className="mt-4 text-xs"
+                  className="mt-3 sm:mt-4 text-xs"
                 >
                   <Plus className="w-3.5 h-3.5 me-1.5" />
                   {t("account.add_passkey")}
@@ -528,25 +530,25 @@ export function AccountPage({ user, token, onUpdateUser, onLogout }: AccountPage
                       : Fingerprint
 
                   return (
-                    <div key={p.id} className="p-3.5 flex items-center justify-between gap-3 hover:bg-muted/30 transition-colors">
-                      <div className="flex items-center gap-3 min-w-0">
+                    <div key={p.id} className="p-3 sm:p-3.5 flex items-center justify-between gap-2.5 sm:gap-3 hover:bg-muted/30 transition-colors">
+                      <div className="flex items-center gap-2.5 sm:gap-3 min-w-0 flex-1">
                         <div className="w-9 h-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
-                          <IconComponent className="w-5 h-5" />
+                          <IconComponent className="w-4 h-4 sm:w-5 sm:h-5" />
                         </div>
-                        <div className="min-w-0">
-                          <div className="text-sm font-semibold truncate flex items-center gap-2">
-                            <span>{p.deviceName}</span>
+                        <div className="min-w-0 flex-1">
+                          <div className="text-sm font-semibold truncate flex items-center gap-1.5">
+                            <span className="truncate">{p.deviceName}</span>
                             {p.backedUp ? (
-                              <span className="text-[10px] uppercase font-bold px-1.5 py-0.5 rounded bg-muted text-muted-foreground">
+                              <span className="text-[10px] uppercase font-bold px-1.5 py-0.5 rounded bg-muted text-muted-foreground shrink-0">
                                 Synced
                               </span>
                             ) : null}
                           </div>
-                          <div className="text-xs text-muted-foreground flex items-center gap-2 mt-0.5">
+                          <div className="text-[11px] sm:text-xs text-muted-foreground flex flex-wrap items-center gap-x-2 gap-y-0.5 mt-0.5">
                             <span>{t("account.created_on", { date: new Date(p.createdAt).toLocaleDateString() })}</span>
                             {p.lastUsedAt && (
                               <>
-                                <span>•</span>
+                                <span className="opacity-40">•</span>
                                 <span>{t("account.last_used", { date: new Date(p.lastUsedAt).toLocaleDateString() })}</span>
                               </>
                             )}
