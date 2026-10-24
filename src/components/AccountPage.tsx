@@ -162,7 +162,7 @@ export function AccountPage({ user, token, onUpdateUser, onLogout }: AccountPage
       {/* Page Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b pb-4">
         <div>
-          <h2 className="text-2xl font-bold tracking-tight">{t("account.title")}</h2>
+          <h2 className="text-xl font-bold">{t("account.title")}</h2>
           <p className="text-muted-foreground text-sm">{t("account.subtitle")}</p>
         </div>
         <Button variant="outline" onClick={onLogout} className="text-destructive hover:text-destructive flex items-center gap-2">
@@ -240,7 +240,7 @@ export function AccountPage({ user, token, onUpdateUser, onLogout }: AccountPage
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1.5">
                   <Label className="text-xs text-muted-foreground">{t("auth.username")}</Label>
-                  <div className="font-mono text-sm font-semibold bg-muted/50 p-2 rounded-md border">
+                  <div className="text-sm font-semibold bg-muted/50 p-2 rounded-md border text-foreground">
                     @{user.username}
                   </div>
                 </div>

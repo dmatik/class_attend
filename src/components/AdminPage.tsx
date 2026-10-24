@@ -308,8 +308,8 @@ export function AdminPage({ currentUser, token }: AdminPageProps) {
       {/* Page Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b pb-4">
         <div>
-          <h2 className="text-2xl font-bold tracking-tight flex items-center gap-2">
-            <Shield className="w-6 h-6 text-amber-500" />
+          <h2 className="text-xl font-bold flex items-center gap-2">
+            <Shield className="w-5 h-5 text-amber-500" />
             {t("admin.title")}
           </h2>
           <p className="text-muted-foreground text-sm">{t("admin.subtitle")}</p>

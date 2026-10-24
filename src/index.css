@@ -174,10 +174,21 @@
 @layer base {
   * {
     @apply border-border;
+    font-family: 'Heebo', 'Assistant', sans-serif;
   }
 
+  html,
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground font-sans;
+    font-family: 'Heebo', 'Assistant', sans-serif;
+  }
+
+  button,
+  input,
+  optgroup,
+  select,
+  textarea {
+    font-family: 'Heebo', 'Assistant', sans-serif;
   }
 
   input,
