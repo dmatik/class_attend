@@ -13,6 +13,7 @@
         "delete": "מחק",
         "edit": "ערוך",
         "save": "שמור",
+        "filter": "סינון",
         "app_title": "ניהול חוגים",
         "no_data_to_display": "אין נתונים להצגה",
         "select_date": "בחר תאריך",
@@ -61,6 +62,7 @@
     },
     "daily_view": {
         "title": "יומן שיעורים",
+        "subtitle": "מעקב וסימון נוכחות",
         "filter_modal": {
             "title": "סינון ותצוגה",
             "dialog_description": "הגדר סינונים לצפייה בשיעורים ספציפיים.",
@@ -85,6 +87,8 @@
         }
     },
     "dashboard": {
+        "title": "לוח בקרה",
+        "subtitle": "סטטיסטיקות וניצול מנוי",
         "total": "סה״כ",
         "attended": "נכחתי",
         "absent": "החסרתי",
@@ -94,6 +98,7 @@
     },
     "management": {
         "title": "החוגים שלי",
+        "subtitle": "הגדרת חוגים ומערכת שעות",
         "add_course": "הוספת חוג חדש",
         "edit_course": "עריכת חוג",
         "course_name": "שם החוג",
@@ -156,7 +161,7 @@
     },
     "account": {
         "title": "פרטי חשבון",
-        "subtitle": "ניהול הפרטים האישיים ושינוי סיסמה",
+        "subtitle": "פרטים אישיים וסיסמה",
         "personal_info": "פרטים אישיים",
         "personal_info_desc": "עדכן את שמך ותמונת הפרופיל שלך",
         "first_name": "שם פרטי",
@@ -189,8 +194,8 @@
     },
     "admin": {
         "title": "ניהול משתמשים",
-        "subtitle": "יצירה, עריכה וניהול הרשאות משתמשים במערכת",
-        "add_user_button": "הוסף משתמש חדש",
+        "subtitle": "ניהול משתמשים והרשאות",
+        "add_user_button": "הוסף משתמש",
         "search_placeholder": "חיפוש לפי שם או שם משתמש...",
         "total_users": "סך הכל משתמשים: {{count}}",
         "no_users": "לא נמצאו משתמשים במערכת",

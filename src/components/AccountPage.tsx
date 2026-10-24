@@ -160,14 +160,19 @@ export function AccountPage({ user, token, onUpdateUser, onLogout }: AccountPage
   return (
     <div className="h-full overflow-y-auto p-4 md:p-8 max-w-4xl mx-auto space-y-6 pb-28">
       {/* Page Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b pb-4">
-        <div>
-          <h2 className="text-xl font-bold">{t("account.title")}</h2>
-          <p className="text-muted-foreground text-sm">{t("account.subtitle")}</p>
+      <div className="flex flex-row justify-between items-center gap-3 border-b pb-3 sm:pb-4">
+        <div className="min-w-0 flex-1">
+          <h2 className="text-xl font-bold truncate">{t("account.title")}</h2>
+          <p className="text-muted-foreground text-xs truncate">{t("account.subtitle")}</p>
         </div>
-        <Button variant="outline" onClick={onLogout} className="text-destructive hover:text-destructive flex items-center gap-2">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={onLogout}
+          className="text-destructive hover:text-destructive flex items-center gap-1.5 shrink-0 h-9 px-3"
+        >
           <LogOut className="w-4 h-4" />
-          {t("auth.logout")}
+          <span>{t("auth.logout")}</span>
         </Button>
       </div>
 

@@ -306,17 +306,17 @@ export function AdminPage({ currentUser, token }: AdminPageProps) {
   return (
     <div className="h-full overflow-y-auto p-4 md:p-8 max-w-5xl mx-auto space-y-6 pb-28">
       {/* Page Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b pb-4">
-        <div>
+      <div className="flex flex-row justify-between items-center gap-3 border-b pb-3 sm:pb-4">
+        <div className="min-w-0 flex-1">
           <h2 className="text-xl font-bold flex items-center gap-2">
-            <Shield className="w-5 h-5 text-amber-500" />
-            {t("admin.title")}
+            <Shield className="w-5 h-5 text-amber-500 shrink-0" />
+            <span className="truncate">{t("admin.title")}</span>
           </h2>
-          <p className="text-muted-foreground text-sm">{t("admin.subtitle")}</p>
+          <p className="text-muted-foreground text-xs truncate">{t("admin.subtitle")}</p>
         </div>
-        <Button onClick={() => setIsCreateOpen(true)} className="flex items-center gap-2">
+        <Button onClick={() => setIsCreateOpen(true)} size="sm" className="flex items-center gap-1.5 shrink-0 h-9 px-3">
           <UserPlus className="w-4 h-4" />
-          {t("admin.add_user_button")}
+          <span>{t("admin.add_user_button")}</span>
         </Button>
       </div>
 
@@ -502,10 +502,10 @@ export function AdminPage({ currentUser, token }: AdminPageProps) {
               </Select>
             </div>
             <DialogFooter className="pt-2">
-              <Button type="button" variant="outline" onClick={() => setIsCreateOpen(false)}>
+              <Button type="button" variant="outline" onClick={() => setIsCreateOpen(false)} className="flex-1 sm:flex-none">
                 {t("common.cancel")}
               </Button>
-              <Button type="submit" disabled={isSubmittingCreate}>
+              <Button type="submit" disabled={isSubmittingCreate} className="flex-1 sm:flex-none">
                 {isSubmittingCreate ? <Loader2 className="w-4 h-4 animate-spin me-2" /> : null}
                 {t("admin.create_button")}
               </Button>
@@ -555,10 +555,10 @@ export function AdminPage({ currentUser, token }: AdminPageProps) {
               </Select>
             </div>
             <DialogFooter className="pt-2">
-              <Button type="button" variant="outline" onClick={() => setIsEditOpen(false)}>
+              <Button type="button" variant="outline" onClick={() => setIsEditOpen(false)} className="flex-1 sm:flex-none">
                 {t("common.cancel")}
               </Button>
-              <Button type="submit" disabled={isSubmittingEdit}>
+              <Button type="submit" disabled={isSubmittingEdit} className="flex-1 sm:flex-none">
                 {isSubmittingEdit ? <Loader2 className="w-4 h-4 animate-spin me-2" /> : null}
                 {t("common.save")}
               </Button>
@@ -589,10 +589,10 @@ export function AdminPage({ currentUser, token }: AdminPageProps) {
               />
             </div>
             <DialogFooter className="pt-2">
-              <Button type="button" variant="outline" onClick={() => setIsPasswordOpen(false)}>
+              <Button type="button" variant="outline" onClick={() => setIsPasswordOpen(false)} className="flex-1 sm:flex-none">
                 {t("common.cancel")}
               </Button>
-              <Button type="submit" disabled={isSubmittingPassword}>
+              <Button type="submit" disabled={isSubmittingPassword} className="flex-1 sm:flex-none">
                 {isSubmittingPassword ? <Loader2 className="w-4 h-4 animate-spin me-2" /> : null}
                 {t("admin.confirm_reset_password")}
               </Button>
@@ -614,8 +614,8 @@ export function AdminPage({ currentUser, token }: AdminPageProps) {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDeleteUser} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+            <AlertDialogCancel className="flex-1 sm:flex-none">{t("common.cancel")}</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteUser} className="bg-destructive text-destructive-foreground hover:bg-destructive/90 flex-1 sm:flex-none">
               {t("common.delete")}
             </AlertDialogAction>
           </AlertDialogFooter>

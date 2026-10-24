@@ -13,6 +13,7 @@
         "delete": "Delete",
         "edit": "Edit",
         "save": "Save",
+        "filter": "Filter",
         "app_title": "Class Attend",
         "no_data_to_display": "No data to display",
         "select_date": "Select date",
@@ -61,6 +62,7 @@
     },
     "daily_view": {
         "title": "Lessons Calendar",
+        "subtitle": "Track and mark attendance",
         "filter_modal": {
             "title": "Filter & View",
             "dialog_description": "Set filters to view specific lessons.",
@@ -85,6 +87,8 @@
         }
     },
     "dashboard": {
+        "title": "Dashboard",
+        "subtitle": "Statistics & subscription overview",
         "total": "Total",
         "attended": "Attended",
         "absent": "Absent",
@@ -94,6 +98,7 @@
     },
     "management": {
         "title": "My Courses",
+        "subtitle": "Manage courses and schedules",
         "add_course": "Add Course",
         "edit_course": "Edit Course",
         "course_name": "Course Name",
@@ -156,7 +161,7 @@
     },
     "account": {
         "title": "Account Settings",
-        "subtitle": "Manage your profile details and change password",
+        "subtitle": "Profile details & password",
         "personal_info": "Personal Information",
         "personal_info_desc": "Update your name and profile picture",
         "first_name": "First Name",
@@ -189,8 +194,8 @@
     },
     "admin": {
         "title": "User Management",
-        "subtitle": "Create, edit, and manage user roles and permissions",
-        "add_user_button": "Add New User",
+        "subtitle": "User roles and permissions",
+        "add_user_button": "Add User",
         "search_placeholder": "Search by name or username...",
         "total_users": "Total users: {{count}}",
         "no_users": "No users found in system",

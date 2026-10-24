@@ -2,7 +2,7 @@ import * as React from "react"
 import { useTranslation } from "react-i18next"
 import { format, parseISO } from "date-fns"
 import { DatePicker } from "@/components/ui/date-picker"
-import { Trash2, Edit } from "lucide-react"
+import { Trash2, Edit, Plus, GraduationCap } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -143,10 +143,26 @@ export function CoursesPage({ courses, onAddCourse, onEditCourse, onDeleteCourse
 
     return (
         <div className="h-full overflow-y-auto pb-24 space-y-6 p-4 md:p-8">
+            {/* Page Header */}
+            <div className="flex flex-row justify-between items-center gap-3 border-b pb-3 sm:pb-4">
+                <div className="min-w-0 flex-1">
+                    <h2 className="text-xl font-bold flex items-center gap-2">
+                        <GraduationCap className="w-5 h-5 text-primary shrink-0" />
+                        <span className="truncate">{t('management.title')}</span>
+                    </h2>
+                    <p className="text-muted-foreground text-xs truncate">{t('management.subtitle')}</p>
+                </div>
+                <Button onClick={() => setIsDialogOpen(true)} size="sm" className="flex items-center gap-1.5 shrink-0 h-9 px-3">
+                    <Plus className="w-4 h-4" />
+                    <span>{t('management.add_course_button')}</span>
+                </Button>
+            </div>
+
             <div className="space-y-4">
-                <h3 className="font-semibold text-lg px-2">{t('management.title')}</h3>
                 {courses.length === 0 ? (
-                    <p className="text-muted-foreground text-center py-8">{t('management.no_courses')}</p>
+                    <div className="text-center py-12 text-muted-foreground">
+                        <p>{t('management.no_courses')}</p>
+                    </div>
                 ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                         {courses.map(course => (
@@ -172,13 +188,6 @@ export function CoursesPage({ courses, onAddCourse, onEditCourse, onDeleteCourse
                     </div>
                 )}
             </div>
-
-            <Button
-                onClick={() => setIsDialogOpen(true)}
-                className="w-full md:w-auto text-base font-bold shadow-lg shadow-primary/20 gap-2 bg-primary text-primary-foreground hover:bg-primary/90"
-            >
-                {t('management.add_course_button')}
-            </Button>
 
             <Dialog open={isDialogOpen} onOpenChange={handleDialogClose}>
                 <DialogContent className="w-full h-full max-w-none max-h-none rounded-none p-4 gap-6 flex flex-col justify-start md:grid md:w-auto md:h-auto md:max-w-md md:max-h-[90vh] md:rounded-lg md:p-6 md:gap-4 overflow-y-auto">
@@ -287,8 +296,8 @@ export function CoursesPage({ courses, onAddCourse, onEditCourse, onDeleteCourse
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
-                        <AlertDialogCancel onClick={() => setCourseToDelete(null)}>{t('common.cancel')}</AlertDialogCancel>
-                        <AlertDialogAction onClick={confirmDelete}>{t('common.delete')}</AlertDialogAction>
+                        <AlertDialogCancel onClick={() => setCourseToDelete(null)} className="flex-1 sm:flex-none">{t('common.cancel')}</AlertDialogCancel>
+                        <AlertDialogAction onClick={confirmDelete} className="flex-1 sm:flex-none">{t('common.delete')}</AlertDialogAction>
                     </AlertDialogFooter>
                 </AlertDialogContent>
             </AlertDialog>

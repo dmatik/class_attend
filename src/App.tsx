@@ -4,7 +4,6 @@ import {
   Calendar as CalendarIcon,
   LayoutDashboard,
   GraduationCap,
-  Filter,
   Loader2,
   AlertCircle,
   RefreshCw,
@@ -460,31 +459,6 @@ function App() {
               {currentUser.firstName ? `${currentUser.firstName} ${currentUser.lastName}` : `@${currentUser.username}`}
             </div>
           </div>
-        </div>
-
-        {/* Desktop Sidebar Header */}
-        <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-card/50">
-          <h3 className="font-semibold text-sm">
-            {activeTab === 'daily' ? t('daily_view.title') :
-              activeTab === 'dashboard' ? t('common.dashboard') :
-                activeTab === 'courses' ? t('common.courses') :
-                  activeTab === 'admin' ? t('common.admin') :
-                    t('common.account')}
-          </h3>
-          <button
-            onClick={() => setIsFiltersOpen(true)}
-            className={cn(
-              "hover:bg-accent rounded-md p-1 relative transition-colors",
-              activeTab !== 'daily' && "invisible pointer-events-none opacity-0"
-            )}
-          >
-            <div className="relative">
-              <Filter className="w-4 h-4" />
-              {(eventTypeFilter !== 'all' || selectedCourseId !== 'all' || showFuture) && (
-                <span className="absolute -top-1 -right-1 w-2 h-2 bg-blue-500 rounded-full border-2 border-background" />
-              )}
-            </div>
-          </button>
         </div>
 
         {/* Desktop Nav Items */}
