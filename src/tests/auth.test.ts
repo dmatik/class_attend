@@ -14,44 +14,23 @@ describe('SQLite Database & Auth System', () => {
   it('initializes database with default admin user (admin / admin)', () => {
     const adminUser = db.prepare('SELECT * FROM users WHERE role = ?').get('admin') as any
     expect(adminUser).toBeDefined()
+    expect(adminUser.username).toBe('admin')
     expect(adminUser.role).toBe('admin')
+    expect(bcrypt.compareSync('admin', adminUser.password_hash)).toBe(true)
   })
 
-  it('updates default admin credentials when USERNAME or PASSWORD env vars are provided', () => {
-    process.env.USERNAME = 'customadmin'
-    process.env.PASSWORD = 'customsecret123'
+  it('allows updating admin credentials in database', () => {
+    const newHash = bcrypt.hashSync('newSecretPassword123', 10)
+    db.prepare("UPDATE users SET username = 'admin_updated', password_hash = ? WHERE id = 'admin-default'")
+      .run(newHash)
 
-    initDb()
+    const updatedUser = db.prepare('SELECT * FROM users WHERE id = ?').get('admin-default') as any
+    expect(updatedUser.username).toBe('admin_updated')
+    expect(bcrypt.compareSync('newSecretPassword123', updatedUser.password_hash)).toBe(true)
 
-    const adminUser = db.prepare('SELECT * FROM users WHERE id = ?').get('admin-default') as any
-    expect(adminUser).toBeDefined()
-    expect(adminUser.username).toBe('customadmin')
-    expect(bcrypt.compareSync('customsecret123', adminUser.password_hash)).toBe(true)
-
-    // Clean up env vars and restore admin
-    delete process.env.USERNAME
-    delete process.env.PASSWORD
-    process.env.USERNAME = 'admin'
-    process.env.PASSWORD = 'admin'
-    initDb()
-    delete process.env.USERNAME
-    delete process.env.PASSWORD
-  })
-
-  it('defaults to admin / admin in code if env vars are empty or undefined', () => {
-    delete process.env.USERNAME
-    delete process.env.PASSWORD
-    process.env.USERNAME = ''
-    process.env.PASSWORD = ''
-
-    const defaultUsername = (process.env.USERNAME && process.env.USERNAME.trim()) ? process.env.USERNAME.trim() : 'admin'
-    const defaultPassword = (process.env.PASSWORD && process.env.PASSWORD.trim()) ? process.env.PASSWORD.trim() : 'admin'
-
-    expect(defaultUsername).toBe('admin')
-    expect(defaultPassword).toBe('admin')
-
-    delete process.env.USERNAME
-    delete process.env.PASSWORD
+    // Restore to admin / admin
+    db.prepare("UPDATE users SET username = 'admin', password_hash = ? WHERE id = 'admin-default'")
+      .run(bcrypt.hashSync('admin', 10))
   })
 
   it('enforces unique usernames (case-insensitive)', () => {

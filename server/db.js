@@ -70,14 +70,10 @@ export function initDb() {
   const userCount = countStmt.get().count;
 
   let adminUserId = 'admin-default';
-  const hasCustomUser = Boolean(process.env.USERNAME && process.env.USERNAME.trim());
-  const hasCustomPass = Boolean(process.env.PASSWORD && process.env.PASSWORD.trim());
-  const defaultUsername = hasCustomUser ? process.env.USERNAME.trim() : 'admin';
-  const defaultPassword = hasCustomPass ? process.env.PASSWORD.trim() : 'admin';
 
   if (userCount === 0) {
     const salt = bcrypt.genSaltSync(10);
-    const passwordHash = bcrypt.hashSync(defaultPassword, salt);
+    const passwordHash = bcrypt.hashSync('admin', salt);
     const now = new Date().toISOString();
 
     const insertAdmin = db.prepare(`
@@ -87,7 +83,7 @@ export function initDb() {
 
     insertAdmin.run(
       adminUserId,
-      defaultUsername,
+      'admin',
       passwordHash,
       'מנהל',
       'מערכת',
@@ -96,22 +92,8 @@ export function initDb() {
       now,
       now
     );
-    console.log(`Seeded default admin user: "${defaultUsername}"`);
+    console.log('Seeded default admin user: "admin"');
   } else {
-    // If env vars are explicitly provided, update default admin accordingly
-    if (hasCustomUser || hasCustomPass) {
-      const defaultAdmin = db.prepare('SELECT * FROM users WHERE id = ?').get('admin-default');
-      if (defaultAdmin) {
-        const newUsername = hasCustomUser ? process.env.USERNAME.trim() : defaultAdmin.username;
-        const newPasswordHash = hasCustomPass ? bcrypt.hashSync(process.env.PASSWORD.trim(), 10) : defaultAdmin.password_hash;
-        const now = new Date().toISOString();
-
-        db.prepare('UPDATE users SET username = ?, password_hash = ?, updated_at = ? WHERE id = ?')
-          .run(newUsername, newPasswordHash, now, 'admin-default');
-        console.log(`Updated default admin credentials from environment: username="${newUsername}"`);
-      }
-    }
-
     // Find existing admin id if available
     const adminUser = db.prepare('SELECT id FROM users WHERE role = ? LIMIT 1').get('admin');
     if (adminUser) {
