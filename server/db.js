@@ -1,0 +1,174 @@
+import Database from 'better-sqlite3';
+import path from 'path';
+import fs from 'fs';
+import bcrypt from 'bcryptjs';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+const DATA_DIR = path.join(__dirname, '../data');
+const DB_FILE = path.join(DATA_DIR, 'class_attend.db');
+const LEGACY_JSON_FILE = path.join(DATA_DIR, 'db.json');
+
+// Ensure data directory exists
+if (!fs.existsSync(DATA_DIR)) {
+  fs.mkdirSync(DATA_DIR, { recursive: true });
+}
+
+// Open SQLite database
+const db = new Database(DB_FILE);
+db.pragma('journal_mode = WAL');
+db.pragma('foreign_keys = ON');
+
+// Initialize schema
+export function initDb() {
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS users (
+      id TEXT PRIMARY KEY,
+      username TEXT UNIQUE NOT NULL COLLATE NOCASE,
+      password_hash TEXT NOT NULL,
+      first_name TEXT DEFAULT '',
+      last_name TEXT DEFAULT '',
+      avatar TEXT DEFAULT '',
+      role TEXT NOT NULL CHECK(role IN ('admin', 'user')),
+      created_at TEXT NOT NULL,
+      updated_at TEXT NOT NULL
+    );
+
+    CREATE TABLE IF NOT EXISTS courses (
+      id TEXT PRIMARY KEY,
+      user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      name TEXT NOT NULL,
+      start_date TEXT NOT NULL,
+      end_date TEXT,
+      days_of_week TEXT NOT NULL,
+      total_lessons INTEGER,
+      created_at TEXT NOT NULL
+    );
+
+    CREATE TABLE IF NOT EXISTS sessions (
+      id TEXT PRIMARY KEY,
+      user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      course_id TEXT NOT NULL REFERENCES courses(id) ON DELETE CASCADE,
+      course_name TEXT NOT NULL,
+      date TEXT NOT NULL,
+      attendance_status TEXT,
+      attendance_reason TEXT,
+      replacement_session_id TEXT,
+      is_replacement INTEGER DEFAULT 0,
+      created_at TEXT NOT NULL
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_courses_user ON courses(user_id);
+    CREATE INDEX IF NOT EXISTS idx_sessions_user ON sessions(user_id);
+    CREATE INDEX IF NOT EXISTS idx_sessions_course ON sessions(course_id);
+  `);
+
+  // 1. Seed default admin if no users exist
+  const countStmt = db.prepare('SELECT COUNT(*) as count FROM users');
+  const userCount = countStmt.get().count;
+
+  let adminUserId = 'admin-default';
+
+  if (userCount === 0) {
+    const salt = bcrypt.genSaltSync(10);
+    const passwordHash = bcrypt.hashSync('admin', salt);
+    const now = new Date().toISOString();
+
+    const insertAdmin = db.prepare(`
+      INSERT INTO users (id, username, password_hash, first_name, last_name, avatar, role, created_at, updated_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `);
+
+    insertAdmin.run(
+      adminUserId,
+      'admin',
+      passwordHash,
+      'מנהל',
+      'מערכת',
+      '',
+      'admin',
+      now,
+      now
+    );
+    console.log('Seeded default admin user: "admin"');
+  } else {
+    // Find existing admin id if available
+    const adminUser = db.prepare('SELECT id FROM users WHERE role = ? LIMIT 1').get('admin');
+    if (adminUser) {
+      adminUserId = adminUser.id;
+    }
+  }
+
+  // 2. Migrate existing db.json data if present
+  if (fs.existsSync(LEGACY_JSON_FILE)) {
+    try {
+      const raw = fs.readFileSync(LEGACY_JSON_FILE, 'utf-8');
+      const data = JSON.parse(raw);
+      const courses = data.courses || [];
+      const sessions = data.sessions || [];
+
+      // Check if admin already has courses to prevent duplicate migration
+      const existingCoursesCount = db.prepare('SELECT COUNT(*) as count FROM courses WHERE user_id = ?').get(adminUserId).count;
+
+      if (existingCoursesCount === 0 && (courses.length > 0 || sessions.length > 0)) {
+        console.log(`Migrating ${courses.length} courses and ${sessions.length} sessions from db.json to SQLite...`);
+
+        const insertCourse = db.prepare(`
+          INSERT OR REPLACE INTO courses (id, user_id, name, start_date, end_date, days_of_week, total_lessons, created_at)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        `);
+
+        const insertSession = db.prepare(`
+          INSERT OR REPLACE INTO sessions (id, user_id, course_id, course_name, date, attendance_status, attendance_reason, replacement_session_id, is_replacement, created_at)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        `);
+
+        const migrationTx = db.transaction(() => {
+          const now = new Date().toISOString();
+          for (const c of courses) {
+            insertCourse.run(
+              c.id,
+              adminUserId,
+              c.name,
+              c.startDate,
+              c.endDate || null,
+              JSON.stringify(c.daysOfWeek || []),
+              c.totalLessons || null,
+              now
+            );
+          }
+
+          for (const s of sessions) {
+            insertSession.run(
+              s.id,
+              adminUserId,
+              s.courseId,
+              s.courseName,
+              s.date,
+              s.attendance?.status || null,
+              s.attendance?.reason || null,
+              s.replacementSessionId || null,
+              s.isReplacement ? 1 : 0,
+              now
+            );
+          }
+        });
+
+        migrationTx();
+        console.log('Migration completed successfully.');
+
+        // Rename legacy file to db.json.migrated
+        const backupFile = path.join(DATA_DIR, 'db.json.migrated');
+        fs.renameSync(LEGACY_JSON_FILE, backupFile);
+        console.log(`Renamed legacy db.json to ${backupFile}`);
+      }
+    } catch (err) {
+      console.error('Error migrating data from db.json:', err);
+    }
+  }
+}
+
+export default db;
+

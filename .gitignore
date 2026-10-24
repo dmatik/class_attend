@@ -24,6 +24,7 @@ dist-ssr
 
 # Data
 data/
+.env
 
 # Docker
 *.tar

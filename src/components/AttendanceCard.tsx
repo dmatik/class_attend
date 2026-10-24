@@ -332,11 +332,21 @@ export function AttendanceCard({ session, sessions, isNext, onUpdate, onSchedule
                             </AlertDialogDescription>
                         </AlertDialogHeader>
                         <AlertDialogFooter>
-                            <AlertDialogCancel onClick={() => {
-                                setPendingStatusChange(null)
-                                setShowDeleteReplacementAlert(false)
-                            }}>{t('common.cancel')}</AlertDialogCancel>
-                            <AlertDialogAction onClick={confirmDeleteReplacement} className="bg-red-600 hover:bg-red-700 text-white">{t('common.confirm')}</AlertDialogAction>
+                            <AlertDialogCancel
+                                onClick={() => {
+                                    setPendingStatusChange(null)
+                                    setShowDeleteReplacementAlert(false)
+                                }}
+                                className="flex-1 sm:flex-none"
+                            >
+                                {t('common.cancel')}
+                            </AlertDialogCancel>
+                            <AlertDialogAction
+                                onClick={confirmDeleteReplacement}
+                                className="bg-red-600 hover:bg-red-700 text-white flex-1 sm:flex-none"
+                            >
+                                {t('common.confirm')}
+                            </AlertDialogAction>
                         </AlertDialogFooter>
                     </AlertDialogContent>
                 </AlertDialog>

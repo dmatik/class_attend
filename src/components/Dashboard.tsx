@@ -1,6 +1,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { useTranslation } from "react-i18next"
+import { LayoutDashboard } from "lucide-react"
 import type { Session } from "@/types"
 
 interface DashboardProps {
@@ -17,17 +18,26 @@ export function Dashboard({ sessions }: DashboardProps) {
         return acc
     }, {} as Record<string, Session[]>)
 
-    if (Object.keys(grouped).length === 0) {
-        return (
-            <div className="text-center text-muted-foreground py-10">
-                {t('common.no_data_to_display')}
-            </div>
-        )
-    }
-
     return (
-        <div className="h-full overflow-y-auto space-y-8 pb-24 p-4 md:p-8">
-            {Object.entries(grouped).map(([name, courseSessions]) => {
+        <div className="h-full overflow-y-auto space-y-6 pb-24 p-4 md:p-8">
+            {/* Page Header */}
+            <div className="flex flex-row justify-between items-center gap-3 border-b pb-3 sm:pb-4">
+                <div className="min-w-0 flex-1">
+                    <h2 className="text-xl font-bold flex items-center gap-2">
+                        <LayoutDashboard className="w-5 h-5 text-primary shrink-0" />
+                        <span className="truncate">{t('common.dashboard')}</span>
+                    </h2>
+                    <p className="text-muted-foreground text-xs truncate">{t('dashboard.subtitle')}</p>
+                </div>
+            </div>
+
+            {Object.keys(grouped).length === 0 ? (
+                <div className="text-center text-muted-foreground py-12">
+                    {t('common.no_data_to_display')}
+                </div>
+            ) : (
+                <div className="space-y-8">
+                    {Object.entries(grouped).map(([name, courseSessions]) => {
                 const total = courseSessions.length
                 const replacementsCount = courseSessions.filter(s => s.isReplacement).length
                 const regularCount = total - replacementsCount
@@ -118,6 +128,8 @@ export function Dashboard({ sessions }: DashboardProps) {
                     </div>
                 )
             })}
+                </div>
+            )}
         </div>
     )
 }

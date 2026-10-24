@@ -25,3 +25,16 @@ export interface Session {
     replacementForSessionId?: string // If this is a replacement, ID of the original missed session
     replacementSessionId?: string // If this session was missed, ID of the replacement session
 }
+
+export type UserRole = 'admin' | 'user';
+
+export interface User {
+    id: string;
+    username: string;
+    firstName: string;
+    lastName: string;
+    avatar?: string;
+    role: UserRole;
+    createdAt?: string;
+    updatedAt?: string;
+}

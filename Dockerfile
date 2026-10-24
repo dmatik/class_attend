@@ -11,8 +11,10 @@ FROM node:20-alpine
 WORKDIR /app
 
 # optimization: We DO NOT copy the main package.json because it contains frontend deps (React, etc)
-# We only need 'express' and 'cors' for the server.
-RUN npm install express cors
+# We only need server dependencies: express, cors, better-sqlite3, bcryptjs, jsonwebtoken
+RUN apk add --no-cache python3 make g++ && \
+    npm install express cors better-sqlite3 bcryptjs jsonwebtoken && \
+    apk del python3 make g++
 
 # We need to ensure Node treats .js files as modules (ESM)
 # So we create a minimal package.json just for the runtime

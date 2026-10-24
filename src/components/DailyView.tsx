@@ -102,29 +102,32 @@ export function DailyView({
         .sort((a, b) => b.date.localeCompare(a.date))
 
     return (
-        <div className="h-full flex flex-col bg-background">
-            {/* Header */}
-            <header className="flex-none relative z-20 flex items-center justify-between px-3 py-1 bg-background border-b border-border shadow-[0_1px_2px_0_rgba(0,0,0,0.05)] md:hidden">
-                <div className="flex items-center gap-2">
-                    <h3 className="font-semibold text-lg px-2">{t('daily_view.title')}</h3>
+        <div className="h-full overflow-y-auto p-4 md:p-8 pb-24 space-y-6 bg-background">
+            {/* Page Header */}
+            <div className="flex flex-row justify-between items-center gap-3 border-b pb-3 sm:pb-4">
+                <div className="min-w-0 flex-1">
+                    <h2 className="text-xl font-bold flex items-center gap-2">
+                        <CalendarIcon className="w-5 h-5 text-primary shrink-0" />
+                        <span className="truncate">{t('daily_view.title')}</span>
+                    </h2>
+                    <p className="text-muted-foreground text-xs truncate">{t('daily_view.subtitle')}</p>
                 </div>
                 <Button
-                    variant="ghost"
-                    size="icon"
+                    variant="outline"
+                    size="sm"
                     onClick={() => setIsFiltersOpen(true)}
-                    className="hover:bg-accent/50 transition-colors relative h-8 w-8"
+                    className="flex items-center gap-1.5 relative shrink-0 h-9 px-3"
                 >
-                    <div className="relative">
-                        <Filter className="w-5 h-5" />
-                        {(eventTypeFilter !== 'all' || selectedCourseId !== 'all' || showFuture) && (
-                            <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-blue-500 rounded-full border-2 border-background" />
-                        )}
-                    </div>
+                    <Filter className="w-4 h-4" />
+                    <span>{t('common.filter')}</span>
+                    {(eventTypeFilter !== 'all' || selectedCourseId !== 'all' || showFuture) && (
+                        <span className="w-2 h-2 rounded-full bg-blue-500" />
+                    )}
                 </Button>
-            </header>
+            </div>
 
             {/* Content Area */}
-            <div className="flex-1 overflow-y-auto p-4 md:p-8 pb-24 space-y-6">
+            <div>
                 <motion.div layout className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                     <AnimatePresence mode="popLayout">
                         {sortedSessions.length === 0 ? (
