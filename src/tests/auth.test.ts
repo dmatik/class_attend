@@ -121,5 +121,55 @@ describe('SQLite Database & Auth System', () => {
     expect(courses).toHaveLength(0)
     expect(sessions).toHaveLength(0)
   })
+
+  it('stores, retrieves, and cascades WebAuthn passkey authenticators', () => {
+    const tempUserId = 'temp-passkey-user'
+    const now = new Date().toISOString()
+    const rawPubKey = Buffer.from([1, 2, 3, 4, 5, 6, 7, 8])
+
+    // Create user
+    db.prepare(`
+      INSERT OR REPLACE INTO users (id, username, password_hash, role, created_at, updated_at)
+      VALUES (?, ?, ?, ?, ?, ?)
+    `).run(tempUserId, 'passkeyuser', 'hash', 'user', now, now)
+
+    // Insert passkey
+    db.prepare(`
+      INSERT INTO authenticators (
+        id, user_id, public_key, counter, device_type, backed_up, transports, device_name, created_at, last_used_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `).run(
+      'cred-id-123',
+      tempUserId,
+      rawPubKey,
+      0,
+      'singleDevice',
+      1,
+      JSON.stringify(['internal']),
+      'MacBook Pro Touch ID',
+      now,
+      now
+    )
+
+    // Retrieve and verify
+    const authRecord = db.prepare('SELECT * FROM authenticators WHERE id = ?').get('cred-id-123') as any
+    expect(authRecord).toBeDefined()
+    expect(authRecord.user_id).toBe(tempUserId)
+    expect(authRecord.device_name).toBe('MacBook Pro Touch ID')
+    expect(Buffer.compare(authRecord.public_key, rawPubKey)).toBe(0)
+    expect(JSON.parse(authRecord.transports)).toEqual(['internal'])
+
+    // Update counter and last_used
+    const later = new Date(Date.now() + 1000).toISOString()
+    db.prepare('UPDATE authenticators SET counter = ?, last_used_at = ? WHERE id = ?').run(1, later, 'cred-id-123')
+    const updatedRecord = db.prepare('SELECT * FROM authenticators WHERE id = ?').get('cred-id-123') as any
+    expect(updatedRecord.counter).toBe(1)
+    expect(updatedRecord.last_used_at).toBe(later)
+
+    // Verify cascade deletion
+    db.prepare('DELETE FROM users WHERE id = ?').run(tempUserId)
+    const afterDelete = db.prepare('SELECT * FROM authenticators WHERE user_id = ?').all(tempUserId)
+    expect(afterDelete).toHaveLength(0)
+  })
 })
 

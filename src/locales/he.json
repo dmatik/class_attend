@@ -157,7 +157,10 @@
         "logging_in": "מתחבר...",
         "login_failed": "שם משתמש או סיסמה שגויים",
         "logout": "התנתק",
-        "default_credentials_hint": "משתמש ברירת מחדל ראשוני: admin / admin"
+        "default_credentials_hint": "משתמש ברירת מחדל ראשוני: admin / admin",
+        "login_with_passkey": "כניסה באמצעות מפתח גישה (Passkey)",
+        "or_use_password": "או באמצעות סיסמה",
+        "passkey_failed": "ההתחברות באמצעות מפתח גישה נכשלה או בוטלה"
     },
     "account": {
         "title": "פרטי חשבון",
@@ -190,7 +193,24 @@
         "password_too_short_desc": "הסיסמה חייבת להכיל לפחות 4 תווים",
         "password_changed_title": "הסיסמה שונתה בהצלחה",
         "password_changed_desc": "תוכל להשתמש בסיסמה החדשה בהתחברות הבאה",
-        "password_change_failed": "שגיאה בשינוי הסיסמה"
+        "password_change_failed": "שגיאה בשינוי הסיסמה",
+        "passkeys_title": "מפתחות גישה וזיהוי ביומטרי",
+        "passkeys_desc": "התחבר בצורה מהירה ומאובטחת באמצעות טביעת אצבע, זיהוי פנים או מפתח אבטחה",
+        "add_passkey": "הוסף מפתח גישה",
+        "adding_passkey": "יוצר מפתח גישה...",
+        "no_passkeys": "טרם הוגדרו מפתחות גישה",
+        "no_passkeys_desc": "הוסף את המכשיר שלך כדי להתחבר ללא צורך בהקלדת סיסמה",
+        "passkey_name_placeholder": "לדוגמה: Touch ID, הטלפון שלי",
+        "passkey_name_prompt": "שם המכשיר / מפתח גישה",
+        "passkey_created_title": "מפתח הגישה נוסף בהצלחה",
+        "passkey_created_desc": "כעת תוכל להשתמש במפתח זה כדי להתחבר",
+        "passkey_deleted_title": "מפתח הגישה הוסר",
+        "passkey_deleted_desc": "מפתח הגישה נמחק בהצלחה",
+        "delete_passkey_confirm": "האם אתה בטוח שברצונך להסיר מפתח גישה זה?",
+        "passkey_not_supported": "מפתחות גישה אינם נתמכים במכשיר או בדפדפן זה",
+        "created_on": "נוסף ב-{{date}}",
+        "last_used": "שימוש אחרון ב-{{date}}",
+        "never_used": "טרם נעשה שימוש"
     },
     "admin": {
         "title": "ניהול משתמשים",

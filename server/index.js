@@ -5,6 +5,12 @@ import crypto from 'crypto';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { fileURLToPath } from 'url';
+import {
+  generateRegistrationOptions,
+  verifyRegistrationResponse,
+  generateAuthenticationOptions,
+  verifyAuthenticationResponse,
+} from '@simplewebauthn/server';
 import db, { initDb } from './db.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -13,6 +19,36 @@ const __dirname = path.dirname(__filename);
 const app = express();
 const PORT = process.env.PORT || 3001;
 const JWT_SECRET = process.env.JWT_SECRET || 'class-attend-sqlite-jwt-secret-2026';
+
+// In-memory WebAuthn challenges: challengeId -> { challenge, userId, username, expiresAt }
+const webauthnChallenges = new Map();
+
+// Periodic cleanup of expired challenges every 5 minutes
+setInterval(() => {
+  const now = Date.now();
+  for (const [id, val] of webauthnChallenges.entries()) {
+    if (val.expiresAt < now) {
+      webauthnChallenges.delete(id);
+    }
+  }
+}, 5 * 60 * 1000).unref();
+
+function getWebAuthnConfig(req) {
+  const rawOrigin = req.headers.origin || req.headers.referer || `${req.protocol}://${req.get('host')}`;
+  let hostname = 'localhost';
+  let origin = rawOrigin;
+  try {
+    const parsed = new URL(rawOrigin);
+    hostname = parsed.hostname;
+    origin = `${parsed.protocol}//${parsed.host}`;
+  } catch {
+    // fallback
+  }
+
+  const rpID = process.env.RP_ID || hostname;
+  const expectedOrigin = process.env.EXPECTED_ORIGIN || origin;
+  return { rpID, expectedOrigin, rpName: 'Class Attend' };
+}
 
 // Initialize SQLite database
 initDb();
@@ -97,6 +133,247 @@ app.post('/api/auth/login', (req, res) => {
       avatar: user.avatar || ''
     }
   });
+});
+
+/* --- WebAuthn Passkey Routes --- */
+
+// POST /api/auth/passkey/register-options (Generate registration options for authenticated user)
+app.post('/api/auth/passkey/register-options', authenticate, async (req, res) => {
+  try {
+    const { rpID, rpName } = getWebAuthnConfig(req);
+    const existing = db.prepare('SELECT id, transports FROM authenticators WHERE user_id = ?').all(req.user.id);
+    const excludeCredentials = existing.map(a => ({
+      id: a.id,
+      transports: JSON.parse(a.transports || '[]')
+    }));
+
+    const options = await generateRegistrationOptions({
+      rpName,
+      rpID,
+      userID: new Uint8Array(Buffer.from(req.user.id)),
+      userName: req.user.username,
+      userDisplayName: [req.user.firstName, req.user.lastName].filter(Boolean).join(' ') || req.user.username,
+      attestationType: 'none',
+      excludeCredentials,
+      authenticatorSelection: {
+        residentKey: 'preferred',
+        userVerification: 'preferred',
+      },
+    });
+
+    const challengeId = crypto.randomUUID();
+    webauthnChallenges.set(challengeId, {
+      challenge: options.challenge,
+      userId: req.user.id,
+      expiresAt: Date.now() + 5 * 60 * 1000,
+    });
+
+    res.json({ options, challengeId });
+  } catch (err) {
+    console.error('Error generating passkey registration options:', err);
+    res.status(500).json({ error: 'Failed to generate passkey registration options' });
+  }
+});
+
+// POST /api/auth/passkey/register-verify (Verify registration response and store authenticator)
+app.post('/api/auth/passkey/register-verify', authenticate, async (req, res) => {
+  try {
+    const { response, challengeId, deviceName } = req.body;
+    if (!response || !challengeId) {
+      return res.status(400).json({ error: 'Missing response or challengeId' });
+    }
+
+    const stored = webauthnChallenges.get(challengeId);
+    if (!stored || stored.userId !== req.user.id || stored.expiresAt < Date.now()) {
+      webauthnChallenges.delete(challengeId);
+      return res.status(400).json({ error: 'Challenge expired or invalid. Please try again.' });
+    }
+
+    const { rpID, expectedOrigin } = getWebAuthnConfig(req);
+    const verification = await verifyRegistrationResponse({
+      response,
+      expectedChallenge: stored.challenge,
+      expectedOrigin,
+      expectedRPID: rpID,
+      requireUserVerification: false,
+    });
+
+    if (!verification.verified || !verification.registrationInfo) {
+      return res.status(400).json({ error: 'Passkey verification failed' });
+    }
+
+    webauthnChallenges.delete(challengeId);
+
+    const { credential, credentialDeviceType, credentialBackedUp } = verification.registrationInfo;
+    const now = new Date().toISOString();
+
+    db.prepare(`
+      INSERT OR REPLACE INTO authenticators (
+        id, user_id, public_key, counter, device_type, backed_up, transports, device_name, created_at, last_used_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `).run(
+      credential.id,
+      req.user.id,
+      Buffer.from(credential.publicKey),
+      credential.counter,
+      credentialDeviceType,
+      credentialBackedUp ? 1 : 0,
+      JSON.stringify(credential.transports || []),
+      deviceName?.trim() || 'Passkey',
+      now,
+      now
+    );
+
+    res.json({
+      verified: true,
+      passkey: {
+        id: credential.id,
+        deviceName: deviceName?.trim() || 'Passkey',
+        createdAt: now
+      }
+    });
+  } catch (err) {
+    console.error('Error verifying passkey registration:', err);
+    res.status(400).json({ error: err.message || 'Passkey verification failed' });
+  }
+});
+
+// POST /api/auth/passkey/login-options (Generate authentication options)
+app.post('/api/auth/passkey/login-options', async (req, res) => {
+  try {
+    const { username } = req.body || {};
+    const { rpID } = getWebAuthnConfig(req);
+    let allowCredentials = [];
+
+    if (username && typeof username === 'string') {
+      const user = db.prepare('SELECT id FROM users WHERE username = ? COLLATE NOCASE').get(username.trim());
+      if (user) {
+        const authenticators = db.prepare('SELECT id, transports FROM authenticators WHERE user_id = ?').all(user.id);
+        allowCredentials = authenticators.map(a => ({
+          id: a.id,
+          transports: JSON.parse(a.transports || '[]')
+        }));
+      }
+    }
+
+    const options = await generateAuthenticationOptions({
+      rpID,
+      allowCredentials,
+      userVerification: 'preferred',
+    });
+
+    const challengeId = crypto.randomUUID();
+    webauthnChallenges.set(challengeId, {
+      challenge: options.challenge,
+      username: username?.trim(),
+      expiresAt: Date.now() + 5 * 60 * 1000,
+    });
+
+    res.json({ options, challengeId });
+  } catch (err) {
+    console.error('Error generating passkey login options:', err);
+    res.status(500).json({ error: 'Failed to generate passkey login options' });
+  }
+});
+
+// POST /api/auth/passkey/login-verify (Verify passkey authentication and issue JWT token)
+app.post('/api/auth/passkey/login-verify', async (req, res) => {
+  try {
+    const { response, challengeId } = req.body;
+    if (!response || !challengeId) {
+      return res.status(400).json({ error: 'Missing response or challengeId' });
+    }
+
+    const stored = webauthnChallenges.get(challengeId);
+    if (!stored || stored.expiresAt < Date.now()) {
+      webauthnChallenges.delete(challengeId);
+      return res.status(400).json({ error: 'Challenge expired or invalid. Please try again.' });
+    }
+
+    const authenticator = db.prepare('SELECT * FROM authenticators WHERE id = ?').get(response.id);
+    if (!authenticator) {
+      return res.status(400).json({ error: 'Passkey not recognized' });
+    }
+
+    const user = db.prepare('SELECT * FROM users WHERE id = ?').get(authenticator.user_id);
+    if (!user) {
+      return res.status(400).json({ error: 'User associated with this passkey not found' });
+    }
+
+    const { rpID, expectedOrigin } = getWebAuthnConfig(req);
+    const verification = await verifyAuthenticationResponse({
+      response,
+      expectedChallenge: stored.challenge,
+      expectedOrigin,
+      expectedRPID: rpID,
+      requireUserVerification: false,
+      credential: {
+        id: authenticator.id,
+        publicKey: new Uint8Array(authenticator.public_key),
+        counter: authenticator.counter,
+        transports: JSON.parse(authenticator.transports || '[]'),
+      },
+    });
+
+    if (!verification.verified) {
+      return res.status(400).json({ error: 'Passkey authentication failed' });
+    }
+
+    webauthnChallenges.delete(challengeId);
+
+    const { newCounter } = verification.authenticationInfo;
+    const now = new Date().toISOString();
+    db.prepare('UPDATE authenticators SET counter = ?, last_used_at = ? WHERE id = ?')
+      .run(newCounter, now, authenticator.id);
+
+    const token = jwt.sign(
+      { id: user.id, username: user.username, role: user.role },
+      JWT_SECRET,
+      { expiresIn: '30d' }
+    );
+
+    res.json({
+      token,
+      user: {
+        id: user.id,
+        username: user.username,
+        role: user.role,
+        firstName: user.first_name || '',
+        lastName: user.last_name || '',
+        avatar: user.avatar || ''
+      }
+    });
+  } catch (err) {
+    console.error('Error verifying passkey login:', err);
+    res.status(400).json({ error: err.message || 'Passkey authentication failed' });
+  }
+});
+
+// GET /api/auth/passkeys (List registered passkeys for current user)
+app.get('/api/auth/passkeys', authenticate, (req, res) => {
+  const passkeys = db.prepare(`
+    SELECT id, device_name as deviceName, device_type as deviceType, backed_up as backedUp, created_at as createdAt, last_used_at as lastUsedAt
+    FROM authenticators
+    WHERE user_id = ?
+    ORDER BY created_at DESC
+  `).all(req.user.id);
+  res.json({ passkeys });
+});
+
+// DELETE /api/auth/passkeys/:id (Remove a passkey)
+app.delete('/api/auth/passkeys/:id', authenticate, (req, res) => {
+  db.prepare('DELETE FROM authenticators WHERE id = ? AND user_id = ?').run(req.params.id, req.user.id);
+  res.json({ success: true });
+});
+
+// PATCH /api/auth/passkeys/:id (Rename a passkey)
+app.patch('/api/auth/passkeys/:id', authenticate, (req, res) => {
+  const { deviceName } = req.body;
+  if (!deviceName || !deviceName.trim()) {
+    return res.status(400).json({ error: 'Device name is required' });
+  }
+  db.prepare('UPDATE authenticators SET device_name = ? WHERE id = ? AND user_id = ?').run(deviceName.trim(), req.params.id, req.user.id);
+  res.json({ success: true });
 });
 
 // GET /api/auth/me

@@ -157,7 +157,10 @@
         "logging_in": "Signing in...",
         "login_failed": "Invalid username or password",
         "logout": "Log Out",
-        "default_credentials_hint": "Initial default user: admin / admin"
+        "default_credentials_hint": "Initial default user: admin / admin",
+        "login_with_passkey": "Sign in with Passkey",
+        "or_use_password": "or sign in with password",
+        "passkey_failed": "Passkey authentication failed or was cancelled"
     },
     "account": {
         "title": "Account Settings",
@@ -190,7 +193,24 @@
         "password_too_short_desc": "Password must be at least 4 characters long",
         "password_changed_title": "Password Changed",
         "password_changed_desc": "You can now use your new password next time you log in",
-        "password_change_failed": "Failed to change password"
+        "password_change_failed": "Failed to change password",
+        "passkeys_title": "Passkeys & Biometrics",
+        "passkeys_desc": "Sign in quickly and securely using fingerprint, face recognition, or a security key",
+        "add_passkey": "Add Passkey",
+        "adding_passkey": "Creating passkey...",
+        "no_passkeys": "No passkeys added yet",
+        "no_passkeys_desc": "Register this device to sign in without typing a password",
+        "passkey_name_placeholder": "e.g. MacBook Touch ID, My iPhone",
+        "passkey_name_prompt": "Device / Passkey Name",
+        "passkey_created_title": "Passkey Added",
+        "passkey_created_desc": "You can now use this passkey to sign in",
+        "passkey_deleted_title": "Passkey Removed",
+        "passkey_deleted_desc": "The passkey has been deleted",
+        "delete_passkey_confirm": "Are you sure you want to remove this passkey?",
+        "passkey_not_supported": "Passkeys are not supported on this device/browser",
+        "created_on": "Added {{date}}",
+        "last_used": "Last used {{date}}",
+        "never_used": "Never used"
     },
     "admin": {
         "title": "User Management",

@@ -1,11 +1,30 @@
-import { useState, useRef } from "react"
+import { useState, useRef, useEffect } from "react"
 import { useTranslation } from "react-i18next"
-import { User, Lock, Upload, LogOut, Check, Shield, Loader2, Camera, Trash2 } from "lucide-react"
+import { User, Lock, Upload, LogOut, Check, Shield, Loader2, Camera, Trash2, Fingerprint, Plus, Smartphone, Laptop, Key } from "lucide-react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 import { toast } from "@/hooks/use-toast"
+import { isPasskeySupported, registerPasskey, fetchUserPasskeys, deletePasskey, type PasskeyInfo } from "@/lib/webauthn"
 import type { User as UserType } from "@/types"
 
 interface AccountPageProps {
@@ -30,6 +49,102 @@ export function AccountPage({ user, token, onUpdateUser, onLogout }: AccountPage
   const [newPassword, setNewPassword] = useState("")
   const [confirmPassword, setConfirmPassword] = useState("")
   const [savingPassword, setSavingPassword] = useState(false)
+
+  // Passkeys State
+  const [passkeys, setPasskeys] = useState<PasskeyInfo[]>([])
+  const [loadingPasskeys, setLoadingPasskeys] = useState(false)
+  const [addingPasskey, setAddingPasskey] = useState(false)
+  const [showAddPasskeyDialog, setShowAddPasskeyDialog] = useState(false)
+  const [newPasskeyName, setNewPasskeyName] = useState("")
+  const [passkeyToDelete, setPasskeyToDelete] = useState<PasskeyInfo | null>(null)
+  const [deletingPasskey, setDeletingPasskey] = useState(false)
+  const [passkeySupported, setPasskeySupported] = useState(false)
+
+  useEffect(() => {
+    setPasskeySupported(isPasskeySupported())
+    loadPasskeys()
+  }, [])
+
+  const loadPasskeys = async () => {
+    setLoadingPasskeys(true)
+    try {
+      const list = await fetchUserPasskeys(token)
+      setPasskeys(list)
+    } catch (err) {
+      console.error("Failed to load passkeys:", err)
+    } finally {
+      setLoadingPasskeys(false)
+    }
+  }
+
+  const handleStartAddPasskey = () => {
+    if (!passkeySupported) {
+      toast({
+        variant: "destructive",
+        title: t("common.error"),
+        description: t("account.passkey_not_supported")
+      })
+      return
+    }
+
+    const ua = navigator.userAgent
+    let defaultName = "Passkey"
+    if (/iPhone|iPad/i.test(ua)) defaultName = "iPhone Passkey"
+    else if (/Macintosh|Mac OS/i.test(ua)) defaultName = "MacBook / Mac"
+    else if (/Android/i.test(ua)) defaultName = "Android Device"
+    else if (/Windows/i.test(ua)) defaultName = "Windows Device"
+
+    setNewPasskeyName(defaultName)
+    setShowAddPasskeyDialog(true)
+  }
+
+  const handleConfirmAddPasskey = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setAddingPasskey(true)
+    try {
+      const created = await registerPasskey(token, newPasskeyName || "Passkey")
+      setPasskeys(prev => [created, ...prev])
+      setShowAddPasskeyDialog(false)
+      toast({
+        variant: "success",
+        title: t("account.passkey_created_title"),
+        description: t("account.passkey_created_desc")
+      })
+    } catch (err: any) {
+      if (err.name !== 'NotAllowedError') {
+        toast({
+          variant: "destructive",
+          title: t("common.error"),
+          description: err.message || t("account.passkey_failed")
+        })
+      }
+    } finally {
+      setAddingPasskey(false)
+    }
+  }
+
+  const handleDeletePasskey = async () => {
+    if (!passkeyToDelete) return
+    setDeletingPasskey(true)
+    try {
+      await deletePasskey(token, passkeyToDelete.id)
+      setPasskeys(prev => prev.filter(p => p.id !== passkeyToDelete.id))
+      setPasskeyToDelete(null)
+      toast({
+        variant: "success",
+        title: t("account.passkey_deleted_title"),
+        description: t("account.passkey_deleted_desc")
+      })
+    } catch (err: any) {
+      toast({
+        variant: "destructive",
+        title: t("common.error"),
+        description: err.message || "Failed to remove passkey"
+      })
+    } finally {
+      setDeletingPasskey(false)
+    }
+  }
 
   // Handle avatar file selection
   const handleAvatarFile = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -356,7 +471,188 @@ export function AccountPage({ user, token, onUpdateUser, onLogout }: AccountPage
             </form>
           </CardContent>
         </Card>
+
+        {/* Passkeys Card */}
+        <Card className="shadow-sm md:col-span-2">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
+            <div className="space-y-1">
+              <CardTitle className="text-lg flex items-center gap-2">
+                <Fingerprint className="w-5 h-5 text-primary" />
+                {t("account.passkeys_title")}
+              </CardTitle>
+              <CardDescription>{t("account.passkeys_desc")}</CardDescription>
+            </div>
+            <Button
+              type="button"
+              size="sm"
+              onClick={handleStartAddPasskey}
+              className="flex items-center gap-1.5 shrink-0"
+            >
+              <Plus className="w-4 h-4" />
+              <span>{t("account.add_passkey")}</span>
+            </Button>
+          </CardHeader>
+          <CardContent>
+            {loadingPasskeys ? (
+              <div className="flex items-center justify-center p-8 text-muted-foreground">
+                <Loader2 className="w-6 h-6 animate-spin" />
+              </div>
+            ) : passkeys.length === 0 ? (
+              <div className="text-center py-8 px-4 border border-dashed rounded-xl bg-muted/20">
+                <div className="w-12 h-12 rounded-full bg-primary/10 text-primary flex items-center justify-center mx-auto mb-3">
+                  <Fingerprint className="w-6 h-6" />
+                </div>
+                <p className="font-semibold text-sm">{t("account.no_passkeys")}</p>
+                <p className="text-xs text-muted-foreground mt-1 max-w-sm mx-auto">
+                  {t("account.no_passkeys_desc")}
+                </p>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={handleStartAddPasskey}
+                  className="mt-4 text-xs"
+                >
+                  <Plus className="w-3.5 h-3.5 me-1.5" />
+                  {t("account.add_passkey")}
+                </Button>
+              </div>
+            ) : (
+              <div className="divide-y border rounded-xl overflow-hidden">
+                {passkeys.map((p) => {
+                  const lower = p.deviceName.toLowerCase()
+                  const IconComponent = (lower.includes('phone') || lower.includes('android') || lower.includes('ios'))
+                    ? Smartphone
+                    : (lower.includes('mac') || lower.includes('windows') || lower.includes('pc') || lower.includes('laptop'))
+                      ? Laptop
+                      : Fingerprint
+
+                  return (
+                    <div key={p.id} className="p-3.5 flex items-center justify-between gap-3 hover:bg-muted/30 transition-colors">
+                      <div className="flex items-center gap-3 min-w-0">
+                        <div className="w-9 h-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                          <IconComponent className="w-5 h-5" />
+                        </div>
+                        <div className="min-w-0">
+                          <div className="text-sm font-semibold truncate flex items-center gap-2">
+                            <span>{p.deviceName}</span>
+                            {p.backedUp ? (
+                              <span className="text-[10px] uppercase font-bold px-1.5 py-0.5 rounded bg-muted text-muted-foreground">
+                                Synced
+                              </span>
+                            ) : null}
+                          </div>
+                          <div className="text-xs text-muted-foreground flex items-center gap-2 mt-0.5">
+                            <span>{t("account.created_on", { date: new Date(p.createdAt).toLocaleDateString() })}</span>
+                            {p.lastUsedAt && (
+                              <>
+                                <span>•</span>
+                                <span>{t("account.last_used", { date: new Date(p.lastUsedAt).toLocaleDateString() })}</span>
+                              </>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => setPasskeyToDelete(p)}
+                        className="text-muted-foreground hover:text-destructive shrink-0 h-8 w-8"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  )
+                })}
+              </div>
+            )}
+          </CardContent>
+        </Card>
       </div>
+
+      {/* Add Passkey Dialog */}
+      <Dialog open={showAddPasskeyDialog} onOpenChange={setShowAddPasskeyDialog}>
+        <DialogContent className="sm:max-w-md">
+          <form onSubmit={handleConfirmAddPasskey}>
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <Fingerprint className="w-5 h-5 text-primary" />
+                {t("account.add_passkey")}
+              </DialogTitle>
+              <DialogDescription>
+                {t("account.passkeys_desc")}
+              </DialogDescription>
+            </DialogHeader>
+
+            <div className="space-y-4 py-4">
+              <div className="space-y-2">
+                <Label htmlFor="passkeyName">{t("account.passkey_name_prompt")}</Label>
+                <Input
+                  id="passkeyName"
+                  value={newPasskeyName}
+                  onChange={(e) => setNewPasskeyName(e.target.value)}
+                  placeholder={t("account.passkey_name_placeholder")}
+                  required
+                  autoFocus
+                />
+              </div>
+            </div>
+
+            <DialogFooter className="flex-row items-center justify-end gap-2 pt-2">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setShowAddPasskeyDialog(false)}
+                disabled={addingPasskey}
+              >
+                {t("common.cancel")}
+              </Button>
+              <Button type="submit" disabled={addingPasskey}>
+                {addingPasskey ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin me-2" />
+                    {t("account.adding_passkey")}
+                  </>
+                ) : (
+                  <>
+                    <Key className="w-4 h-4 me-2" />
+                    {t("common.confirm")}
+                  </>
+                )}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Passkey Confirmation Dialog */}
+      <AlertDialog open={!!passkeyToDelete} onOpenChange={(open) => !open && setPasskeyToDelete(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t("account.passkey_deleted_title")}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {t("account.delete_passkey_confirm")}
+              {passkeyToDelete && (
+                <span className="block mt-2 font-medium text-foreground">
+                  "{passkeyToDelete.deviceName}"
+                </span>
+              )}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="flex-row items-center justify-end gap-2 pt-2">
+            <AlertDialogCancel disabled={deletingPasskey}>{t("common.cancel")}</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeletePasskey}
+              disabled={deletingPasskey}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {deletingPasskey ? <Loader2 className="w-4 h-4 animate-spin" /> : t("common.delete")}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }
