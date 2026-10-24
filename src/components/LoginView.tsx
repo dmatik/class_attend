@@ -1,12 +1,13 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useTranslation } from "react-i18next"
-import { Lock, User as UserIcon, Loader2 } from "lucide-react"
+import { Lock, User as UserIcon, Loader2, Fingerprint } from "lucide-react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { ModeToggle } from "@/components/mode-toggle"
 import { LanguageSwitcher } from "@/components/LanguageSwitcher"
+import { isPasskeySupported, loginWithPasskey } from "@/lib/webauthn"
 import type { User } from "@/types"
 
 interface LoginViewProps {
@@ -19,6 +20,27 @@ export function LoginView({ onLoginSuccess }: LoginViewProps) {
   const [password, setPassword] = useState("")
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
+  const [passkeyLoading, setPasskeyLoading] = useState(false)
+  const [hasPasskeySupport, setHasPasskeySupport] = useState(false)
+
+  useEffect(() => {
+    setHasPasskeySupport(isPasskeySupported())
+  }, [])
+
+  const handlePasskeyLogin = async () => {
+    setError(null)
+    setPasskeyLoading(true)
+    try {
+      const result = await loginWithPasskey(username.trim() || undefined)
+      onLoginSuccess(result.token, result.user)
+    } catch (err: any) {
+      if (err.name !== 'NotAllowedError') {
+        setError(err.message || t("auth.passkey_failed"))
+      }
+    } finally {
+      setPasskeyLoading(false)
+    }
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -113,7 +135,7 @@ export function LoginView({ onLoginSuccess }: LoginViewProps) {
               </div>
             </div>
 
-            <Button type="submit" className="w-full mt-6" disabled={loading}>
+            <Button type="submit" className="w-full mt-6" disabled={loading || passkeyLoading}>
               {loading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -123,6 +145,39 @@ export function LoginView({ onLoginSuccess }: LoginViewProps) {
                 t("auth.login_button")
               )}
             </Button>
+
+            {hasPasskeySupport && (
+              <>
+                <div className="relative my-4">
+                  <div className="absolute inset-0 flex items-center">
+                    <span className="w-full border-t border-border/60" />
+                  </div>
+                  <div className="relative flex justify-center text-xs uppercase">
+                    <span className="bg-card px-2 text-muted-foreground">{t("auth.or_use_password")}</span>
+                  </div>
+                </div>
+
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={handlePasskeyLogin}
+                  disabled={loading || passkeyLoading}
+                  className="w-full border-primary/30 hover:bg-primary/5 hover:border-primary/50 text-foreground font-medium flex items-center justify-center gap-2"
+                >
+                  {passkeyLoading ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      <span>{t("auth.logging_in")}</span>
+                    </>
+                  ) : (
+                    <>
+                      <Fingerprint className="h-4 w-4 text-primary" />
+                      <span>{t("auth.login_with_passkey")}</span>
+                    </>
+                  )}
+                </Button>
+              </>
+            )}
 
             <div className="text-center text-xs text-muted-foreground pt-4 border-t border-border/40">
               {t("auth.default_credentials_hint")}

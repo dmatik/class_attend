@@ -12,9 +12,9 @@ FROM node:22-alpine
 WORKDIR /app
 
 # optimization: We DO NOT copy the main package.json because it contains frontend deps (React, etc)
-# We only need server dependencies: express, cors, better-sqlite3, bcryptjs, jsonwebtoken
+# We only need server dependencies: express, cors, better-sqlite3, bcryptjs, jsonwebtoken, @simplewebauthn/server
 RUN apk add --no-cache python3 make g++ && \
-    npm install express cors better-sqlite3 bcryptjs jsonwebtoken && \
+    npm install express cors better-sqlite3 bcryptjs jsonwebtoken @simplewebauthn/server && \
     apk del python3 make g++
 
 # We need to ensure Node treats .js files as modules (ESM)

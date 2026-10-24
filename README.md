@@ -24,7 +24,8 @@
 *   **👥 Multi-User Support & Roles:** Secure user management with two roles:
     *   **Admin:** Full access to User Management (create users, reset passwords, assign admin/user roles, delete users).
     *   **User:** Full course and attendance management for their own scoped data.
-*   **👤 Account Management:** Dedicated Account page to update name, family name, avatar picture, and change passwords.
+*   **👤 Account Management:** Dedicated Account page to update name, family name, avatar picture, change passwords, and manage passkeys.
+*   **🔑 WebAuthn & Passkeys Support:** Fast and secure biometric login using Touch ID, Face ID, Windows Hello, or hardware security keys in addition to username/password.
 *   **🗄️ SQLite Database:** Fast, reliable, zero-config local database (`attendance.db`) stored in the `./data` directory with foreign-key cascade deletions and auto-migration from legacy `db.json`.
 *   **🔐 Secure Authentication:** JWT-based sessions with bcrypt-hashed passwords. Initial installation seeds a default `admin` / `admin` account ready to use and customize.
 *   **📚 Course & Session Management:** Organize multiple courses, schedule days of the week, track attendance status (attended, absent), log reasons, and manage makeup / replacement lessons.

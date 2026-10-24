@@ -63,6 +63,21 @@ export function initDb() {
     CREATE INDEX IF NOT EXISTS idx_courses_user ON courses(user_id);
     CREATE INDEX IF NOT EXISTS idx_sessions_user ON sessions(user_id);
     CREATE INDEX IF NOT EXISTS idx_sessions_course ON sessions(course_id);
+
+    CREATE TABLE IF NOT EXISTS authenticators (
+      id TEXT PRIMARY KEY,
+      user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      public_key BLOB NOT NULL,
+      counter INTEGER NOT NULL DEFAULT 0,
+      device_type TEXT DEFAULT 'singleDevice',
+      backed_up INTEGER DEFAULT 0,
+      transports TEXT DEFAULT '[]',
+      device_name TEXT DEFAULT 'Passkey',
+      created_at TEXT NOT NULL,
+      last_used_at TEXT
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_authenticators_user ON authenticators(user_id);
   `);
 
   // 1. Seed default admin if no users exist
