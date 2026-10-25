@@ -20,10 +20,17 @@ if (!fs.existsSync(DATA_DIR)) {
 const db = new Database(DB_FILE);
 db.pragma('journal_mode = WAL');
 db.pragma('foreign_keys = ON');
+db.pragma('busy_timeout = 5000');
+db.pragma('synchronous = NORMAL');
 
 // Initialize schema
 export function initDb() {
   db.exec(`
+    CREATE TABLE IF NOT EXISTS settings (
+      key TEXT PRIMARY KEY,
+      value TEXT NOT NULL
+    );
+
     CREATE TABLE IF NOT EXISTS users (
       id TEXT PRIMARY KEY,
       username TEXT UNIQUE NOT NULL COLLATE NOCASE,
@@ -55,7 +62,9 @@ export function initDb() {
       date TEXT NOT NULL,
       attendance_status TEXT,
       attendance_reason TEXT,
+      attendance_details TEXT,
       replacement_session_id TEXT,
+      replacement_for_session_id TEXT,
       is_replacement INTEGER DEFAULT 0,
       created_at TEXT NOT NULL
     );
@@ -79,6 +88,20 @@ export function initDb() {
 
     CREATE INDEX IF NOT EXISTS idx_authenticators_user ON authenticators(user_id);
   `);
+
+  // Migrate missing columns on existing databases if needed
+  try {
+    const sessionCols = db.prepare("PRAGMA table_info(sessions)").all();
+    const colNames = sessionCols.map(c => c.name);
+    if (!colNames.includes('attendance_details')) {
+      db.exec('ALTER TABLE sessions ADD COLUMN attendance_details TEXT;');
+    }
+    if (!colNames.includes('replacement_for_session_id')) {
+      db.exec('ALTER TABLE sessions ADD COLUMN replacement_for_session_id TEXT;');
+    }
+  } catch (err) {
+    console.error('Migration error for sessions columns:', err);
+  }
 
   // 1. Seed default admin if no users exist
   const countStmt = db.prepare('SELECT COUNT(*) as count FROM users');
@@ -136,8 +159,11 @@ export function initDb() {
         `);
 
         const insertSession = db.prepare(`
-          INSERT OR REPLACE INTO sessions (id, user_id, course_id, course_name, date, attendance_status, attendance_reason, replacement_session_id, is_replacement, created_at)
-          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+          INSERT OR REPLACE INTO sessions (
+            id, user_id, course_id, course_name, date,
+            attendance_status, attendance_reason, attendance_details,
+            replacement_session_id, replacement_for_session_id, is_replacement, created_at
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         `);
 
         const migrationTx = db.transaction(() => {
@@ -164,7 +190,9 @@ export function initDb() {
               s.date,
               s.attendance?.status || null,
               s.attendance?.reason || null,
+              s.attendance?.details || null,
               s.replacementSessionId || null,
+              s.replacementForSessionId || null,
               s.isReplacement ? 1 : 0,
               now
             );

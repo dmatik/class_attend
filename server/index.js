@@ -18,7 +18,6 @@ const __dirname = path.dirname(__filename);
 
 const app = express();
 const PORT = process.env.PORT || 3001;
-const JWT_SECRET = process.env.JWT_SECRET || 'class-attend-sqlite-jwt-secret-2026';
 
 // In-memory WebAuthn challenges: challengeId -> { challenge, userId, username, expiresAt }
 const webauthnChallenges = new Map();
@@ -53,8 +52,25 @@ function getWebAuthnConfig(req) {
 // Initialize SQLite database
 initDb();
 
+function getOrCreateJwtSecret() {
+  if (process.env.JWT_SECRET) {
+    return process.env.JWT_SECRET;
+  }
+
+  const row = db.prepare('SELECT value FROM settings WHERE key = ?').get('jwt_secret');
+  if (row?.value) {
+    return row.value;
+  }
+
+  const generated = crypto.randomBytes(64).toString('hex');
+  db.prepare('INSERT INTO settings (key, value) VALUES (?, ?)').run('jwt_secret', generated);
+  return generated;
+}
+
+const JWT_SECRET = getOrCreateJwtSecret();
+
 app.use(cors());
-app.use(express.json({ limit: '10mb' })); // Support avatar upload
+app.use(express.json({ limit: '2mb' })); // Support bulk session sync and avatar upload
 
 // Cache-Control headers for all API requests
 app.use('/api', (req, res, next) => {
@@ -384,6 +400,34 @@ app.get('/api/auth/me', authenticate, (req, res) => {
 // PUT /api/auth/profile
 app.put('/api/auth/profile', authenticate, (req, res) => {
   const { firstName, lastName, avatar } = req.body;
+
+  let validatedAvatar = '';
+  if (avatar !== undefined && avatar !== null) {
+    if (typeof avatar !== 'string') {
+      return res.status(400).json({ error: 'avatar_invalid', message: 'Avatar must be a string' });
+    }
+    if (avatar.trim().length > 0) {
+      // 500KB limit (~700KB base64 string)
+      if (avatar.length > 700000) {
+        return res.status(400).json({ error: 'avatar_too_large', message: 'Avatar image must be under 500KB' });
+      }
+      // Strict image MIME check (PNG, JPEG, WebP only; rejects SVG to prevent stored XSS)
+      const isAllowedImage = /^data:image\/(png|jpeg|jpg|webp);base64,[A-Za-z0-9+/=]+$/.test(avatar.trim());
+      if (!isAllowedImage) {
+        return res.status(400).json({
+          error: 'avatar_invalid_format',
+          message: 'Avatar must be a valid PNG, JPEG, or WebP base64 image'
+        });
+      }
+      validatedAvatar = avatar.trim();
+    }
+  } else {
+    const existing = db.prepare('SELECT avatar FROM users WHERE id = ?').get(req.user.id);
+    validatedAvatar = existing?.avatar || '';
+  }
+
+  const cleanFirst = typeof firstName === 'string' ? firstName.trim().slice(0, 50) : (req.user.firstName || '');
+  const cleanLast = typeof lastName === 'string' ? lastName.trim().slice(0, 50) : (req.user.lastName || '');
   const now = new Date().toISOString();
 
   db.prepare(`
@@ -391,9 +435,9 @@ app.put('/api/auth/profile', authenticate, (req, res) => {
     SET first_name = ?, last_name = ?, avatar = ?, updated_at = ?
     WHERE id = ?
   `).run(
-    firstName?.trim() || '',
-    lastName?.trim() || '',
-    avatar || '',
+    cleanFirst,
+    cleanLast,
+    validatedAvatar,
     now,
     req.user.id
   );
@@ -537,20 +581,25 @@ app.put('/api/admin/users/:id', authenticate, requireAdmin, (req, res) => {
       return res.status(404).json({ error: 'User not found' });
     }
 
+    // Determine target role: if role was explicitly provided in req.body, use it; otherwise retain existing role
+    let targetRole = user.role;
+    if (role !== undefined) {
+      targetRole = role === 'admin' ? 'admin' : 'user';
+    }
+
     // Prevent updating default admin role or demoting the sole remaining admin
     const isDefaultAdmin = id === 'admin-default' || user.username.toLowerCase() === 'admin';
-    if (isDefaultAdmin && role && role !== 'admin') {
+    if (isDefaultAdmin && targetRole !== 'admin') {
       return res.status(400).json({ error: 'cannot_demote_default_admin' });
     }
 
-    if (user.role === 'admin' && role === 'user') {
+    if (user.role === 'admin' && targetRole === 'user') {
       const adminCount = db.prepare('SELECT COUNT(*) as c FROM users WHERE role = ?').get('admin').c;
       if (adminCount <= 1) {
         return res.status(400).json({ error: 'cannot_demote_sole_admin' });
       }
     }
 
-    const newRole = role === 'admin' ? 'admin' : 'user';
     const now = new Date().toISOString();
 
     db.prepare(`
@@ -558,9 +607,9 @@ app.put('/api/admin/users/:id', authenticate, requireAdmin, (req, res) => {
       SET first_name = ?, last_name = ?, role = ?, updated_at = ?
       WHERE id = ?
     `).run(
-      firstName !== undefined ? firstName.trim() : user.first_name,
-      lastName !== undefined ? lastName.trim() : user.last_name,
-      newRole,
+      firstName !== undefined ? String(firstName).trim() : user.first_name,
+      lastName !== undefined ? String(lastName).trim() : user.last_name,
+      targetRole,
       now,
       id
     );
@@ -649,14 +698,23 @@ app.get('/api/data', authenticate, (req, res) => {
     const courseRows = db.prepare('SELECT * FROM courses WHERE user_id = ? ORDER BY created_at ASC').all(userId);
     const sessionRows = db.prepare('SELECT * FROM sessions WHERE user_id = ? ORDER BY date ASC').all(userId);
 
-    const courses = courseRows.map(c => ({
-      id: c.id,
-      name: c.name,
-      startDate: c.start_date,
-      endDate: c.end_date || undefined,
-      daysOfWeek: JSON.parse(c.days_of_week || '[]'),
-      totalLessons: c.total_lessons || undefined
-    }));
+    const courses = courseRows.map(c => {
+      let daysOfWeek = [];
+      try {
+        daysOfWeek = c.days_of_week ? JSON.parse(c.days_of_week) : [];
+      } catch {
+        daysOfWeek = [];
+      }
+
+      return {
+        id: c.id,
+        name: c.name,
+        startDate: c.start_date,
+        endDate: c.end_date || undefined,
+        daysOfWeek,
+        totalLessons: c.total_lessons || undefined
+      };
+    });
 
     const sessions = sessionRows.map(s => {
       const sessionObj = {
@@ -669,12 +727,17 @@ app.get('/api/data', authenticate, (req, res) => {
       if (s.attendance_status) {
         sessionObj.attendance = {
           status: s.attendance_status,
-          reason: s.attendance_reason || undefined
+          reason: s.attendance_reason || undefined,
+          details: s.attendance_details || undefined
         };
       }
 
       if (s.replacement_session_id) {
         sessionObj.replacementSessionId = s.replacement_session_id;
+      }
+
+      if (s.replacement_for_session_id) {
+        sessionObj.replacementForSessionId = s.replacement_for_session_id;
       }
 
       if (s.is_replacement) {
@@ -695,7 +758,32 @@ app.get('/api/data', authenticate, (req, res) => {
 app.post('/api/data', authenticate, (req, res) => {
   try {
     const userId = req.user.id;
-    const { courses = [], sessions = [] } = req.body;
+    const { courses = [], sessions = [], confirmEmpty = false } = req.body;
+
+    if (!Array.isArray(courses) || !Array.isArray(sessions)) {
+      return res.status(400).json({ error: 'courses and sessions must be arrays' });
+    }
+
+    // Safety guard against accidental full-data wipe (P0-5)
+    if (courses.length === 0) {
+      const existingCoursesCount = db.prepare('SELECT COUNT(*) as count FROM courses WHERE user_id = ?').get(userId).count;
+      if (existingCoursesCount > 0 && !confirmEmpty) {
+        return res.status(400).json({
+          error: 'wipe_prevented',
+          message: 'Cannot wipe all courses without explicit confirmEmpty: true'
+        });
+      }
+    }
+
+    // Validate course ownership scoping for submitted sessions
+    const submittedCourseIds = new Set(courses.map(c => c.id));
+    for (const s of sessions) {
+      if (!submittedCourseIds.has(s.courseId)) {
+        return res.status(400).json({
+          error: `Session references unauthorized or non-existent course ${s.courseId}`
+        });
+      }
+    }
 
     const deleteSessions = db.prepare('DELETE FROM sessions WHERE user_id = ?');
     const deleteCourses = db.prepare('DELETE FROM courses WHERE user_id = ?');
@@ -706,8 +794,11 @@ app.post('/api/data', authenticate, (req, res) => {
     `);
 
     const insertSession = db.prepare(`
-      INSERT INTO sessions (id, user_id, course_id, course_name, date, attendance_status, attendance_reason, replacement_session_id, is_replacement, created_at)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      INSERT INTO sessions (
+        id, user_id, course_id, course_name, date,
+        attendance_status, attendance_reason, attendance_details,
+        replacement_session_id, replacement_for_session_id, is_replacement, created_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `);
 
     const saveTransaction = db.transaction(() => {
@@ -738,7 +829,9 @@ app.post('/api/data', authenticate, (req, res) => {
           s.date,
           s.attendance?.status || null,
           s.attendance?.reason || null,
+          s.attendance?.details || null,
           s.replacementSessionId || null,
+          s.replacementForSessionId || null,
           s.isReplacement ? 1 : 0,
           now
         );
