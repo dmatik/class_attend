@@ -29,3 +29,9 @@ data/
 # Docker
 *.tar
 class-attend-app.tar
+
+# Playwright
+test-results/
+playwright-report/
+blob-report/
+
