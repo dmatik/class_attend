@@ -631,7 +631,7 @@ function App() {
       </div>
 
       {/* Mobile Bottom Navigation */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-background/85 backdrop-blur-md border-t border-border pb-2.5 z-30 pt-1.5 shadow-sm">
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-background/85 backdrop-blur-md border-t border-border pb-3 z-30 pt-1.5 shadow-sm">
         <div className="flex justify-around items-center">
           <MobileNavButton
             active={activeTab === 'daily'}
