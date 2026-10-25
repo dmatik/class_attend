@@ -456,7 +456,7 @@ function App() {
               {t('common.app_title')}
             </h1>
             <div className="text-[11px] text-muted-foreground truncate">
-              {currentUser.firstName ? `${currentUser.firstName} ${currentUser.lastName}` : `@${currentUser.username}`}
+              {currentUser.firstName ? `${currentUser.firstName} ${currentUser.lastName}` : currentUser.username}
             </div>
           </div>
         </div>
@@ -631,7 +631,7 @@ function App() {
       </div>
 
       {/* Mobile Bottom Navigation */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-background/85 backdrop-blur-md border-t border-border pb-safe z-30 pt-1.5 shadow-sm">
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-background/85 backdrop-blur-md border-t border-border pb-2 z-30 pt-1.5 shadow-sm">
         <div className="flex justify-around items-center">
           <MobileNavButton
             active={activeTab === 'daily'}

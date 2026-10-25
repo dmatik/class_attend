@@ -376,7 +376,7 @@ export function AdminPage({ currentUser, token }: AdminPageProps) {
                             {fullName || u.username}
                           </span>
                           {fullName && (
-                            <span className="text-xs text-muted-foreground">(@{u.username})</span>
+                            <span className="text-xs text-muted-foreground">({u.username})</span>
                           )}
                           {isSelf && (
                             <span className="text-[10px] bg-primary/15 text-primary px-1.5 py-0.5 rounded-full font-medium">

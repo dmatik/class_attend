@@ -361,7 +361,7 @@ export function AccountPage({ user, token, onUpdateUser, onLogout }: AccountPage
                 <div className="space-y-1.5">
                   <Label className="text-xs text-muted-foreground">{t("auth.username")}</Label>
                   <div className="text-sm font-semibold bg-muted/50 p-2 rounded-md border text-foreground">
-                    @{user.username}
+                    {user.username}
                   </div>
                 </div>
                 <div className="space-y-1.5">
