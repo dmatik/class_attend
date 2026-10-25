@@ -360,7 +360,7 @@ export function AdminPage({ currentUser, token }: AdminPageProps) {
   })
 
   return (
-    <div className="h-full overflow-y-auto p-4 md:p-8 max-w-5xl mx-auto space-y-6 pb-28">
+    <div className="h-full overflow-y-auto overscroll-y-contain p-4 md:p-8 pb-8 max-w-5xl mx-auto space-y-6">
       {/* Page Header */}
       <div className="flex flex-row justify-between items-center gap-3 border-b pb-3 sm:pb-4">
         <div className="min-w-0 flex-1">
