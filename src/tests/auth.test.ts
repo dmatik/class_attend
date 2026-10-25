@@ -187,5 +187,63 @@ describe('SQLite Database & Auth System', () => {
     expect(defaultAdmin.username).toBe('admin')
     expect(defaultAdmin.role).toBe('admin')
   })
+
+  it('persists attendance_details and replacement_for_session_id on sessions table', () => {
+    const userId = 'temp-user-details'
+    const courseId = 'course-p0-test'
+    const sessionId = 'session-p0-test'
+    const now = new Date().toISOString()
+
+    db.prepare(`
+      INSERT OR REPLACE INTO users (id, username, password_hash, role, created_at, updated_at)
+      VALUES (?, ?, 'hash', 'user', ?, ?)
+    `).run(userId, 'details_user', now, now)
+
+    db.prepare(`
+      INSERT INTO courses (id, user_id, name, start_date, days_of_week, created_at)
+      VALUES (?, ?, 'Test Course', '2026-10-01', '[]', ?)
+    `).run(courseId, userId, now)
+
+    db.prepare(`
+      INSERT INTO sessions (
+        id, user_id, course_id, course_name, date,
+        attendance_status, attendance_reason, attendance_details,
+        replacement_session_id, replacement_for_session_id, is_replacement, created_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `).run(
+      sessionId,
+      userId,
+      courseId,
+      'Test Course',
+      '2026-10-01',
+      'absent',
+      'personal',
+      'Doctor appointment notes',
+      'rep-session-1',
+      'orig-session-1',
+      0,
+      now
+    )
+
+    const savedSession = db.prepare('SELECT * FROM sessions WHERE id = ?').get(sessionId) as any
+    expect(savedSession).toBeDefined()
+    expect(savedSession.attendance_details).toBe('Doctor appointment notes')
+    expect(savedSession.replacement_for_session_id).toBe('orig-session-1')
+    expect(savedSession.replacement_session_id).toBe('rep-session-1')
+
+    // Clean up
+    db.prepare('DELETE FROM users WHERE id = ?').run(userId)
+  })
+
+  it('persists and retrieves auto-generated jwt_secret in settings table', () => {
+    const settingRow = db.prepare('SELECT value FROM settings WHERE key = ?').get('jwt_secret') as any
+    if (!settingRow) {
+      db.prepare('INSERT INTO settings (key, value) VALUES (?, ?)').run('jwt_secret', 'test-secret-value-123')
+    }
+    const retrieved = db.prepare('SELECT value FROM settings WHERE key = ?').get('jwt_secret') as any
+    expect(retrieved).toBeDefined()
+    expect(typeof retrieved.value).toBe('string')
+    expect(retrieved.value.length).toBeGreaterThanOrEqual(16)
+  })
 })
 

@@ -73,6 +73,7 @@ Specialized skills are available in `.agents/skills/`:
 
 Whenever delegating specialized tasks, use these exact role names:
 * **`code-reviewer`**: Audits diffs for security vulnerabilities (SQL injection, auth checks), multi-tenant data scoping, bilingual i18n completeness (`he.json` + `en.json`), and RTL layout compliance.
+* **`red-team-reviewer`**: Adversarial security researcher that stress-tests architectures, probes for exploit vectors (DoS, XSS, auth bypasses, timing attacks, data loss), and audits proposed remediations for flaws or regressions.
 * **`test-engineer`**: Writes and maintains Vitest component tests and Playwright E2E test suites with strict temporary user isolation and cleanup.
 * **`fullstack-engineer`**: Builds end-to-end features adhering to the project's exact stack (React 19, Radix UI, Express 5, Better-SQLite3).
 

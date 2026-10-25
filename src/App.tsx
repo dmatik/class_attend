@@ -1,4 +1,4 @@
-import { useState, useEffect, Suspense, lazy } from "react"
+import { useState, useEffect, useRef, Suspense, lazy } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import {
   Calendar as CalendarIcon,
@@ -213,9 +213,22 @@ function App() {
     sessionStorage.setItem('dailyView.eventTypeFilter', eventTypeFilter)
   }, [eventTypeFilter])
 
+  const isDirtyRef = useRef(false)
+  const isInitialMount = useRef(true)
+  const pendingDataRef = useRef({ courses, sessions })
+  pendingDataRef.current = { courses, sessions }
+
   // Auto-Save Effect
   useEffect(() => {
     if (!token || !isInitialized || loading) return
+
+    // Prevent immediate re-save on mount right after data initialization
+    if (isInitialMount.current) {
+      isInitialMount.current = false
+      return
+    }
+
+    isDirtyRef.current = true
     const saveData = async () => {
       try {
         const res = await fetch('/api/data', {
@@ -224,12 +237,15 @@ function App() {
             'Content-Type': 'application/json',
             Authorization: `Bearer ${token}`
           },
-          body: JSON.stringify({ courses, sessions })
+          body: JSON.stringify({ courses: pendingDataRef.current.courses, sessions: pendingDataRef.current.sessions })
         })
         if (!res) return
         if (res.status === 401) {
           handleLogout()
           return
+        }
+        if (res.ok) {
+          isDirtyRef.current = false
         }
         const contentType = res.headers?.get?.('content-type') || ''
         const isUnauthorized = res.status === 401 || res.status === 403
@@ -248,6 +264,26 @@ function App() {
     const timeout = setTimeout(saveData, 500)
     return () => clearTimeout(timeout)
   }, [courses, sessions, loading, isInitialized, token])
+
+  // Flush pending changes on window close / navigation
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      if (isDirtyRef.current && token) {
+        fetch('/api/data', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`
+          },
+          body: JSON.stringify({ courses: pendingDataRef.current.courses, sessions: pendingDataRef.current.sessions }),
+          keepalive: true
+        }).catch(() => {})
+      }
+    }
+
+    window.addEventListener('beforeunload', handleBeforeUnload)
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload)
+  }, [token])
 
   const handleAddCourse = (course: Course) => {
     try {
