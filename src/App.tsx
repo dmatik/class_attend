@@ -34,6 +34,7 @@ const LoadingSpinner = () => (
 )
 
 import { useTranslation } from "react-i18next"
+import { DirectionProvider } from "@radix-ui/react-direction"
 
 function App() {
   const { t, i18n } = useTranslation()
@@ -421,11 +422,16 @@ function App() {
 
   // 2. Not logged in -> Show Login View
   if (!token || !currentUser) {
-    return <LoginView onLoginSuccess={handleLoginSuccess} />
+    return (
+      <DirectionProvider dir={i18n.dir()}>
+        <LoginView onLoginSuccess={handleLoginSuccess} />
+      </DirectionProvider>
+    )
   }
 
   return (
-    <div className="flex h-screen bg-background overflow-hidden relative">
+    <DirectionProvider dir={i18n.dir()}>
+      <div className="flex h-screen bg-background overflow-hidden relative">
       {/* Desktop Sidebar */}
       <aside className="hidden md:flex flex-col w-64 bg-card border-l border-border h-screen sticky top-0 z-20 shadow-sm shrink-0">
         {/* User Icon placed before the app title */}
@@ -663,6 +669,7 @@ function App() {
       </nav>
       <Toaster />
     </div>
+    </DirectionProvider>
   )
 }
 

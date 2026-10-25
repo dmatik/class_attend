@@ -248,6 +248,12 @@
         "create_failed": "שגיאה ביצירת משתמש",
         "update_failed": "שגיאה בעדכון משתמש",
         "password_reset_failed": "שגיאה באיפוס סיסמה",
-        "delete_failed": "שגיאה במחיקת משתמש"
+        "delete_failed": "שגיאה במחיקת משתמש",
+        "cannot_demote_sole_admin": "לא ניתן להסיר הרשאת מנהל מהמנהל היחיד במערכת",
+        "cannot_demote_default_admin": "לא ניתן לשנות את התפקיד של מנהל ברירת המחדל",
+        "default_admin_role_fixed": "לא ניתן לשנות את התפקיד של מנהל ברירת המחדל",
+        "cannot_delete_sole_admin": "לא ניתן למחוק את המנהל היחיד במערכת",
+        "cannot_delete_self": "לא ניתן למחוק את החשבון האישי שלך",
+        "username_taken": "שם משתמש זה כבר קיים במערכת"
     }
 }

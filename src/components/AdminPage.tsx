@@ -78,6 +78,50 @@ export function AdminPage({ currentUser, token }: AdminPageProps) {
   const [resetPassword, setResetPassword] = useState("")
   const [isSubmittingPassword, setIsSubmittingPassword] = useState(false)
 
+  // Helper to extract localized error messages safely from responses
+  const getErrorMessage = async (res: Response, fallbackKey: string) => {
+    let data: any = null
+    try {
+      const isJson = res.headers.get("content-type")?.includes("application/json")
+      if (isJson) {
+        data = await res.json()
+      } else {
+        const text = await res.text()
+        try {
+          data = JSON.parse(text)
+        } catch {
+          // not json
+        }
+      }
+    } catch {
+      // ignore
+    }
+
+    const err = data?.error
+    if (!err) return t(fallbackKey)
+
+    if (err === "cannot_demote_default_admin") {
+      return t("admin.cannot_demote_default_admin")
+    }
+    if (err === "cannot_demote_sole_admin" || err === "Cannot remove admin role from the only remaining admin") {
+      return t("admin.cannot_demote_sole_admin")
+    }
+    if (err === "cannot_delete_sole_admin") {
+      return t("admin.cannot_delete_sole_admin")
+    }
+    if (err === "cannot_delete_self" || err === "Cannot delete your own account") {
+      return t("admin.cannot_delete_self")
+    }
+    if (err === "username_taken" || err === "A user with this username already exists") {
+      return t("admin.username_taken")
+    }
+
+    const translated = t(`admin.${err}`)
+    if (translated && translated !== `admin.${err}`) return translated
+
+    return err || t(fallbackKey)
+  }
+
   // Fetch Users
   const fetchUsers = async () => {
     try {
@@ -87,8 +131,11 @@ export function AdminPage({ currentUser, token }: AdminPageProps) {
           Authorization: `Bearer ${token}`
         }
       })
+      if (!res.ok) {
+        const msg = await getErrorMessage(res, "admin.fetch_failed")
+        throw new Error(msg)
+      }
       const data = await res.json()
-      if (!res.ok) throw new Error(data.error || t("admin.fetch_failed"))
       setUsers(data.users || [])
     } catch (err: any) {
       toast({
@@ -126,8 +173,10 @@ export function AdminPage({ currentUser, token }: AdminPageProps) {
         })
       })
 
-      const data = await res.json()
-      if (!res.ok) throw new Error(data.error || t("admin.create_failed"))
+      if (!res.ok) {
+        const msg = await getErrorMessage(res, "admin.create_failed")
+        throw new Error(msg)
+      }
 
       toast({
         variant: "success",
@@ -169,6 +218,7 @@ export function AdminPage({ currentUser, token }: AdminPageProps) {
     setIsSubmittingEdit(true)
 
     try {
+      const isDefaultAdmin = activeUser.id === "admin-default" || activeUser.username.toLowerCase() === "admin"
       const res = await fetch(`/api/admin/users/${activeUser.id}`, {
         method: "PUT",
         headers: {
@@ -178,12 +228,14 @@ export function AdminPage({ currentUser, token }: AdminPageProps) {
         body: JSON.stringify({
           firstName: editFirstName,
           lastName: editLastName,
-          role: editRole
+          role: isDefaultAdmin ? "admin" : editRole
         })
       })
 
-      const data = await res.json()
-      if (!res.ok) throw new Error(data.error || t("admin.update_failed"))
+      if (!res.ok) {
+        const msg = await getErrorMessage(res, "admin.update_failed")
+        throw new Error(msg)
+      }
 
       toast({
         variant: "success",
@@ -239,8 +291,10 @@ export function AdminPage({ currentUser, token }: AdminPageProps) {
         })
       })
 
-      const data = await res.json()
-      if (!res.ok) throw new Error(data.error || t("admin.password_reset_failed"))
+      if (!res.ok) {
+        const msg = await getErrorMessage(res, "admin.password_reset_failed")
+        throw new Error(msg)
+      }
 
       toast({
         variant: "success",
@@ -273,8 +327,10 @@ export function AdminPage({ currentUser, token }: AdminPageProps) {
         }
       })
 
-      const data = await res.json()
-      if (!res.ok) throw new Error(data.error || t("admin.delete_failed"))
+      if (!res.ok) {
+        const msg = await getErrorMessage(res, "admin.delete_failed")
+        throw new Error(msg)
+      }
 
       toast({
         variant: "success",
@@ -517,53 +573,69 @@ export function AdminPage({ currentUser, token }: AdminPageProps) {
       {/* Edit User Dialog */}
       <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
         <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>
-              {t("admin.edit_user_modal_title", { username: activeUser?.username })}
-            </DialogTitle>
-            <DialogDescription>{t("admin.edit_user_modal_desc")}</DialogDescription>
-          </DialogHeader>
-          <form onSubmit={handleEditUser} className="space-y-4 py-2">
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-2">
-                <Label htmlFor="edit-fn">{t("account.first_name")}</Label>
-                <Input
-                  id="edit-fn"
-                  value={editFirstName}
-                  onChange={(e) => setEditFirstName(e.target.value)}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="edit-ln">{t("account.last_name")}</Label>
-                <Input
-                  id="edit-ln"
-                  value={editLastName}
-                  onChange={(e) => setEditLastName(e.target.value)}
-                />
-              </div>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="edit-role">{t("account.role")}</Label>
-              <Select value={editRole} onValueChange={(val: UserRole) => setEditRole(val)}>
-                <SelectTrigger id="edit-role">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="user">{t("account.role_user")}</SelectItem>
-                  <SelectItem value="admin">{t("account.role_admin")}</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <DialogFooter className="pt-2">
-              <Button type="button" variant="outline" onClick={() => setIsEditOpen(false)} className="flex-1 sm:flex-none">
-                {t("common.cancel")}
-              </Button>
-              <Button type="submit" disabled={isSubmittingEdit} className="flex-1 sm:flex-none">
-                {isSubmittingEdit ? <Loader2 className="w-4 h-4 animate-spin me-2" /> : null}
-                {t("common.save")}
-              </Button>
-            </DialogFooter>
-          </form>
+          {(() => {
+            const isEditingDefaultAdmin = activeUser?.id === "admin-default" || activeUser?.username?.toLowerCase() === "admin"
+            return (
+              <>
+                <DialogHeader>
+                  <DialogTitle>
+                    {t("admin.edit_user_modal_title", { username: activeUser?.username })}
+                  </DialogTitle>
+                  <DialogDescription>{t("admin.edit_user_modal_desc")}</DialogDescription>
+                </DialogHeader>
+                <form onSubmit={handleEditUser} className="space-y-4 py-2">
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-2">
+                      <Label htmlFor="edit-fn">{t("account.first_name")}</Label>
+                      <Input
+                        id="edit-fn"
+                        value={editFirstName}
+                        onChange={(e) => setEditFirstName(e.target.value)}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="edit-ln">{t("account.last_name")}</Label>
+                      <Input
+                        id="edit-ln"
+                        value={editLastName}
+                        onChange={(e) => setEditLastName(e.target.value)}
+                      />
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="edit-role">{t("account.role")}</Label>
+                    <Select
+                      value={isEditingDefaultAdmin ? "admin" : editRole}
+                      onValueChange={(val: UserRole) => setEditRole(val)}
+                      disabled={isEditingDefaultAdmin}
+                    >
+                      <SelectTrigger id="edit-role" disabled={isEditingDefaultAdmin}>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="user">{t("account.role_user")}</SelectItem>
+                        <SelectItem value="admin">{t("account.role_admin")}</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    {isEditingDefaultAdmin && (
+                      <p className="text-xs text-muted-foreground">
+                        {t("admin.default_admin_role_fixed")}
+                      </p>
+                    )}
+                  </div>
+                  <DialogFooter className="pt-2">
+                    <Button type="button" variant="outline" onClick={() => setIsEditOpen(false)} className="flex-1 sm:flex-none">
+                      {t("common.cancel")}
+                    </Button>
+                    <Button type="submit" disabled={isSubmittingEdit} className="flex-1 sm:flex-none">
+                      {isSubmittingEdit ? <Loader2 className="w-4 h-4 animate-spin me-2" /> : null}
+                      {t("common.save")}
+                    </Button>
+                  </DialogFooter>
+                </form>
+              </>
+            )
+          })()}
         </DialogContent>
       </Dialog>
 

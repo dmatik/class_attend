@@ -59,9 +59,10 @@ export function LoginView({ onLoginSuccess }: LoginViewProps) {
         })
       })
 
-      const data = await res.json()
+      const isJson = res.headers.get("content-type")?.includes("application/json")
+      const data = isJson ? await res.json().catch(() => null) : null
       if (!res.ok) {
-        throw new Error(data.error || t("auth.login_failed"))
+        throw new Error(data?.error || t("auth.login_failed"))
       }
 
       onLoginSuccess(data.token, data.user)

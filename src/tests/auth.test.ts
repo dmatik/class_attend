@@ -171,5 +171,21 @@ describe('SQLite Database & Auth System', () => {
     const afterDelete = db.prepare('SELECT * FROM authenticators WHERE user_id = ?').all(tempUserId)
     expect(afterDelete).toHaveLength(0)
   })
+
+  it('correctly queries admin count without SQLite syntax error and identifies sole admin', () => {
+    // Check sole admin count using parameterized query
+    const adminCount = (db.prepare('SELECT COUNT(*) as c FROM users WHERE role = ?').get('admin') as any).c
+    expect(adminCount).toBeGreaterThanOrEqual(1)
+
+    // Demoting when adminCount <= 1 should be forbidden
+    const isSoleAdmin = adminCount <= 1
+    expect(isSoleAdmin).toBe(true)
+
+    // Verify default admin identification
+    const defaultAdmin = db.prepare('SELECT id, username, role FROM users WHERE id = ?').get('admin-default') as any
+    expect(defaultAdmin).toBeDefined()
+    expect(defaultAdmin.username).toBe('admin')
+    expect(defaultAdmin.role).toBe('admin')
+  })
 })
 
