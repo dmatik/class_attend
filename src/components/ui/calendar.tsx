@@ -35,14 +35,12 @@ function Calendar({
                 button_previous: cn(
                     buttonVariants({ variant: "outline" }),
                     "h-7 w-7 bg-transparent p-0 opacity-50 hover:opacity-100",
-                    "absolute top-2 z-10",
-                    isRtl ? "right-2" : "left-2" // Logical start
+                    "absolute top-2 start-2 z-10"
                 ),
                 button_next: cn(
                     buttonVariants({ variant: "outline" }),
                     "h-7 w-7 bg-transparent p-0 opacity-50 hover:opacity-100",
-                    "absolute top-2 z-10",
-                    isRtl ? "left-2" : "right-2" // Logical end
+                    "absolute top-2 end-2 z-10"
                 ),
                 month_grid: "w-full border-collapse space-y-1",
                 weekdays: "flex",

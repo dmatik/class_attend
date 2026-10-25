@@ -38,8 +38,7 @@ export function DatePicker({ date, setDate, placeholder, className }: DatePicker
                 <Button
                     variant={"outline"}
                     className={cn(
-                        "w-full justify-start text-left font-normal gap-2",
-                        isRtl && "text-right",
+                        "w-full justify-start text-start font-normal gap-2",
                         !date && "text-muted-foreground",
                         className
                     )}

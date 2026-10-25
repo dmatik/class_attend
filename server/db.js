@@ -73,6 +73,7 @@ export function initDb() {
     CREATE INDEX IF NOT EXISTS idx_courses_user ON courses(user_id);
     CREATE INDEX IF NOT EXISTS idx_sessions_user ON sessions(user_id);
     CREATE INDEX IF NOT EXISTS idx_sessions_course ON sessions(course_id);
+    CREATE INDEX IF NOT EXISTS idx_sessions_user_date ON sessions(user_id, date ASC);
 
     CREATE TABLE IF NOT EXISTS authenticators (
       id TEXT PRIMARY KEY,
@@ -106,6 +107,8 @@ export function initDb() {
     if (!colNames.includes('replacement_for_session_id')) {
       db.exec('ALTER TABLE sessions ADD COLUMN replacement_for_session_id TEXT;');
     }
+
+    db.exec('CREATE INDEX IF NOT EXISTS idx_sessions_user_date ON sessions(user_id, date ASC);');
   } catch (err) {
     console.error('Migration error for columns:', err);
   }

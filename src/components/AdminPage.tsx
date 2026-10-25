@@ -80,7 +80,7 @@ export function AdminPage({ currentUser, token }: AdminPageProps) {
 
   // Helper to extract localized error messages safely from responses
   const getErrorMessage = async (res: Response, fallbackKey: string) => {
-    let data: any = null
+    let data: { error?: string; users?: User[] } | null = null
     try {
       const isJson = res.headers.get("content-type")?.includes("application/json")
       if (isJson) {
@@ -137,11 +137,11 @@ export function AdminPage({ currentUser, token }: AdminPageProps) {
       }
       const data = await res.json()
       setUsers(data.users || [])
-    } catch (err: any) {
+    } catch (err: unknown) {
       toast({
         variant: "destructive",
         title: t("common.error"),
-        description: err.message || t("admin.fetch_failed")
+        description: err instanceof Error ? err.message : t("admin.fetch_failed")
       })
     } finally {
       setLoading(false)
@@ -191,11 +191,11 @@ export function AdminPage({ currentUser, token }: AdminPageProps) {
       setCreateLastName("")
       setCreateRole("user")
       fetchUsers()
-    } catch (err: any) {
+    } catch (err: unknown) {
       toast({
         variant: "destructive",
         title: t("common.error"),
-        description: err.message || t("admin.create_failed")
+        description: err instanceof Error ? err.message : t("admin.create_failed")
       })
     } finally {
       setIsSubmittingCreate(false)
@@ -245,11 +245,11 @@ export function AdminPage({ currentUser, token }: AdminPageProps) {
 
       setIsEditOpen(false)
       fetchUsers()
-    } catch (err: any) {
+    } catch (err: unknown) {
       toast({
         variant: "destructive",
         title: t("common.error"),
-        description: err.message || t("admin.update_failed")
+        description: err instanceof Error ? err.message : t("admin.update_failed")
       })
     } finally {
       setIsSubmittingEdit(false)
@@ -304,11 +304,11 @@ export function AdminPage({ currentUser, token }: AdminPageProps) {
 
       setIsPasswordOpen(false)
       setResetPassword("")
-    } catch (err: any) {
+    } catch (err: unknown) {
       toast({
         variant: "destructive",
         title: t("common.error"),
-        description: err.message || t("admin.password_reset_failed")
+        description: err instanceof Error ? err.message : t("admin.password_reset_failed")
       })
     } finally {
       setIsSubmittingPassword(false)
@@ -340,11 +340,11 @@ export function AdminPage({ currentUser, token }: AdminPageProps) {
 
       setUserToDelete(null)
       fetchUsers()
-    } catch (err: any) {
+    } catch (err: unknown) {
       toast({
         variant: "destructive",
         title: t("common.error"),
-        description: err.message || t("admin.delete_failed")
+        description: err instanceof Error ? err.message : t("admin.delete_failed")
       })
     }
   }

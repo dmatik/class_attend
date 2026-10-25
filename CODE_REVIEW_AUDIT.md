@@ -103,47 +103,47 @@ Following the primary full-stack code review, an adversarial **Red Team audit** 
 
 ---
 
-### 🔧 Medium Severity (P2) — Quality & Robustness Improvements
+### 🔧 Medium Severity (P2) — Resolved & Verified
 
-- [ ] **P2-1: Configure SQLite `busy_timeout` and Pragmas**
-  * **File**: [`server/db.js:20-23`](file:///Users/dmitryt/GitHub/class_attend/server/db.js#L20-L23)
-  * **Remediation**: Add `db.pragma('busy_timeout = 5000');` and `db.pragma('synchronous = NORMAL');`.
+- [x] **P2-1: Configure SQLite `busy_timeout` and Pragmas**
+  * **File**: [`server/db.js:20-25`](file:///Users/dmitryt/GitHub/class_attend/server/db.js#L20-L25)
+  * **Resolution**: Added `db.pragma('busy_timeout = 5000');` and `db.pragma('synchronous = NORMAL');` alongside WAL mode.
 
-- [ ] **P2-2: Fix Bcrypt Login Timing Attack User Enumeration**
-  * **File**: [`server/index.js:114-117`](file:///Users/dmitryt/GitHub/class_attend/server/index.js#L114-L117)
-  * **Remediation**: Run a dummy `bcrypt.compareSync` on non-existent users to eliminate ~100ms timing discrepancy.
+- [x] **P2-2: Fix Bcrypt Login Timing Attack User Enumeration**
+  * **File**: [`server/index.js:199-205`](file:///Users/dmitryt/GitHub/class_attend/server/index.js#L199-L205)
+  * **Resolution**: Executed constant-time `bcrypt.compareSync(password, DUMMY_HASH)` on non-existent usernames to eliminate ~100ms timing discrepancy.
 
-- [ ] **P2-3: Passkey Re-registration & Pre-Check**
-  * **File**: [`server/index.js:210-225`](file:///Users/dmitryt/GitHub/class_attend/server/index.js#L210-L225)
-  * **Remediation**: Check existing authenticator ownership before insert; reject 409 if owned by another user.
+- [x] **P2-3: Passkey Re-registration & Pre-Check**
+  * **File**: [`server/index.js:297-301`](file:///Users/dmitryt/GitHub/class_attend/server/index.js#L297-L301)
+  * **Resolution**: Validated credential uniqueness in `user_passkeys` and excluded registered credentials in `register-options`. Rejects cross-account collision with 409 Conflict.
 
-- [ ] **P2-4: Validate Course Scoping in `/api/data`**
-  * **File**: [`server/index.js:695-748`](file:///Users/dmitryt/GitHub/class_attend/server/index.js#L695-L748)
-  * **Remediation**: Ensure all submitted session `courseId`s exist within submitted courses for `req.user.id`.
+- [x] **P2-4: Validate Course Scoping in `/api/data`**
+  * **File**: [`server/index.js:853-861`](file:///Users/dmitryt/GitHub/class_attend/server/index.js#L853-L861)
+  * **Resolution**: Enforced that all session `courseId`s exist within the submitted user courses before persisting.
 
-- [ ] **P2-5: Convert Physical Tailwind Directional Classes to Logical Properties**
-  * **Files**: `src/components/DailyView.tsx`, `src/components/LoginView.tsx`, `src/components/ui/calendar.tsx`, `src/components/ui/dropdown-menu.tsx`
-  * **Remediation**: Replace with `ps-`, `pe-`, `ms-`, `me-`, `start-`, `end-`, `text-start`.
+- [x] **P2-5: Convert Physical Tailwind Directional Classes to Logical Properties**
+  * **Files**: [`src/App.tsx:676, 729`](file:///Users/dmitryt/GitHub/class_attend/src/App.tsx), [`src/components/DailyView.tsx:251-269`](file:///Users/dmitryt/GitHub/class_attend/src/components/DailyView.tsx), [`src/components/LoginView.tsx:79, 142`](file:///Users/dmitryt/GitHub/class_attend/src/components/LoginView.tsx), [`src/components/CoursesPage.tsx:260`](file:///Users/dmitryt/GitHub/class_attend/src/components/CoursesPage.tsx), [`src/components/ui/date-picker.tsx:41`](file:///Users/dmitryt/GitHub/class_attend/src/components/ui/date-picker.tsx), [`src/components/ui/calendar.tsx:39, 45`](file:///Users/dmitryt/GitHub/class_attend/src/components/ui/calendar.tsx), [`src/components/ui/dropdown-menu.tsx`](file:///Users/dmitryt/GitHub/class_attend/src/components/ui/dropdown-menu.tsx), [`src/components/ui/toast.tsx:17`](file:///Users/dmitryt/GitHub/class_attend/src/components/ui/toast.tsx)
+  * **Resolution**: Replaced `pl-`, `pr-`, `ml-`, `mr-`, `left-`, `right-`, `text-left`, `text-right` with logical Tailwind utilities (`ps-`, `pe-`, `ms-`, `me-`, `start-`, `end-`, `inset-x-0`, `text-start`, `rounded-e-full`).
 
-- [ ] **P2-6: Add Composite Index on `sessions(user_id, date ASC)`**
-  * **File**: [`server/db.js:63-65`](file:///Users/dmitryt/GitHub/class_attend/server/db.js#L63-L65)
-  * **Remediation**: Add `CREATE INDEX IF NOT EXISTS idx_sessions_user_date ON sessions(user_id, date ASC);`.
+- [x] **P2-6: Add Composite Index on `sessions(user_id, date ASC)`**
+  * **File**: [`server/db.js:76, 111`](file:///Users/dmitryt/GitHub/class_attend/server/db.js#L76)
+  * **Resolution**: Created `idx_sessions_user_date ON sessions(user_id, date ASC)` in SQLite schema and automatic migration block. Added verification unit test in `src/tests/auth.test.ts`.
 
-- [ ] **P2-7: Group Dashboard Sessions by Course ID Rather Than Course Name**
-  * **File**: [`src/components/Dashboard.tsx:14-19`](file:///Users/dmitryt/GitHub/class_attend/src/components/Dashboard.tsx#L14-L19)
-  * **Remediation**: Group by `session.courseId`.
+- [x] **P2-7: Group Dashboard Sessions by Course ID Rather Than Course Name**
+  * **File**: [`src/components/Dashboard.tsx:26-80`](file:///Users/dmitryt/GitHub/class_attend/src/components/Dashboard.tsx#L26-L80)
+  * **Resolution**: Grouped sessions by `session.courseId || session.courseName` with `useMemo` calculation to prevent conflating distinct courses with duplicate names and memoize calculations (resolving P3-2).
 
-- [ ] **P2-8: Modernize React 19 Component Refs in UI Primitives**
-  * **Files**: `src/components/ui/*.tsx`
-  * **Remediation**: Refactor components to standard function components accepting `ref`.
+- [x] **P2-8: Modernize React 19 Component Refs in UI Primitives**
+  * **Files**: [`src/components/ui/card.tsx`](file:///Users/dmitryt/GitHub/class_attend/src/components/ui/card.tsx), [`src/components/ui/input.tsx`](file:///Users/dmitryt/GitHub/class_attend/src/components/ui/input.tsx), [`src/components/ui/textarea.tsx`](file:///Users/dmitryt/GitHub/class_attend/src/components/ui/textarea.tsx)
+  * **Resolution**: Refactored HTML element primitives to standard React 19 functional components accepting `ref` directly as a prop (`React.ComponentProps<...>`).
 
-- [ ] **P2-9: Safe `JSON.parse` with Fallbacks**
-  * **File**: [`server/index.js:147, 254, 314, 657`](file:///Users/dmitryt/GitHub/class_attend/server/index.js#L147)
-  * **Remediation**: Wrap with `safeJsonParse(val, fallback)`.
+- [x] **P2-9: Safe `JSON.parse` with Fallbacks**
+  * **File**: [`server/index.js:133-140, 243, 354, 415, 786`](file:///Users/dmitryt/GitHub/class_attend/server/index.js#L133-L140)
+  * **Resolution**: Implemented `safeJsonParse(value, fallback)` helper preventing server 500 crashes on malformed JSON columns (`transports`, `days_of_week`).
 
-- [ ] **P2-10: Replace Loose `any` Types with Strict TypeScript Types**
-  * **Files**: `src/App.tsx:676`, `src/components/AdminPage.tsx:83`, `src/components/AccountPage.tsx:113`
-  * **Remediation**: Replace with typed components and `unknown` + type guards.
+- [x] **P2-10: Replace Loose `any` Types with Strict TypeScript Types**
+  * **Files**: [`src/App.tsx:712, 736`](file:///Users/dmitryt/GitHub/class_attend/src/App.tsx), [`src/components/DailyView.tsx:238`](file:///Users/dmitryt/GitHub/class_attend/src/components/DailyView.tsx), [`src/components/AdminPage.tsx:83, 140, 194, 248, 307, 343`](file:///Users/dmitryt/GitHub/class_attend/src/components/AdminPage.tsx), [`src/components/AccountPage.tsx:113, 138, 203, 266`](file:///Users/dmitryt/GitHub/class_attend/src/components/AccountPage.tsx), [`src/components/LoginView.tsx:36, 69`](file:///Users/dmitryt/GitHub/class_attend/src/components/LoginView.tsx)
+  * **Resolution**: Replaced `: any` with strict types: `LucideIcon`, `TFunction`, `unknown` error typing with `err instanceof Error ? err.message : String(err)`.
 
 ---
 

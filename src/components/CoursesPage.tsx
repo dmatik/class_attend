@@ -257,7 +257,7 @@ export function CoursesPage({ courses, onAddCourse, onEditCourse, onDeleteCourse
                                         value={lessonCount}
                                         onChange={(e) => setLessonCount(e.target.value)}
                                         min="1"
-                                        className={i18n.dir() === 'rtl' ? "text-right" : "text-left"}
+                                        className="text-start"
                                     />
                                     <p className="text-xs text-muted-foreground mt-1">
                                         <span className="text-destructive">*</span> {t('management.total_lessons_mandatory')}
