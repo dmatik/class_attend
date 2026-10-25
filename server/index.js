@@ -934,7 +934,9 @@ app.use('/api', (req, res) => {
 app.use((err, req, res, next) => {
   console.error('Unhandled server error:', err);
   if (req.path.startsWith('/api') || req.originalUrl?.startsWith('/api')) {
-    return res.status(500).json({ error: err.message || 'Internal server error' });
+    const isProd = process.env.NODE_ENV === 'production';
+    const message = isProd ? 'Internal server error' : (err.message || 'Internal server error');
+    return res.status(500).json({ error: message });
   }
   next(err);
 });

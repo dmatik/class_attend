@@ -3,50 +3,14 @@
 @tailwind utilities;
 
 @layer base {
-
-  /* :root {
-    --background: 210 20% 98%;
-    --foreground: 222.2 84% 4.9%;
-
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
-
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
-
-    --primary: 221.2 83.2% 53.3%;
-    --primary-foreground: 210 40% 98%;
-
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
-
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
-
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
-
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 221.2 83.2% 53.3%;
-
-    --radius: 0.75rem;
-  } */
   :root {
-    /* Background: Slate-50 (Soft Cool Grey) 
-      Instead of 0 0% 100% (Pure White)
-    */
+    /* Background: Slate-50 (Soft Cool Grey) */
     --background: 210 40% 98%;
 
     /* Foreground: Slate-900 (Deep Text) */
     --foreground: 222.2 47.4% 11.2%;
 
-    /* Cards: Pure White 
-      This creates contrast against the Slate-50 background.
-    */
+    /* Cards: Pure White */
     --card: 0 0% 100%;
     --card-foreground: 222.2 47.4% 11.2%;
 
@@ -54,22 +18,19 @@
     --popover: 0 0% 100%;
     --popover-foreground: 222.2 47.4% 11.2%;
 
-    /* Primary Action: Slate-900 (Deep Blue-Black) */
-    /* --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%; */
+    /* Primary Action */
     --primary: 221.2 83.2% 53.3%;
     --primary-foreground: 210 40% 98%;
 
-    /* Secondary: Slate-100 (Slightly darker grey for buttons) */
+    /* Secondary */
     --secondary: 210 40% 96.1%;
     --secondary-foreground: 222.2 47.4% 11.2%;
 
-    /* Muted: Slate-100 */
+    /* Muted */
     --muted: 210 40% 96.1%;
     --muted-foreground: 215.4 16.3% 46.9%;
-    /* Slate-500 for subtitles */
 
-    /* Accents (Hover states): Slate-100 */
+    /* Accents (Hover states) */
     --accent: 210 40% 96.1%;
     --accent-foreground: 222.2 47.4% 11.2%;
 
@@ -77,7 +38,7 @@
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
 
-    /* Borders: Slate-200 (Visible but soft) */
+    /* Borders: Slate-200 */
     --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
     --ring: 222.2 84% 4.9%;
@@ -85,86 +46,40 @@
     --radius: 0.5rem;
   }
 
-  /* .dark {
-    --background: 0 0% 3.9%;
-    --foreground: 0 0% 98%;
-
-    --card: 0 0% 3.9%;
-    --card-foreground: 0 0% 98%;
-
-    --popover: 0 0% 3.9%;
-    --popover-foreground: 0 0% 98%;
-
-    --primary: 0 0% 98%;
-    --primary-foreground: 0 0% 9%;
-
-    --secondary: 0 0% 14.9%;
-    --secondary-foreground: 0 0% 98%;
-
-    --muted: 0 0% 14.9%;
-    --muted-foreground: 0 0% 63.9%;
-
-    --accent: 0 0% 14.9%;
-    --accent-foreground: 0 0% 98%;
-
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 0 0% 98%;
-
-    --border: 240 3.7% 15.9%;
-    --input: 240 3.7% 15.9%;
-    --ring: 0 0% 83.1%;
-  } */
   .dark {
-    /* Main Background: Slate-900 (Instead of Black/Zinc-950)
-       This gives it that deep blue-grey look.
-    */
+    /* Main Background: Slate-900 */
     --background: 222.2 47.4% 11.2%;
     --foreground: 210 40% 98%;
 
-    /* Cards: Slightly lighter than BG to create depth
-       (Slate-800 ish)
-    */
+    /* Cards */
     --card: 217.2 32.6% 17.5%;
     --card-foreground: 210 40% 98%;
 
-    /* Popovers (Dropdowns, etc): Same as Card
-    */
+    /* Popovers (Dropdowns, etc) */
     --popover: 217.2 32.6% 17.5%;
     --popover-foreground: 210 40% 98%;
 
-    /* Primary (Action buttons): White/Off-white 
-       to contrast against the blue-grey
-    */
-    /* --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 11.2%; */
+    /* Primary */
     --primary: 221.2 83.2% 53.3%;
     --primary-foreground: 210 40% 98%;
 
-    /* Secondary (Muted buttons): 
-       Blending with the card background 
-    */
+    /* Secondary */
     --secondary: 217.2 32.6% 22%;
-    /* Lighter than card */
     --secondary-foreground: 210 40% 98%;
 
-    /* Muted text/backgrounds
-    */
+    /* Muted */
     --muted: 217.2 32.6% 22%;
     --muted-foreground: 215 20.2% 65.1%;
 
-    /* Accents (Hover states)
-    */
+    /* Accents */
     --accent: 217.2 32.6% 22%;
     --accent-foreground: 210 40% 98%;
 
-    /* Destructive (Error states) - Soft Red
-    */
+    /* Destructive */
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 210 40% 98%;
 
-    /* Borders: Distinct but not harsh 
-       (Slate-700)
-    */
+    /* Borders */
     --border: 217.2 32.6% 25%;
     --input: 217.2 32.6% 25%;
     --ring: 212.7 26.8% 83.9%;

@@ -147,20 +147,20 @@ Following the primary full-stack code review, an adversarial **Red Team audit** 
 
 ---
 
-### 💡 Low Severity (P3) — Minor Polish & Cleanup
+### 💡 Low Severity (P3) — Resolved & Verified
 
-- [ ] **P3-1: Pin Dependencies in Dockerfile**
-  * **File**: [`Dockerfile:16-18`](file:///Users/dmitryt/GitHub/class_attend/Dockerfile#L16-L18)
-  * **Remediation**: Use `npm ci --omit=dev` with `package-lock.json`.
+- [x] **P3-1: Pin Dependencies in Dockerfile**
+  * **File**: [`Dockerfile:13-18`](file:///Users/dmitryt/GitHub/class_attend/Dockerfile#L13-L18)
+  * **Resolution**: Replaced unpinned `npm install` with reproducible `COPY package.json package-lock.json ./` and `RUN npm ci --omit=dev`.
 
-- [ ] **P3-2: Memoize Dashboard Calculations**
-  * **File**: [`src/components/Dashboard.tsx:14-61`](file:///Users/dmitryt/GitHub/class_attend/src/components/Dashboard.tsx#L14-L61)
-  * **Remediation**: Wrap calculations with `useMemo`.
+- [x] **P3-2: Memoize Dashboard Calculations**
+  * **File**: [`src/components/Dashboard.tsx:26-80`](file:///Users/dmitryt/GitHub/class_attend/src/components/Dashboard.tsx#L26-L80)
+  * **Resolution**: Wrapped grouping and aggregate metrics computations in `useMemo`, eliminating redundant array filtering across renders.
 
-- [ ] **P3-3: Mask Raw SQLite Errors in API Error Handler**
-  * **File**: [`server/index.js:761-768`](file:///Users/dmitryt/GitHub/class_attend/server/index.js#L761-L768)
-  * **Remediation**: Return generic `{ error: 'Internal server error' }` in production.
+- [x] **P3-3: Mask Raw SQLite Errors in API Error Handler**
+  * **File**: [`server/index.js:933-941`](file:///Users/dmitryt/GitHub/class_attend/server/index.js#L933-L941)
+  * **Resolution**: Added production environment check in global Express error handler to return generic `{ error: 'Internal server error' }`, preventing leak of raw SQLite table structures and constraint details.
 
-- [ ] **P3-4: Clean Up Dead Commented-Out CSS**
-  * **File**: [`src/index.css:7-37, 88-116`](file:///Users/dmitryt/GitHub/class_attend/src/index.css#L7-L37)
-  * **Remediation**: Delete unused comments.
+- [x] **P3-4: Clean Up Dead Commented-Out CSS**
+  * **File**: [`src/index.css:7-172`](file:///Users/dmitryt/GitHub/class_attend/src/index.css#L7-L172)
+  * **Resolution**: Removed all dead commented-out color tokens and selector blocks from `:root` and `.dark` layers.
