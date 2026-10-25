@@ -33,9 +33,10 @@ export function LoginView({ onLoginSuccess }: LoginViewProps) {
     try {
       const result = await loginWithPasskey(username.trim() || undefined)
       onLoginSuccess(result.token, result.user)
-    } catch (err: any) {
-      if (err.name !== 'NotAllowedError') {
-        setError(err.message || t("auth.passkey_failed"))
+    } catch (err: unknown) {
+      const errorObj = err instanceof Error ? err : new Error(String(err))
+      if (errorObj.name !== 'NotAllowedError') {
+        setError(errorObj.message || t("auth.passkey_failed"))
       }
     } finally {
       setPasskeyLoading(false)
@@ -66,8 +67,9 @@ export function LoginView({ onLoginSuccess }: LoginViewProps) {
       }
 
       onLoginSuccess(data.token, data.user)
-    } catch (err: any) {
-      setError(err.message || t("auth.login_failed"))
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err)
+      setError(message || t("auth.login_failed"))
     } finally {
       setLoading(false)
     }
@@ -76,7 +78,7 @@ export function LoginView({ onLoginSuccess }: LoginViewProps) {
   return (
     <div className="min-h-screen w-full flex flex-col justify-center items-center bg-gradient-to-br from-background via-muted/30 to-background p-4 relative">
       {/* Top Controls */}
-      <div className="absolute top-4 right-4 flex items-center gap-2">
+      <div className="absolute top-4 end-4 flex items-center gap-2">
         <LanguageSwitcher />
         <ModeToggle />
       </div>
@@ -139,7 +141,7 @@ export function LoginView({ onLoginSuccess }: LoginViewProps) {
             <Button type="submit" className="w-full mt-6" disabled={loading || passkeyLoading}>
               {loading ? (
                 <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  <Loader2 className="me-2 h-4 w-4 animate-spin" />
                   {t("auth.logging_in")}
                 </>
               ) : (

@@ -268,5 +268,15 @@ describe('SQLite Database & Auth System', () => {
     // Clean up
     db.prepare('DELETE FROM users WHERE id = ?').run(testUserId)
   })
+
+  it('creates and verifies the idx_sessions_user_date composite index', () => {
+    const indexes = db.prepare("PRAGMA index_list('sessions')").all() as Array<{ name: string }>
+    const indexNames = indexes.map(idx => idx.name)
+    expect(indexNames).toContain('idx_sessions_user_date')
+
+    const indexInfo = db.prepare("PRAGMA index_info('idx_sessions_user_date')").all() as Array<{ name: string }>
+    const indexedColumns = indexInfo.map(info => info.name)
+    expect(indexedColumns).toEqual(['user_id', 'date'])
+  })
 })
 

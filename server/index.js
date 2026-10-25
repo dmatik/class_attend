@@ -130,6 +130,15 @@ function getOrCreateJwtSecret() {
 
 const JWT_SECRET = getOrCreateJwtSecret();
 
+function safeJsonParse(value, fallback = []) {
+  if (!value) return fallback;
+  try {
+    return JSON.parse(value);
+  } catch {
+    return fallback;
+  }
+}
+
 app.use(cors());
 app.use(express.json({ limit: '2mb' })); // Support bulk session sync and avatar upload
 
@@ -232,7 +241,7 @@ app.post('/api/auth/passkey/register-options', authenticate, async (req, res) =>
     const existing = db.prepare('SELECT id, transports FROM authenticators WHERE user_id = ?').all(req.user.id);
     const excludeCredentials = existing.map(a => ({
       id: a.id,
-      transports: JSON.parse(a.transports || '[]')
+      transports: safeJsonParse(a.transports, [])
     }));
 
     const options = await generateRegistrationOptions({
@@ -343,7 +352,7 @@ app.post('/api/auth/passkey/login-options', async (req, res) => {
         const authenticators = db.prepare('SELECT id, transports FROM authenticators WHERE user_id = ?').all(user.id);
         allowCredentials = authenticators.map(a => ({
           id: a.id,
-          transports: JSON.parse(a.transports || '[]')
+          transports: safeJsonParse(a.transports, [])
         }));
       }
     }
@@ -404,7 +413,7 @@ app.post('/api/auth/passkey/login-verify', rateLimitAuth(20, 60000), async (req,
         id: authenticator.id,
         publicKey: new Uint8Array(authenticator.public_key),
         counter: authenticator.counter,
-        transports: JSON.parse(authenticator.transports || '[]'),
+        transports: safeJsonParse(authenticator.transports, []),
       },
     });
 
@@ -774,12 +783,7 @@ app.get('/api/data', authenticate, (req, res) => {
     const sessionRows = db.prepare('SELECT * FROM sessions WHERE user_id = ? ORDER BY date ASC').all(userId);
 
     const courses = courseRows.map(c => {
-      let daysOfWeek = [];
-      try {
-        daysOfWeek = c.days_of_week ? JSON.parse(c.days_of_week) : [];
-      } catch {
-        daysOfWeek = [];
-      }
+      const daysOfWeek = safeJsonParse(c.days_of_week, []);
 
       return {
         id: c.id,

@@ -8,7 +8,8 @@ import {
   AlertCircle,
   RefreshCw,
   User as UserIcon,
-  Shield
+  Shield,
+  type LucideIcon
 } from "lucide-react"
 import { addDays, format, parseISO } from "date-fns"
 import { Toaster } from "@/components/ui/toaster"
@@ -673,7 +674,7 @@ function App() {
       </div>
 
       {/* Mobile Bottom Navigation */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-background/85 backdrop-blur-md border-t border-border pb-4 z-30 pt-1.5 shadow-sm">
+      <nav className="md:hidden fixed bottom-0 inset-x-0 bg-background/85 backdrop-blur-md border-t border-border pb-4 z-30 pt-1.5 shadow-sm">
         <div className="flex justify-around items-center">
           <MobileNavButton
             active={activeTab === 'daily'}
@@ -709,7 +710,7 @@ function App() {
   )
 }
 
-function MenuButton({ active, onClick, icon: Icon, label }: { active: boolean; onClick: () => void; icon: any; label: string }) {
+function MenuButton({ active, onClick, icon: Icon, label }: { active: boolean; onClick: () => void; icon: LucideIcon; label: string }) {
   return (
     <motion.button
       whileTap={{ scale: 0.98 }}
@@ -726,14 +727,14 @@ function MenuButton({ active, onClick, icon: Icon, label }: { active: boolean; o
       {active && (
         <motion.div
           layoutId="activeDesk"
-          className="absolute start-0 ltr:left-0 rtl:right-0 w-1 h-6 bg-primary ltr:rounded-r-full rtl:rounded-l-full"
+          className="absolute start-0 w-1 h-6 bg-primary rounded-e-full"
         />
       )}
     </motion.button>
   )
 }
 
-function MobileNavButton({ active, onClick, icon: Icon, label }: { active: boolean; onClick: () => void; icon: any; label: string }) {
+function MobileNavButton({ active, onClick, icon: Icon, label }: { active: boolean; onClick: () => void; icon: LucideIcon; label: string }) {
   return (
     <motion.button
       whileTap={{ scale: 0.9 }}

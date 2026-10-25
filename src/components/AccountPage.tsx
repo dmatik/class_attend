@@ -110,12 +110,13 @@ export function AccountPage({ user, token, onUpdateUser, onLogout }: AccountPage
         title: t("account.passkey_created_title"),
         description: t("account.passkey_created_desc")
       })
-    } catch (err: any) {
-      if (err.name !== 'NotAllowedError') {
+    } catch (err: unknown) {
+      const errorObj = err instanceof Error ? err : new Error(String(err))
+      if (errorObj.name !== 'NotAllowedError') {
         toast({
           variant: "destructive",
           title: t("common.error"),
-          description: err.message || t("account.passkey_failed")
+          description: errorObj.message || t("account.passkey_failed")
         })
       }
     } finally {
@@ -135,11 +136,11 @@ export function AccountPage({ user, token, onUpdateUser, onLogout }: AccountPage
         title: t("account.passkey_deleted_title"),
         description: t("account.passkey_deleted_desc")
       })
-    } catch (err: any) {
+    } catch (err: unknown) {
       toast({
         variant: "destructive",
         title: t("common.error"),
-        description: err.message || "Failed to remove passkey"
+        description: err instanceof Error ? err.message : t("account.passkey_failed")
       })
     } finally {
       setDeletingPasskey(false)
@@ -200,11 +201,11 @@ export function AccountPage({ user, token, onUpdateUser, onLogout }: AccountPage
         title: t("account.profile_updated_title"),
         description: t("account.profile_updated_desc")
       })
-    } catch (err: any) {
+    } catch (err: unknown) {
       toast({
         variant: "destructive",
         title: t("common.error"),
-        description: err.message || t("account.update_failed")
+        description: err instanceof Error ? err.message : t("account.update_failed")
       })
     } finally {
       setSavingProfile(false)
@@ -263,11 +264,11 @@ export function AccountPage({ user, token, onUpdateUser, onLogout }: AccountPage
         title: t("account.password_changed_title"),
         description: t("account.password_changed_desc")
       })
-    } catch (err: any) {
+    } catch (err: unknown) {
       toast({
         variant: "destructive",
         title: t("common.error"),
-        description: err.message || t("account.password_change_failed")
+        description: err instanceof Error ? err.message : t("account.password_change_failed")
       })
     } finally {
       setSavingPassword(false)

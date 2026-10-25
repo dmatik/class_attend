@@ -1,5 +1,6 @@
 import * as React from "react"
 import { useTranslation } from 'react-i18next'
+import type { TFunction } from 'i18next'
 import { motion, AnimatePresence } from "framer-motion"
 import { Calendar as CalendarIcon, Filter } from "lucide-react"
 import { format } from "date-fns"
@@ -235,7 +236,7 @@ function FilterContent({
     setDraftEventTypeFilter: (v: 'all' | 'missed' | 'replacement') => void,
     onApply: () => void,
     onCancel: () => void,
-    t: any,
+    t: TFunction,
     dir: string
 }) {
     return (
@@ -248,9 +249,9 @@ function FilterContent({
                         <SelectValue placeholder={t('daily_view.filter_modal.select_course')} />
                     </SelectTrigger>
                     <SelectContent>
-                        <SelectItem value="all" className="text-start rtl:pr-8 ltr:pl-8">{t('daily_view.filter_modal.all_courses')}</SelectItem>
+                        <SelectItem value="all">{t('daily_view.filter_modal.all_courses')}</SelectItem>
                         {courses.map(course => (
-                            <SelectItem key={course.id} value={course.id} className="text-start rtl:pr-8 ltr:pl-8">{course.name}</SelectItem>
+                            <SelectItem key={course.id} value={course.id}>{course.name}</SelectItem>
                         ))}
                     </SelectContent>
                 </Select>
@@ -264,9 +265,9 @@ function FilterContent({
                         <SelectValue placeholder={t('daily_view.filter_modal.select_type')} />
                     </SelectTrigger>
                     <SelectContent>
-                        <SelectItem value="all" className="text-start rtl:pr-8 ltr:pl-8">{t('daily_view.filter_modal.all_events')}</SelectItem>
-                        <SelectItem value="missed" className="text-start rtl:pr-8 ltr:pl-8">{t('daily_view.filter_modal.only_missed')}</SelectItem>
-                        <SelectItem value="replacement" className="text-start rtl:pr-8 ltr:pl-8">{t('daily_view.filter_modal.only_replacements')}</SelectItem>
+                        <SelectItem value="all">{t('daily_view.filter_modal.all_events')}</SelectItem>
+                        <SelectItem value="missed">{t('daily_view.filter_modal.only_missed')}</SelectItem>
+                        <SelectItem value="replacement">{t('daily_view.filter_modal.only_replacements')}</SelectItem>
                     </SelectContent>
                 </Select>
             </div>
