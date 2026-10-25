@@ -754,7 +754,7 @@ app.post('/api/data', authenticate, (req, res) => {
 });
 
 // 404 handler for unmatched API routes
-app.all('/api/*', (req, res) => {
+app.use('/api', (req, res) => {
   res.status(404).json({ error: 'Endpoint not found' });
 });
 
