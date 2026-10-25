@@ -200,6 +200,6 @@
 
 @layer utilities {
   .pb-safe {
-    padding-bottom: max(1.125rem, calc(env(safe-area-inset-bottom, 0px) + 0.5rem));
+    padding-bottom: max(0.75rem, env(safe-area-inset-bottom, 0px));
   }
 }

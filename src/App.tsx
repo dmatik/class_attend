@@ -631,7 +631,7 @@ function App() {
       </div>
 
       {/* Mobile Bottom Navigation */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-background/85 backdrop-blur-md border-t border-border pb-safe z-30 pt-2 shadow-sm">
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-background/85 backdrop-blur-md border-t border-border pb-safe z-30 pt-1.5 shadow-sm">
         <div className="flex justify-around items-center">
           <MobileNavButton
             active={activeTab === 'daily'}
@@ -696,7 +696,7 @@ function MobileNavButton({ active, onClick, icon: Icon, label }: { active: boole
       whileTap={{ scale: 0.9 }}
       onClick={onClick}
       className={cn(
-        "flex flex-col items-center justify-center w-full pt-1 pb-1.5 relative",
+        "flex flex-col items-center justify-center w-full py-1 relative",
         active ? "text-primary" : "text-muted-foreground"
       )}
     >
