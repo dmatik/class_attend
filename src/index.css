@@ -200,6 +200,6 @@
 
 @layer utilities {
   .pb-safe {
-    padding-bottom: 8px;
+    padding-bottom: 10px;
   }
 }
