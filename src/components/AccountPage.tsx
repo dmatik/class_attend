@@ -188,9 +188,10 @@ export function AccountPage({ user, token, onUpdateUser, onLogout }: AccountPage
         })
       })
 
-      const data = await res.json()
+      const isJson = res.headers.get("content-type")?.includes("application/json")
+      const data = isJson ? await res.json().catch(() => null) : null
       if (!res.ok) {
-        throw new Error(data.error || t("account.update_failed"))
+        throw new Error(data?.error || t("account.update_failed"))
       }
 
       onUpdateUser(data.user)
@@ -247,9 +248,10 @@ export function AccountPage({ user, token, onUpdateUser, onLogout }: AccountPage
         })
       })
 
-      const data = await res.json()
+      const isJson = res.headers.get("content-type")?.includes("application/json")
+      const data = isJson ? await res.json().catch(() => null) : null
       if (!res.ok) {
-        throw new Error(data.error || t("account.password_change_failed"))
+        throw new Error(data?.error || t("account.password_change_failed"))
       }
 
       setCurrentPassword("")

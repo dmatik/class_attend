@@ -439,167 +439,204 @@ app.put('/api/auth/password', authenticate, (req, res) => {
 
 // GET /api/admin/users
 app.get('/api/admin/users', authenticate, requireAdmin, (req, res) => {
-  const users = db.prepare(`
-    SELECT id, username, first_name, last_name, avatar, role, created_at, updated_at
-    FROM users
-    ORDER BY created_at ASC
-  `).all();
+  try {
+    const users = db.prepare(`
+      SELECT id, username, first_name, last_name, avatar, role, created_at, updated_at
+      FROM users
+      ORDER BY created_at ASC
+    `).all();
 
-  res.json({
-    users: users.map(u => ({
-      id: u.id,
-      username: u.username,
-      firstName: u.first_name || '',
-      lastName: u.last_name || '',
-      avatar: u.avatar || '',
-      role: u.role,
-      createdAt: u.created_at,
-      updatedAt: u.updated_at
-    }))
-  });
+    res.json({
+      users: users.map(u => ({
+        id: u.id,
+        username: u.username,
+        firstName: u.first_name || '',
+        lastName: u.last_name || '',
+        avatar: u.avatar || '',
+        role: u.role,
+        createdAt: u.created_at,
+        updatedAt: u.updated_at
+      }))
+    });
+  } catch (err) {
+    console.error('Failed to fetch users:', err);
+    res.status(500).json({ error: 'fetch_failed' });
+  }
 });
 
 // POST /api/admin/users
 app.post('/api/admin/users', authenticate, requireAdmin, (req, res) => {
-  const { username, password, firstName, lastName, role } = req.body;
-  if (!username || !password) {
-    return res.status(400).json({ error: 'Username and password are required' });
-  }
-
-  const cleanUsername = username.trim();
-  if (cleanUsername.length < 2) {
-    return res.status(400).json({ error: 'Username must be at least 2 characters long' });
-  }
-
-  if (password.length < 4) {
-    return res.status(400).json({ error: 'Password must be at least 4 characters long' });
-  }
-
-  const userRole = role === 'admin' ? 'admin' : 'user';
-
-  // Check unique username
-  const existing = db.prepare('SELECT id FROM users WHERE username = ? COLLATE NOCASE').get(cleanUsername);
-  if (existing) {
-    return res.status(409).json({ error: 'A user with this username already exists' });
-  }
-
-  const id = crypto.randomUUID();
-  const salt = bcrypt.genSaltSync(10);
-  const passwordHash = bcrypt.hashSync(password, salt);
-  const now = new Date().toISOString();
-
-  db.prepare(`
-    INSERT INTO users (id, username, password_hash, first_name, last_name, avatar, role, created_at, updated_at)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-  `).run(
-    id,
-    cleanUsername,
-    passwordHash,
-    firstName?.trim() || '',
-    lastName?.trim() || '',
-    '',
-    userRole,
-    now,
-    now
-  );
-
-  res.status(201).json({
-    user: {
-      id,
-      username: cleanUsername,
-      firstName: firstName?.trim() || '',
-      lastName: lastName?.trim() || '',
-      avatar: '',
-      role: userRole,
-      createdAt: now
+  try {
+    const { username, password, firstName, lastName, role } = req.body;
+    if (!username || !password) {
+      return res.status(400).json({ error: 'Username and password are required' });
     }
-  });
+
+    const cleanUsername = username.trim();
+    if (cleanUsername.length < 2) {
+      return res.status(400).json({ error: 'Username must be at least 2 characters long' });
+    }
+
+    if (password.length < 4) {
+      return res.status(400).json({ error: 'Password must be at least 4 characters long' });
+    }
+
+    const userRole = role === 'admin' ? 'admin' : 'user';
+
+    // Check unique username
+    const existing = db.prepare('SELECT id FROM users WHERE username = ? COLLATE NOCASE').get(cleanUsername);
+    if (existing) {
+      return res.status(409).json({ error: 'username_taken' });
+    }
+
+    const id = crypto.randomUUID();
+    const salt = bcrypt.genSaltSync(10);
+    const passwordHash = bcrypt.hashSync(password, salt);
+    const now = new Date().toISOString();
+
+    db.prepare(`
+      INSERT INTO users (id, username, password_hash, first_name, last_name, avatar, role, created_at, updated_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `).run(
+      id,
+      cleanUsername,
+      passwordHash,
+      firstName?.trim() || '',
+      lastName?.trim() || '',
+      '',
+      userRole,
+      now,
+      now
+    );
+
+    res.status(201).json({
+      user: {
+        id,
+        username: cleanUsername,
+        firstName: firstName?.trim() || '',
+        lastName: lastName?.trim() || '',
+        avatar: '',
+        role: userRole,
+        createdAt: now
+      }
+    });
+  } catch (err) {
+    console.error('Failed to create user:', err);
+    res.status(500).json({ error: 'create_failed' });
+  }
 });
 
 // PUT /api/admin/users/:id
 app.put('/api/admin/users/:id', authenticate, requireAdmin, (req, res) => {
-  const { id } = req.params;
-  const { firstName, lastName, role } = req.body;
+  try {
+    const { id } = req.params;
+    const { firstName, lastName, role } = req.body;
 
-  const user = db.prepare('SELECT * FROM users WHERE id = ?').get(id);
-  if (!user) {
-    return res.status(404).json({ error: 'User not found' });
-  }
-
-  // Prevent demoting self if sole admin
-  if (id === req.user.id && role === 'user') {
-    const adminCount = db.prepare('SELECT COUNT(*) as c FROM users WHERE role = "admin"').get().c;
-    if (adminCount <= 1) {
-      return res.status(400).json({ error: 'Cannot remove admin role from the only remaining admin' });
+    const user = db.prepare('SELECT * FROM users WHERE id = ?').get(id);
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
     }
-  }
 
-  const newRole = role === 'admin' ? 'admin' : 'user';
-  const now = new Date().toISOString();
-
-  db.prepare(`
-    UPDATE users
-    SET first_name = ?, last_name = ?, role = ?, updated_at = ?
-    WHERE id = ?
-  `).run(
-    firstName !== undefined ? firstName.trim() : user.first_name,
-    lastName !== undefined ? lastName.trim() : user.last_name,
-    newRole,
-    now,
-    id
-  );
-
-  const updated = db.prepare('SELECT id, username, first_name, last_name, avatar, role, created_at FROM users WHERE id = ?').get(id);
-  res.json({
-    user: {
-      id: updated.id,
-      username: updated.username,
-      firstName: updated.first_name || '',
-      lastName: updated.last_name || '',
-      avatar: updated.avatar || '',
-      role: updated.role,
-      createdAt: updated.created_at
+    // Prevent updating default admin role or demoting the sole remaining admin
+    const isDefaultAdmin = id === 'admin-default' || user.username.toLowerCase() === 'admin';
+    if (isDefaultAdmin && role && role !== 'admin') {
+      return res.status(400).json({ error: 'cannot_demote_default_admin' });
     }
-  });
+
+    if (user.role === 'admin' && role === 'user') {
+      const adminCount = db.prepare('SELECT COUNT(*) as c FROM users WHERE role = ?').get('admin').c;
+      if (adminCount <= 1) {
+        return res.status(400).json({ error: 'cannot_demote_sole_admin' });
+      }
+    }
+
+    const newRole = role === 'admin' ? 'admin' : 'user';
+    const now = new Date().toISOString();
+
+    db.prepare(`
+      UPDATE users
+      SET first_name = ?, last_name = ?, role = ?, updated_at = ?
+      WHERE id = ?
+    `).run(
+      firstName !== undefined ? firstName.trim() : user.first_name,
+      lastName !== undefined ? lastName.trim() : user.last_name,
+      newRole,
+      now,
+      id
+    );
+
+    const updated = db.prepare('SELECT id, username, first_name, last_name, avatar, role, created_at FROM users WHERE id = ?').get(id);
+    res.json({
+      user: {
+        id: updated.id,
+        username: updated.username,
+        firstName: updated.first_name || '',
+        lastName: updated.last_name || '',
+        avatar: updated.avatar || '',
+        role: updated.role,
+        createdAt: updated.created_at
+      }
+    });
+  } catch (err) {
+    console.error('Failed to update user:', err);
+    res.status(500).json({ error: 'update_failed' });
+  }
 });
 
 // PUT /api/admin/users/:id/password
 app.put('/api/admin/users/:id/password', authenticate, requireAdmin, (req, res) => {
-  const { id } = req.params;
-  const { password } = req.body;
+  try {
+    const { id } = req.params;
+    const { password } = req.body;
 
-  if (!password || password.length < 4) {
-    return res.status(400).json({ error: 'Password must be at least 4 characters long' });
+    if (!password || password.length < 4) {
+      return res.status(400).json({ error: 'Password must be at least 4 characters long' });
+    }
+
+    const user = db.prepare('SELECT id FROM users WHERE id = ?').get(id);
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    const salt = bcrypt.genSaltSync(10);
+    const passwordHash = bcrypt.hashSync(password, salt);
+    const now = new Date().toISOString();
+
+    db.prepare('UPDATE users SET password_hash = ?, updated_at = ? WHERE id = ?').run(passwordHash, now, id);
+    res.json({ success: true });
+  } catch (err) {
+    console.error('Failed to reset password:', err);
+    res.status(500).json({ error: 'password_reset_failed' });
   }
-
-  const user = db.prepare('SELECT id FROM users WHERE id = ?').get(id);
-  if (!user) {
-    return res.status(404).json({ error: 'User not found' });
-  }
-
-  const salt = bcrypt.genSaltSync(10);
-  const passwordHash = bcrypt.hashSync(password, salt);
-  const now = new Date().toISOString();
-
-  db.prepare('UPDATE users SET password_hash = ?, updated_at = ? WHERE id = ?').run(passwordHash, now, id);
-  res.json({ success: true });
 });
 
 // DELETE /api/admin/users/:id
 app.delete('/api/admin/users/:id', authenticate, requireAdmin, (req, res) => {
-  const { id } = req.params;
+  try {
+    const { id } = req.params;
 
-  if (id === req.user.id) {
-    return res.status(400).json({ error: 'Cannot delete your own account' });
+    if (id === req.user.id) {
+      return res.status(400).json({ error: 'cannot_delete_self' });
+    }
+
+    const user = db.prepare('SELECT id, role FROM users WHERE id = ?').get(id);
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    if (user.role === 'admin') {
+      const adminCount = db.prepare('SELECT COUNT(*) as c FROM users WHERE role = ?').get('admin').c;
+      if (adminCount <= 1) {
+        return res.status(400).json({ error: 'cannot_delete_sole_admin' });
+      }
+    }
+
+    db.prepare('DELETE FROM users WHERE id = ?').run(id);
+    res.json({ success: true });
+  } catch (err) {
+    console.error('Failed to delete user:', err);
+    res.status(500).json({ error: 'delete_failed' });
   }
-
-  const user = db.prepare('SELECT id, role FROM users WHERE id = ?').get(id);
-  if (!user) {
-    return res.status(404).json({ error: 'User not found' });
-  }
-
-  db.prepare('DELETE FROM users WHERE id = ?').run(id);
-  res.json({ success: true });
 });
 
 /* --- Scoped Data Routes (Per-User) --- */
@@ -714,6 +751,20 @@ app.post('/api/data', authenticate, (req, res) => {
     console.error('Failed to save data:', error);
     res.status(500).json({ error: 'Failed to save data' });
   }
+});
+
+// 404 handler for unmatched API routes
+app.all('/api/*', (req, res) => {
+  res.status(404).json({ error: 'Endpoint not found' });
+});
+
+// Global API error handler
+app.use((err, req, res, next) => {
+  console.error('Unhandled server error:', err);
+  if (req.path.startsWith('/api') || req.originalUrl?.startsWith('/api')) {
+    return res.status(500).json({ error: err.message || 'Internal server error' });
+  }
+  next(err);
 });
 
 // The "catchall" handler: for any request that doesn't

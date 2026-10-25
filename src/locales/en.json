@@ -248,6 +248,12 @@
         "create_failed": "Failed to create user",
         "update_failed": "Failed to update user",
         "password_reset_failed": "Failed to reset password",
-        "delete_failed": "Failed to delete user"
+        "delete_failed": "Failed to delete user",
+        "cannot_demote_sole_admin": "Cannot remove admin role from the only remaining admin",
+        "cannot_demote_default_admin": "The default admin role cannot be changed",
+        "default_admin_role_fixed": "The role of the default admin cannot be changed",
+        "cannot_delete_sole_admin": "Cannot delete the only remaining admin",
+        "cannot_delete_self": "Cannot delete your own account",
+        "username_taken": "A user with this username already exists"
     }
 }
