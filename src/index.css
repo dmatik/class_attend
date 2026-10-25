@@ -197,3 +197,9 @@
     @apply text-base;
   }
 }
+
+@layer utilities {
+  .pb-safe {
+    padding-bottom: max(1.125rem, calc(env(safe-area-inset-bottom, 0px) + 0.5rem));
+  }
+}
