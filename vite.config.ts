@@ -61,6 +61,8 @@ export default defineConfig({
     pool: 'threads',
     maxWorkers: 1,
     fileParallelism: false,
+    include: ['src/**/*.{test,spec}.{ts,tsx}'],
+    exclude: ['node_modules', 'dist', 'e2e/**'],
   },
   build: {
     chunkSizeWarningLimit: 1000,
