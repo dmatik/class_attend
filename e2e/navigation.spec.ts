@@ -1,18 +1,27 @@
 import { test, expect } from '@playwright/test';
+import { createTestUser, deleteTestUser, cleanupAllTestUsers, loginWithUser, TestUser } from './helpers/auth';
 
 test.describe('Navigation and RTL Layout', () => {
+  let testUser: TestUser;
+
+  test.beforeAll(() => {
+    cleanupAllTestUsers();
+  });
+
   test.beforeEach(async ({ page }) => {
-    // Clear storage and log in with admin
-    await page.goto('/');
-    await page.evaluate(() => localStorage.clear());
-    await page.reload();
+    // Dedicated user for this test
+    testUser = createTestUser('admin');
+    await loginWithUser(page, testUser);
+  });
 
-    await page.fill('#username', 'admin');
-    await page.fill('#password', 'admin');
-    await page.click('button[type="submit"]');
+  test.afterEach(async () => {
+    if (testUser) {
+      deleteTestUser(testUser.id);
+    }
+  });
 
-    // Wait until logged in
-    await expect(page.locator('aside button').first()).toBeVisible();
+  test.afterAll(() => {
+    cleanupAllTestUsers();
   });
 
   test('switches between Dashboard, Calendar, and Courses tabs', async ({ page }) => {
@@ -22,7 +31,6 @@ test.describe('Navigation and RTL Layout', () => {
     // Click Calendar (DailyView) tab
     const calendarButton = nav.locator('button').nth(0);
     await calendarButton.click();
-    // Daily view should load
     await expect(page.locator('main')).toBeVisible();
 
     // Click Dashboard tab

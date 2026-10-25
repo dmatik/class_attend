@@ -1,13 +1,31 @@
 import { test, expect } from '@playwright/test';
-import { loginAsAdmin, selectFirstCalendarDay } from './helpers/auth';
+import { createTestUser, deleteTestUser, cleanupAllTestUsers, loginWithUser, selectFirstCalendarDay, TestUser } from './helpers/auth';
 
 test.describe('Courses Management', () => {
+  let testUser: TestUser;
+
+  test.beforeAll(() => {
+    cleanupAllTestUsers();
+  });
+
   test.beforeEach(async ({ page }) => {
-    await loginAsAdmin(page);
+    testUser = createTestUser('admin');
+    await loginWithUser(page, testUser);
+
     // Navigate to Courses tab (third item in desktop navigation)
     const coursesNavButton = page.locator('aside nav button').nth(2);
     await coursesNavButton.click();
     await expect(page.locator('main')).toBeVisible();
+  });
+
+  test.afterEach(async () => {
+    if (testUser) {
+      deleteTestUser(testUser.id);
+    }
+  });
+
+  test.afterAll(() => {
+    cleanupAllTestUsers();
   });
 
   test('validates required fields before allowing course submission', async ({ page }) => {

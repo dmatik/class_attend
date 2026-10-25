@@ -1,12 +1,30 @@
 import { test, expect } from '@playwright/test';
-import { loginAsAdmin, selectFirstCalendarDay } from './helpers/auth';
+import { createTestUser, deleteTestUser, cleanupAllTestUsers, loginWithUser, selectFirstCalendarDay, TestUser } from './helpers/auth';
 
 test.describe('Dashboard Statistics Flow', () => {
+  let testUser: TestUser;
+
+  test.beforeAll(() => {
+    cleanupAllTestUsers();
+  });
+
   test.beforeEach(async ({ page }) => {
-    await loginAsAdmin(page);
+    testUser = createTestUser('admin');
+    await loginWithUser(page, testUser);
+
     // Navigate to Dashboard tab (second item in desktop navigation)
     await page.locator('aside nav button').nth(1).click();
     await expect(page.locator('main')).toBeVisible();
+  });
+
+  test.afterEach(async () => {
+    if (testUser) {
+      deleteTestUser(testUser.id);
+    }
+  });
+
+  test.afterAll(() => {
+    cleanupAllTestUsers();
   });
 
   test('displays dashboard header and grouped statistics or empty state', async ({ page }) => {
@@ -64,11 +82,5 @@ test.describe('Dashboard Statistics Flow', () => {
     await page.locator('aside nav button').nth(1).click();
     const courseHeader = page.locator(`main h3:has-text("${courseName}")`).first();
     await expect(courseHeader).toBeVisible();
-
-    // Clean up: delete test course
-    await page.locator('aside nav button').nth(2).click();
-    const deleteBtn = page.locator(`div:has-text("${courseName}") button:has(svg.lucide-trash-2)`).first();
-    await deleteBtn.click();
-    await page.locator('[role="alertdialog"] button:has-text("Delete"), [role="alertdialog"] button:has-text("מחק")').first().click();
   });
 });

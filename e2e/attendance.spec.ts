@@ -1,44 +1,53 @@
 import { test, expect, Page } from '@playwright/test';
-import { loginAsAdmin, selectFirstCalendarDay } from './helpers/auth';
+import { createTestUser, deleteTestUser, cleanupAllTestUsers, loginWithUser, selectFirstCalendarDay, TestUser } from './helpers/auth';
 
-async function ensureSessionExists(page: Page) {
-  // Navigate to Calendar (DailyView)
-  await page.locator('aside nav button').nth(0).click();
-  await page.waitForTimeout(500);
+async function createCourseForUser(page: Page) {
+  // Navigate to Courses tab and add a course
+  await page.locator('aside nav button').nth(2).click();
+  await page.getByRole('button', { name: /add course|הוסף חוג/i }).click();
 
-  const absentBtn = page.getByRole('button', { name: /absent|נעדר/i });
-  if ((await absentBtn.count()) === 0) {
-    // If no session visible, navigate to Courses and add one
-    await page.locator('aside nav button').nth(2).click();
-    await page.getByRole('button', { name: /add course|הוסף חוג/i }).click();
+  const dialog = page.locator('[role="dialog"]');
+  await dialog.locator('#name').fill(`Attendance Course ${Date.now()}`);
 
-    const dialog = page.locator('[role="dialog"]');
-    await dialog.locator('#name').fill(`Course For Attendance ${Date.now()}`);
+  // Select start date
+  const dateBtn = dialog.locator('button').filter({ hasText: /select start date|תאריך/i }).first();
+  await dateBtn.click();
+  await selectFirstCalendarDay(page);
 
-    // Select start date
-    const dateBtn = dialog.locator('button').filter({ hasText: /select start date|תאריך/i }).first();
-    await dateBtn.click();
-    await selectFirstCalendarDay(page);
+  // Select first day of week
+  const dayButtons = dialog.locator('form div.flex-wrap button[type="button"]');
+  await dayButtons.nth(0).click();
 
-    // Select today's day of week or all days
-    const dayButtons = dialog.locator('form div.flex-wrap button[type="button"]');
-    await dayButtons.nth(0).click();
+  // Fill lessons
+  await dialog.locator('input[type="number"]').fill('10');
+  await dialog.locator('button[type="submit"]').click();
+  await expect(dialog).not.toBeVisible();
 
-    // Fill lessons
-    await dialog.locator('input[type="number"]').fill('10');
-    await dialog.locator('button[type="submit"]').click();
-    await expect(dialog).not.toBeVisible();
-
-    await page.waitForTimeout(1000);
-    // Return to Calendar view
-    await page.locator('aside nav button').nth(0).click();
-  }
+  // Wait for auto-save debounce
+  await page.waitForTimeout(1000);
 }
 
 test.describe('Attendance Recording and Reasons', () => {
+  let testUser: TestUser;
+
+  test.beforeAll(() => {
+    cleanupAllTestUsers();
+  });
+
   test.beforeEach(async ({ page }) => {
-    await loginAsAdmin(page);
-    await ensureSessionExists(page);
+    testUser = createTestUser('admin');
+    await loginWithUser(page, testUser);
+    await createCourseForUser(page);
+  });
+
+  test.afterEach(async () => {
+    if (testUser) {
+      deleteTestUser(testUser.id);
+    }
+  });
+
+  test.afterAll(() => {
+    cleanupAllTestUsers();
   });
 
   test('toggles attendance to Absent, fills reason & notes, and verifies persistence', async ({ page }) => {

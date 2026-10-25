@@ -1,11 +1,29 @@
 import { test, expect } from '@playwright/test';
+import { createTestUser, deleteTestUser, cleanupAllTestUsers, TestUser } from './helpers/auth';
 
 test.describe('Authentication Flow', () => {
+  let dedicatedUser: TestUser | null = null;
+
+  test.beforeAll(() => {
+    cleanupAllTestUsers();
+  });
+
   test.beforeEach(async ({ page }) => {
     // Clear tokens before each test
     await page.goto('/');
     await page.evaluate(() => localStorage.clear());
     await page.reload();
+  });
+
+  test.afterEach(async () => {
+    if (dedicatedUser) {
+      deleteTestUser(dedicatedUser.id);
+      dedicatedUser = null;
+    }
+  });
+
+  test.afterAll(() => {
+    cleanupAllTestUsers();
   });
 
   test('displays login form with username, password and submit button', async ({ page }) => {
@@ -23,8 +41,8 @@ test.describe('Authentication Flow', () => {
   test('shows error notification on invalid credentials', async ({ page }) => {
     await page.goto('/');
 
-    await page.fill('#username', 'nonexistent_user');
-    await page.fill('#password', 'wrong_password');
+    await page.fill('#username', 'nonexistent_user_123');
+    await page.fill('#password', 'wrong_password_123');
     await page.click('button[type="submit"]');
 
     // Should display an error alert box
@@ -32,15 +50,16 @@ test.describe('Authentication Flow', () => {
     await expect(errorBox).toBeVisible();
   });
 
-  test('successfully logs in with admin credentials and logs out', async ({ page }) => {
-    await page.goto('/');
+  test('successfully logs in with dedicated test user and logs out', async ({ page }) => {
+    // 1. Create a dedicated isolated test user
+    dedicatedUser = createTestUser('admin');
 
-    await page.fill('#username', 'admin');
-    await page.fill('#password', 'admin');
+    await page.goto('/');
+    await page.fill('#username', dedicatedUser.username);
+    await page.fill('#password', dedicatedUser.password);
     await page.click('button[type="submit"]');
 
     // Should navigate to dashboard / authenticated shell
-    // Wait for the desktop sidebar or user account button to appear
     const accountButton = page.locator('aside button').first();
     await expect(accountButton).toBeVisible();
 
@@ -62,4 +81,3 @@ test.describe('Authentication Flow', () => {
     expect(tokenAfterLogout).toBeNull();
   });
 });
-
