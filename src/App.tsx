@@ -469,7 +469,7 @@ function App() {
     <DirectionProvider dir={i18n.dir()}>
       <div className="flex h-screen bg-background overflow-hidden relative">
       {/* Desktop Sidebar */}
-      <aside className="hidden md:flex flex-col w-64 bg-card border-l border-border h-screen sticky top-0 z-20 shadow-sm shrink-0">
+      <aside className="hidden md:flex flex-col w-64 bg-card border-e border-border h-screen sticky top-0 z-20 shadow-sm shrink-0">
         {/* User Icon placed before the app title */}
         <div className="p-5 border-b border-border flex items-center gap-3">
           <button

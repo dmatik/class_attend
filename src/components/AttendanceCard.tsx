@@ -162,11 +162,11 @@ export function AttendanceCard({ session, sessions, isNext, onUpdate, onSchedule
             transition={{ duration: 0.2 }}
         >
             <Card className={cn(
-                "overflow-hidden transition-all duration-300 border-l-4 shadow-sm hover:shadow-md",
+                "overflow-hidden transition-all duration-300 border-s-4 shadow-sm hover:shadow-md",
                 "bg-card border-border",
-                session.isReplacement ? "border-l-orange-500" :
-                    isPresent ? "border-l-emerald-500" :
-                        isAbsent ? "border-l-rose-500" : "border-l-slate-300 dark:border-l-slate-700"
+                session.isReplacement ? "border-s-orange-500" :
+                    isPresent ? "border-s-emerald-500" :
+                        isAbsent ? "border-s-rose-500" : "border-s-slate-300 dark:border-s-slate-700"
             )}>
                 <CardContent className="p-5">
                     <div className="flex justify-between items-start mb-4">
@@ -176,7 +176,7 @@ export function AttendanceCard({ session, sessions, isNext, onUpdate, onSchedule
                                     session.isReplacement ? "text-orange-700 dark:text-orange-400" : "text-foreground"
                                 )}>
                                     {session.courseName}
-                                    {session.isReplacement && <span className="mr-2 text-xs font-normal text-orange-600 bg-orange-100 dark:text-orange-400 dark:bg-orange-950/50 px-2 py-0.5 rounded-full">{t('attendance_card.replacement')}</span>}
+                                    {session.isReplacement && <span className="me-2 text-xs font-normal text-orange-600 bg-orange-100 dark:text-orange-400 dark:bg-orange-950/50 px-2 py-0.5 rounded-full">{t('attendance_card.replacement')}</span>}
                                 </h3>
                                 {isNext && (
                                     <span className="text-[10px] font-extrabold bg-blue-600 text-white px-2 py-0.5 rounded-full animate-pulse shadow-sm">

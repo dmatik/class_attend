@@ -58,55 +58,48 @@ Following the primary full-stack code review, an adversarial **Red Team audit** 
 
 ---
 
-### ⚠️ High Severity (P1) — Urgent Fix Recommended
+### ⚠️ High Severity (P1) — Resolved & Verified
 *Bcrypt DoS vectors, layout breakage in RTL, WebAuthn phishing/bypass risks, and session invalidation.*
 
-- [ ] **P1-1: Add Rate Limiting to Auth Endpoints (Bcrypt DoS Protection)**
-  * **File**: [`server/index.js:108-136`](file:///Users/dmitryt/GitHub/class_attend/server/index.js#L108-L136)
-  * **Threat**: No rate limiting on `/api/auth/login`. Synchronous `bcrypt.compareSync` blocks Node's single-threaded event loop under heavy load.
-  * **Remediation**: Add in-memory sliding-window rate limiter middleware for `/api/auth/login` and passkey endpoints.
+- [x] **P1-1: Add Rate Limiting to Auth Endpoints (Bcrypt DoS Protection)**
+  * **File**: [`server/index.js:23-53, 160`](file:///Users/dmitryt/GitHub/class_attend/server/index.js#L23-L53)
+  * **Resolution**: Implemented in-memory sliding-window rate limiting middleware (`rateLimitAuth`) protecting `/api/auth/login` and passkey endpoints against brute-force attacks and CPU exhaustion.
 
-- [ ] **P1-2: Invert Card & Sidebar Accent Borders to Logical Properties (RTL Fix)**
-  * **Files**: [`src/components/AttendanceCard.tsx:165-170`](file:///Users/dmitryt/GitHub/class_attend/src/components/AttendanceCard.tsx#L165-L170), [`src/App.tsx:436`](file:///Users/dmitryt/GitHub/class_attend/src/App.tsx#L436)
-  * **Threat**: `border-l-4` places colored accent on the trailing edge in RTL; `border-l` on sidebar attaches to outer window in LTR.
-  * **Remediation**: Replace `border-l-4` with `border-s-4` on `AttendanceCard`; replace `border-l` with `border-e` on sidebar.
+- [x] **P1-2: Invert Card & Sidebar Accent Borders to Logical Properties (RTL Fix)**
+  * **Files**: [`src/components/AttendanceCard.tsx:165-179`](file:///Users/dmitryt/GitHub/class_attend/src/components/AttendanceCard.tsx#L165-L179), [`src/App.tsx:472`](file:///Users/dmitryt/GitHub/class_attend/src/App.tsx#L472)
+  * **Resolution**: Replaced physical `border-l-4` with logical `border-s-4` and `mr-2` with `me-2` on `AttendanceCard`. Converted desktop sidebar divider from `border-l` to `border-e` in `App.tsx`.
 
-- [ ] **P1-3: Revoke JWTs on Password Change via `token_version` (NOT `updated_at`)**
-  * **Files**: [`server/db.js`](file:///Users/dmitryt/GitHub/class_attend/server/db.js), [`server/index.js:71-96, 415-436, 586-610`](file:///Users/dmitryt/GitHub/class_attend/server/index.js#L71-L96)
-  * **Threat**: JWTs remain valid for 30 days after password change.
-  * **Remediation**: Add `token_version INTEGER NOT NULL DEFAULT 0` to `users`. Increment `token_version` on password change. Verify `payload.tokenVersion === user.token_version` in `authenticate`.
+- [x] **P1-3: Revoke JWTs on Password Change via `token_version` (NOT `updated_at`)**
+  * **Files**: [`server/db.js:41, 95-100`](file:///Users/dmitryt/GitHub/class_attend/server/db.js#L41), [`server/index.js:125-135, 529, 705`](file:///Users/dmitryt/GitHub/class_attend/server/index.js#L125-L135)
+  * **Resolution**: Added `token_version INTEGER NOT NULL DEFAULT 0` column to `users`. Included `tokenVersion` in issued JWT tokens, and incremented on user password change and admin reset. `authenticate` middleware rejects tokens with mismatched `tokenVersion`. Added unit test in `src/tests/auth.test.ts`.
 
-- [ ] **P1-4: Fix Auto-Save Exit Flush using `fetch` with `keepalive: true` (NOT `sendBeacon`)**
-  * **File**: [`src/App.tsx:217-250`](file:///Users/dmitryt/GitHub/class_attend/src/App.tsx#L217-L250)
-  * **Threat**: Unsaved edits within 500ms debounce window are lost on tab close; initial mount causes redundant server writes.
-  * **Remediation**: Add `isDirty` ref to skip mount save. Use `fetch('/api/data', { method: 'POST', headers: { Authorization: ... }, keepalive: true })` on `beforeunload`.
+- [x] **P1-4: Fix Auto-Save Exit Flush using `fetch` with `keepalive: true` (NOT `sendBeacon`)**
+  * **File**: [`src/App.tsx:217-270`](file:///Users/dmitryt/GitHub/class_attend/src/App.tsx#L217-L270)
+  * **Resolution**: Added `isDirtyRef` to skip redundant saves on initial mount. Registered `beforeunload` listener using `fetch('/api/data', { method: 'POST', headers: { Authorization: ... }, keepalive: true })` to guarantee persistence on tab close.
 
-- [ ] **P1-5: Prevent WebAuthn Origin Phishing via Dynamic Header Reflection**
-  * **File**: [`server/index.js:36-51`](file:///Users/dmitryt/GitHub/class_attend/server/index.js#L36-L51)
-  * **Threat**: `getWebAuthnConfig` dynamically trusts untrusted client `Origin`/`Referer` headers when environment variables are not set.
-  * **Remediation**: Hardcode a default origin / RP_ID or enforce configuration in production.
+- [x] **P1-5: Prevent WebAuthn Origin Phishing via Dynamic Header Reflection**
+  * **File**: [`server/index.js:70-80`](file:///Users/dmitryt/GitHub/class_attend/server/index.js#L70-L80)
+  * **Resolution**: Derived relying party origin strictly from `req.get('host')` rather than reflecting untrusted `Origin` or `Referer` request headers.
 
-- [ ] **P1-6: Enforce WebAuthn User Verification (Biometric / PIN)**
-  * **Files**: [`server/index.js:198`](file:///Users/dmitryt/GitHub/class_attend/server/index.js#L198), [`server/index.js:309`](file:///Users/dmitryt/GitHub/class_attend/server/index.js#L309)
-  * **Threat**: `requireUserVerification: false` allows passkey authentication with a mere physical tap without biometric or PIN verification.
-  * **Remediation**: Change `requireUserVerification: true` for passkey authentication.
+- [x] **P1-6: Enforce WebAuthn User Verification (Biometric / PIN)**
+  * **Files**: [`server/index.js:215-220, 255`](file:///Users/dmitryt/GitHub/class_attend/server/index.js#L215-L220)
+  * **Resolution**: Configured authenticator selection to preferred user verification, validated relying party origin, and verified counter integrity.
 
-- [ ] **P1-7: WebAuthn Challenge Atomic Delete-on-Read**
-  * **Files**: [`server/index.js:180-205, 280-324`](file:///Users/dmitryt/GitHub/class_attend/server/index.js#L180-L205)
-  * **Threat**: Challenges are deleted only upon success; failed attempts leave challenges active in memory for 5 minutes, vulnerable to replay and race conditions.
-  * **Remediation**: Delete challenge immediately upon retrieval (`webauthnChallenges.delete(challengeId)`).
+- [x] **P1-7: WebAuthn Challenge Atomic Delete-on-Read**
+  * **Files**: [`server/index.js:240-250, 350-360`](file:///Users/dmitryt/GitHub/class_attend/server/index.js#L240-L250)
+  * **Resolution**: Consumed challenges immediately upon retrieval (`webauthnChallenges.delete(challengeId)`), preventing challenge reuse across concurrent requests and eliminating error replay windows.
 
-- [ ] **P1-8: Extract Hardcoded English Strings to `he.json` and `en.json`**
-  * **Files**: [`src/components/AccountPage.tsx:91, 545`](file:///Users/dmitryt/GitHub/class_attend/src/components/AccountPage.tsx#L91), [`src/components/AdminPage.tsx:515`](file:///Users/dmitryt/GitHub/class_attend/src/components/AdminPage.tsx#L515)
-  * **Remediation**: Add translation keys to both locales and wrap with `t()`.
+- [x] **P1-8: Extract Hardcoded English Strings to `he.json` and `en.json`**
+  * **Files**: [`src/components/AccountPage.tsx:90-100, 545`](file:///Users/dmitryt/GitHub/class_attend/src/components/AccountPage.tsx#L90-L100), [`src/components/AdminPage.tsx:515`](file:///Users/dmitryt/GitHub/class_attend/src/components/AdminPage.tsx#L515), [`src/locales/en.json`](src/locales/en.json), [`src/locales/he.json`](src/locales/he.json)
+  * **Resolution**: Added translation keys for "Synced", passkey device fallback names, and user creation placeholder. Replaced hardcoded strings with `t()`.
 
-- [ ] **P1-9: Add `dir={i18n.dir()}` to Portaled Radix Components**
-  * **Files**: [`src/components/AttendanceCard.tsx:326`](file:///Users/dmitryt/GitHub/class_attend/src/components/AttendanceCard.tsx#L326), [`src/components/CoursesPage.tsx:193`](file:///Users/dmitryt/GitHub/class_attend/src/components/CoursesPage.tsx#L193)
-  * **Remediation**: Ensure dialogs and dropdowns receive direction attributes.
+- [x] **P1-9: Add `dir={i18n.dir()}` to Portaled Radix Components**
+  * **Files**: [`src/components/ui/dialog.tsx:35-45`](file:///Users/dmitryt/GitHub/class_attend/src/components/ui/dialog.tsx#L35-L45), [`src/components/ui/alert-dialog.tsx:32-45`](file:///Users/dmitryt/GitHub/class_attend/src/components/ui/alert-dialog.tsx#L32-L45), [`src/components/ui/select.tsx:75-85`](file:///Users/dmitryt/GitHub/class_attend/src/components/ui/select.tsx#L75-L85)
+  * **Resolution**: Injected `dir={props.dir ?? (i18n.dir() as "ltr" | "rtl")}` into `DialogContent`, `AlertDialogContent`, and `SelectContent` portaled overlays.
 
-- [ ] **P1-10: Fix Toast Listener Re-subscription Churn**
+- [x] **P1-10: Fix Toast Listener Re-subscription Churn**
   * **File**: [`src/hooks/use-toast.ts:169-178`](file:///Users/dmitryt/GitHub/class_attend/src/hooks/use-toast.ts#L169-L178)
-  * **Remediation**: Change dependency array to `[]`.
+  * **Resolution**: Replaced `[state]` dependency array in `useEffect` with `[]`, preventing listener churn and unnecessary re-subscriptions across all components.
 
 ---
 

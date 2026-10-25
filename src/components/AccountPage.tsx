@@ -88,11 +88,11 @@ export function AccountPage({ user, token, onUpdateUser, onLogout }: AccountPage
     }
 
     const ua = navigator.userAgent
-    let defaultName = "Passkey"
-    if (/iPhone|iPad/i.test(ua)) defaultName = "iPhone Passkey"
-    else if (/Macintosh|Mac OS/i.test(ua)) defaultName = "MacBook / Mac"
-    else if (/Android/i.test(ua)) defaultName = "Android Device"
-    else if (/Windows/i.test(ua)) defaultName = "Windows Device"
+    let defaultName = t("account.passkey_default_name")
+    if (/iPhone|iPad/i.test(ua)) defaultName = t("account.passkey_device_iphone")
+    else if (/Macintosh|Mac OS/i.test(ua)) defaultName = t("account.passkey_device_mac")
+    else if (/Android/i.test(ua)) defaultName = t("account.passkey_device_android")
+    else if (/Windows/i.test(ua)) defaultName = t("account.passkey_device_windows")
 
     setNewPasskeyName(defaultName)
     setShowAddPasskeyDialog(true)
@@ -542,7 +542,7 @@ export function AccountPage({ user, token, onUpdateUser, onLogout }: AccountPage
                             <span className="truncate">{p.deviceName}</span>
                             {p.backedUp ? (
                               <span className="text-[10px] uppercase font-bold px-1.5 py-0.5 rounded bg-muted text-muted-foreground shrink-0">
-                                Synced
+                                {t("account.synced")}
                               </span>
                             ) : null}
                           </div>
