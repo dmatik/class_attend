@@ -245,5 +245,28 @@ describe('SQLite Database & Auth System', () => {
     expect(typeof retrieved.value).toBe('string')
     expect(retrieved.value.length).toBeGreaterThanOrEqual(16)
   })
+
+  it('increments token_version when password is changed to invalidate active sessions', () => {
+    const testUserId = 'test-token-version-user'
+    const now = new Date().toISOString()
+
+    db.prepare(`
+      INSERT OR REPLACE INTO users (id, username, password_hash, role, token_version, created_at, updated_at)
+      VALUES (?, 'tv_user', 'hash', 'user', 0, ?, ?)
+    `).run(testUserId, now, now)
+
+    const initialUser = db.prepare('SELECT token_version FROM users WHERE id = ?').get(testUserId) as any
+    expect(initialUser.token_version).toBe(0)
+
+    // Simulate password change
+    db.prepare('UPDATE users SET password_hash = ?, token_version = token_version + 1, updated_at = ? WHERE id = ?')
+      .run('new_hash', now, testUserId)
+
+    const updatedUser = db.prepare('SELECT token_version FROM users WHERE id = ?').get(testUserId) as any
+    expect(updatedUser.token_version).toBe(1)
+
+    // Clean up
+    db.prepare('DELETE FROM users WHERE id = ?').run(testUserId)
+  })
 })
 

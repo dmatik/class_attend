@@ -210,7 +210,13 @@
         "passkey_not_supported": "Passkeys are not supported on this device/browser",
         "created_on": "Added {{date}}",
         "last_used": "Last used {{date}}",
-        "never_used": "Never used"
+        "never_used": "Never used",
+        "synced": "Synced",
+        "passkey_default_name": "Passkey",
+        "passkey_device_iphone": "iPhone Passkey",
+        "passkey_device_mac": "MacBook / Mac",
+        "passkey_device_android": "Android Device",
+        "passkey_device_windows": "Windows Device"
     },
     "admin": {
         "title": "User Management",

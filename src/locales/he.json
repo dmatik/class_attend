@@ -210,7 +210,13 @@
         "passkey_not_supported": "מפתחות גישה אינם נתמכים במכשיר או בדפדפן זה",
         "created_on": "נוסף: {{date}}",
         "last_used": "שימוש אחרון: {{date}}",
-        "never_used": "טרם נעשה שימוש"
+        "never_used": "טרם נעשה שימוש",
+        "synced": "מסונכרן",
+        "passkey_default_name": "מפתח גישה",
+        "passkey_device_iphone": "מפתח גישה ל-iPhone",
+        "passkey_device_mac": "מחשב Mac",
+        "passkey_device_android": "מכשיר Android",
+        "passkey_device_windows": "מחשב Windows"
     },
     "admin": {
         "title": "ניהול משתמשים",

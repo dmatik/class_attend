@@ -39,6 +39,7 @@ export function initDb() {
       last_name TEXT DEFAULT '',
       avatar TEXT DEFAULT '',
       role TEXT NOT NULL CHECK(role IN ('admin', 'user')),
+      token_version INTEGER NOT NULL DEFAULT 0,
       created_at TEXT NOT NULL,
       updated_at TEXT NOT NULL
     );
@@ -91,6 +92,12 @@ export function initDb() {
 
   // Migrate missing columns on existing databases if needed
   try {
+    const userCols = db.prepare("PRAGMA table_info(users)").all();
+    const userColNames = userCols.map(c => c.name);
+    if (!userColNames.includes('token_version')) {
+      db.exec('ALTER TABLE users ADD COLUMN token_version INTEGER NOT NULL DEFAULT 0;');
+    }
+
     const sessionCols = db.prepare("PRAGMA table_info(sessions)").all();
     const colNames = sessionCols.map(c => c.name);
     if (!colNames.includes('attendance_details')) {
@@ -100,7 +107,7 @@ export function initDb() {
       db.exec('ALTER TABLE sessions ADD COLUMN replacement_for_session_id TEXT;');
     }
   } catch (err) {
-    console.error('Migration error for sessions columns:', err);
+    console.error('Migration error for columns:', err);
   }
 
   // 1. Seed default admin if no users exist

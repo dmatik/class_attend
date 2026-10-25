@@ -17,7 +17,45 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
+app.set('trust proxy', 1);
 const PORT = process.env.PORT || 3001;
+
+// In-memory rate limiting map: ip -> { count, resetAt }
+const authRateLimits = new Map();
+function rateLimitAuth(maxAttempts = (process.env.NODE_ENV === 'test' ? 1000 : 60), windowMs = 60 * 1000) {
+  return (req, res, next) => {
+    const ip = req.ip || req.socket?.remoteAddress || 'unknown';
+    const now = Date.now();
+    const record = authRateLimits.get(ip) || { count: 0, resetAt: now + windowMs };
+
+    if (now > record.resetAt) {
+      record.count = 0;
+      record.resetAt = now + windowMs;
+    }
+
+    record.count++;
+    authRateLimits.set(ip, record);
+
+    if (record.count > maxAttempts) {
+      return res.status(429).json({
+        error: 'too_many_requests',
+        message: 'Too many authentication attempts. Please try again in a minute.'
+      });
+    }
+
+    next();
+  };
+}
+
+// Periodic cleanup of rate limits every 10 minutes
+setInterval(() => {
+  const now = Date.now();
+  for (const [ip, rec] of authRateLimits.entries()) {
+    if (rec.resetAt < now) {
+      authRateLimits.delete(ip);
+    }
+  }
+}, 10 * 60 * 1000).unref();
 
 // In-memory WebAuthn challenges: challengeId -> { challenge, userId, username, expiresAt }
 const webauthnChallenges = new Map();
@@ -33,19 +71,42 @@ setInterval(() => {
 }, 5 * 60 * 1000).unref();
 
 function getWebAuthnConfig(req) {
-  const rawOrigin = req.headers.origin || req.headers.referer || `${req.protocol}://${req.get('host')}`;
-  let hostname = 'localhost';
-  let origin = rawOrigin;
-  try {
-    const parsed = new URL(rawOrigin);
-    hostname = parsed.hostname;
-    origin = `${parsed.protocol}//${parsed.host}`;
-  } catch {
-    // fallback
+  const rawOrigin = req.headers.origin || req.headers.referer;
+  let clientOrigin = null;
+  let clientHostname = null;
+
+  if (rawOrigin) {
+    try {
+      const parsed = new URL(rawOrigin);
+      clientOrigin = `${parsed.protocol}//${parsed.host}`;
+      clientHostname = parsed.hostname;
+    } catch {
+      // ignore
+    }
   }
 
-  const rpID = process.env.RP_ID || hostname;
-  const expectedOrigin = process.env.EXPECTED_ORIGIN || origin;
+  const hostHeader = req.get('host') || 'localhost:3001';
+  const serverHostname = hostHeader.split(':')[0];
+  const serverOrigin = `${req.protocol}://${hostHeader}`;
+
+  const rpID = process.env.RP_ID || clientHostname || serverHostname || 'localhost';
+
+  const origins = new Set();
+  if (process.env.EXPECTED_ORIGIN) {
+    process.env.EXPECTED_ORIGIN.split(',').forEach(o => origins.add(o.trim()));
+  }
+  if (clientOrigin) origins.add(clientOrigin);
+  if (serverOrigin) origins.add(serverOrigin);
+
+  // In local environments, permit both Vite dev server and Express/Docker ports
+  origins.add('http://localhost:5173');
+  origins.add('http://localhost:3001');
+  origins.add('http://localhost:8080');
+  origins.add('http://127.0.0.1:5173');
+  origins.add('http://127.0.0.1:3001');
+  origins.add('http://127.0.0.1:8080');
+
+  const expectedOrigin = Array.from(origins);
   return { rpID, expectedOrigin, rpName: 'Class Attend' };
 }
 
@@ -93,10 +154,17 @@ function authenticate(req, res, next) {
   const token = authHeader.split(' ')[1];
   try {
     const payload = jwt.verify(token, JWT_SECRET);
-    const user = db.prepare('SELECT id, username, role, first_name, last_name, avatar FROM users WHERE id = ?').get(payload.id);
+    const user = db.prepare('SELECT id, username, role, first_name, last_name, avatar, token_version FROM users WHERE id = ?').get(payload.id);
     if (!user) {
       return res.status(401).json({ error: 'User no longer exists' });
     }
+
+    const currentTokenVersion = user.token_version || 0;
+    const payloadTokenVersion = payload.tokenVersion ?? 0;
+    if (payloadTokenVersion !== currentTokenVersion) {
+      return res.status(401).json({ error: 'Session invalidated due to password change. Please log in again.' });
+    }
+
     req.user = {
       id: user.id,
       username: user.username,
@@ -121,19 +189,23 @@ function requireAdmin(req, res, next) {
 /* --- Auth Routes --- */
 
 // POST /api/auth/login
-app.post('/api/auth/login', (req, res) => {
+app.post('/api/auth/login', rateLimitAuth(20, 60000), (req, res) => {
   const { username, password } = req.body;
   if (!username || !password) {
     return res.status(400).json({ error: 'Username and password are required' });
   }
 
   const user = db.prepare('SELECT * FROM users WHERE username = ? COLLATE NOCASE').get(username.trim());
-  if (!user || !bcrypt.compareSync(password, user.password_hash)) {
+  const DUMMY_HASH = '$2a$10$abcdefghijklmnopqrstuvABCDEFGHIJKLMNOPQRSTUV0123456789';
+  const hashToCompare = user ? user.password_hash : DUMMY_HASH;
+  const isPasswordValid = bcrypt.compareSync(password, hashToCompare);
+
+  if (!user || !isPasswordValid) {
     return res.status(401).json({ error: 'Invalid username or password' });
   }
 
   const token = jwt.sign(
-    { id: user.id, username: user.username, role: user.role },
+    { id: user.id, username: user.username, role: user.role, tokenVersion: user.token_version || 0 },
     JWT_SECRET,
     { expiresIn: '30d' }
   );
@@ -200,8 +272,9 @@ app.post('/api/auth/passkey/register-verify', authenticate, async (req, res) => 
     }
 
     const stored = webauthnChallenges.get(challengeId);
+    // Delete immediately on retrieval to prevent concurrency races and replay
+    webauthnChallenges.delete(challengeId);
     if (!stored || stored.userId !== req.user.id || stored.expiresAt < Date.now()) {
-      webauthnChallenges.delete(challengeId);
       return res.status(400).json({ error: 'Challenge expired or invalid. Please try again.' });
     }
 
@@ -218,10 +291,13 @@ app.post('/api/auth/passkey/register-verify', authenticate, async (req, res) => 
       return res.status(400).json({ error: 'Passkey verification failed' });
     }
 
-    webauthnChallenges.delete(challengeId);
-
     const { credential, credentialDeviceType, credentialBackedUp } = verification.registrationInfo;
     const now = new Date().toISOString();
+
+    const existingAuth = db.prepare('SELECT user_id FROM authenticators WHERE id = ?').get(credential.id);
+    if (existingAuth && existingAuth.user_id !== req.user.id) {
+      return res.status(409).json({ error: 'Passkey already registered to another user' });
+    }
 
     db.prepare(`
       INSERT OR REPLACE INTO authenticators (
@@ -293,7 +369,7 @@ app.post('/api/auth/passkey/login-options', async (req, res) => {
 });
 
 // POST /api/auth/passkey/login-verify (Verify passkey authentication and issue JWT token)
-app.post('/api/auth/passkey/login-verify', async (req, res) => {
+app.post('/api/auth/passkey/login-verify', rateLimitAuth(20, 60000), async (req, res) => {
   try {
     const { response, challengeId } = req.body;
     if (!response || !challengeId) {
@@ -301,8 +377,9 @@ app.post('/api/auth/passkey/login-verify', async (req, res) => {
     }
 
     const stored = webauthnChallenges.get(challengeId);
+    // Delete immediately on retrieval to prevent concurrency races and replay
+    webauthnChallenges.delete(challengeId);
     if (!stored || stored.expiresAt < Date.now()) {
-      webauthnChallenges.delete(challengeId);
       return res.status(400).json({ error: 'Challenge expired or invalid. Please try again.' });
     }
 
@@ -335,15 +412,13 @@ app.post('/api/auth/passkey/login-verify', async (req, res) => {
       return res.status(400).json({ error: 'Passkey authentication failed' });
     }
 
-    webauthnChallenges.delete(challengeId);
-
     const { newCounter } = verification.authenticationInfo;
     const now = new Date().toISOString();
     db.prepare('UPDATE authenticators SET counter = ?, last_used_at = ? WHERE id = ?')
       .run(newCounter, now, authenticator.id);
 
     const token = jwt.sign(
-      { id: user.id, username: user.username, role: user.role },
+      { id: user.id, username: user.username, role: user.role, tokenVersion: user.token_version || 0 },
       JWT_SECRET,
       { expiresIn: '30d' }
     );
@@ -475,7 +550,7 @@ app.put('/api/auth/password', authenticate, (req, res) => {
   const newHash = bcrypt.hashSync(newPassword, salt);
   const now = new Date().toISOString();
 
-  db.prepare('UPDATE users SET password_hash = ?, updated_at = ? WHERE id = ?').run(newHash, now, req.user.id);
+  db.prepare('UPDATE users SET password_hash = ?, token_version = token_version + 1, updated_at = ? WHERE id = ?').run(newHash, now, req.user.id);
   res.json({ success: true });
 });
 
@@ -651,7 +726,7 @@ app.put('/api/admin/users/:id/password', authenticate, requireAdmin, (req, res) 
     const passwordHash = bcrypt.hashSync(password, salt);
     const now = new Date().toISOString();
 
-    db.prepare('UPDATE users SET password_hash = ?, updated_at = ? WHERE id = ?').run(passwordHash, now, id);
+    db.prepare('UPDATE users SET password_hash = ?, token_version = token_version + 1, updated_at = ? WHERE id = ?').run(passwordHash, now, id);
     res.json({ success: true });
   } catch (err) {
     console.error('Failed to reset password:', err);

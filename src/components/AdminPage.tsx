@@ -512,7 +512,7 @@ export function AdminPage({ currentUser, token }: AdminPageProps) {
                 id="create-username"
                 value={createUsername}
                 onChange={(e) => setCreateUsername(e.target.value)}
-                placeholder="username"
+                placeholder={t("auth.username_placeholder")}
                 required
               />
             </div>
