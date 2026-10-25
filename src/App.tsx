@@ -631,8 +631,8 @@ function App() {
       </div>
 
       {/* Mobile Bottom Navigation */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-background/80 backdrop-blur-md border-t border-border safe-area-bottom pb-safe z-30">
-        <div className="flex justify-around items-center h-16">
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-background/85 backdrop-blur-md border-t border-border pb-safe z-30 pt-2 shadow-sm">
+        <div className="flex justify-around items-center">
           <MobileNavButton
             active={activeTab === 'daily'}
             onClick={() => setActiveTab('daily')}
@@ -696,7 +696,7 @@ function MobileNavButton({ active, onClick, icon: Icon, label }: { active: boole
       whileTap={{ scale: 0.9 }}
       onClick={onClick}
       className={cn(
-        "flex flex-col items-center justify-center w-full h-full space-y-1 relative",
+        "flex flex-col items-center justify-center w-full pt-1 pb-1.5 relative",
         active ? "text-primary" : "text-muted-foreground"
       )}
     >
@@ -704,9 +704,9 @@ function MobileNavButton({ active, onClick, icon: Icon, label }: { active: boole
         "p-1.5 rounded-full transition-all duration-300",
         active ? "bg-primary/10" : "bg-transparent"
       )}>
-        <Icon className={cn("w-6 h-6", active && "stroke-2")} />
+        <Icon className={cn("w-5 h-5", active && "stroke-[2.5px]")} />
       </div>
-      <span className="text-[10px] font-medium">{label}</span>
+      <span className="text-[11px] font-medium leading-none mt-1">{label}</span>
       {active && (
         <motion.div
           layoutId="activeTabMobile"
