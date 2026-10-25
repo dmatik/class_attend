@@ -26,7 +26,7 @@
     *   **User:** Full course and attendance management for their own scoped data.
 *   **👤 Account Management:** Dedicated Account page to update name, family name, avatar picture, change passwords, and manage passkeys.
 *   **🔑 WebAuthn & Passkeys Support:** Fast and secure biometric login using Touch ID, Face ID, Windows Hello, or hardware security keys in addition to username/password.
-*   **🗄️ SQLite Database:** Fast, reliable, zero-config local database (`attendance.db`) stored in the `./data` directory with foreign-key cascade deletions and auto-migration from legacy `db.json`.
+*   **🗄️ SQLite Database:** Fast, reliable, zero-config local database (`class_attend.db`) stored in the `./data` directory with foreign-key cascade deletions and auto-migration from legacy `db.json`.
 *   **🔐 Secure Authentication:** JWT-based sessions with bcrypt-hashed passwords. Initial installation seeds a default `admin` / `admin` account ready to use and customize.
 *   **📚 Course & Session Management:** Organize multiple courses, schedule days of the week, track attendance status (attended, absent), log reasons, and manage makeup / replacement lessons.
 *   **📊 Rich Dashboard & Analytics:** Real-time summary cards tracking remaining sessions, attendances, absences, and subscription usage.
@@ -115,7 +115,14 @@ If you want to contribute or develop locally:
 
 5.  **Run Tests:**
     ```bash
+    # Unit & Component Tests (Vitest)
     npm test
+
+    # Local End-to-End Tests (Playwright)
+    npm run test:e2e
+
+    # Local E2E with visible browser window
+    npm run test:e2e:headed
     ```
 
 ---
@@ -124,7 +131,8 @@ If you want to contribute or develop locally:
 
 *   `src/`: React Frontend (Vite, TypeScript, Tailwind CSS, Radix UI).
 *   `server/`: Express backend API with JWT authentication (`server/index.js`) and SQLite initialization & schemas (`server/db.js`).
-*   `data/`: Persistent volume directory containing `attendance.db` (SQLite database with tables for `users`, `courses`, and `sessions`).
+*   `data/`: Persistent volume directory containing `class_attend.db` (SQLite database with tables for `users`, `courses`, and `sessions`).
+*   `e2e/`: Playwright end-to-end test suites.
 
 ---
 
