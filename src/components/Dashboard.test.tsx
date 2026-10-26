@@ -1,13 +1,22 @@
 import { describe, it, expect, beforeAll, vi } from 'vitest'
-import { render, screen } from '@testing-library/react'
+import { render, screen, fireEvent } from '@testing-library/react'
 import { Dashboard } from './Dashboard'
 import type { Session } from '@/types'
+import * as csvLib from '@/lib/csv'
 
 // Mock react-i18next
 vi.mock('react-i18next', () => ({
     useTranslation: () => ({
         t: (key: string) => key,
+        i18n: { language: 'en' }
     }),
+}))
+
+// Mock csv utility functions
+vi.mock('@/lib/csv', () => ({
+    generateCourseCsv: vi.fn(() => 'mock,csv,data'),
+    generateCsvFilename: vi.fn(() => 'Math_101.csv'),
+    downloadCsv: vi.fn()
 }))
 
 // Setup window.scrollTo mock to avoid jsdom errors
@@ -123,5 +132,36 @@ describe('Dashboard Component', () => {
         const card = makeupLabel.parentElement?.parentElement
         expect(card).toHaveTextContent('1')
         expect(card).toHaveTextContent('(2)')
+    })
+
+    it('renders the export CSV button on the same line as the course name', () => {
+        render(<Dashboard sessions={mockSessions} />)
+
+        const exportBtn = screen.getByRole('button', { name: /dashboard\.csv_export\.export_button/i })
+        expect(exportBtn).toBeInTheDocument()
+
+        // Check that course heading and button are in the same header container
+        const heading = screen.getByText('Math 101')
+        expect(heading.parentElement).toContainElement(exportBtn)
+    })
+
+    it('triggers CSV generation and download on export button click', () => {
+        render(<Dashboard sessions={mockSessions} />)
+
+        const exportBtn = screen.getByRole('button', { name: /dashboard\.csv_export\.export_button/i })
+        fireEvent.click(exportBtn)
+
+        expect(csvLib.generateCourseCsv).toHaveBeenCalledWith(
+            expect.objectContaining({
+                stats: expect.objectContaining({
+                    courseId: 'c1',
+                    courseName: 'Math 101'
+                }),
+                sessions: mockSessions,
+                language: 'en'
+            })
+        )
+        expect(csvLib.generateCsvFilename).toHaveBeenCalledWith('Math 101')
+        expect(csvLib.downloadCsv).toHaveBeenCalledWith('Math_101.csv', 'mock,csv,data')
     })
 })
