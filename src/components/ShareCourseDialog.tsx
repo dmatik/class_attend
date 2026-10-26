@@ -26,7 +26,7 @@ export function ShareCourseDialog({
     onCourseUpdated,
     onLeaveCourse
 }: ShareCourseDialogProps) {
-    const { t } = useTranslation()
+    const { t, i18n } = useTranslation()
     const { toast } = useToast()
 
     const [members, setMembers] = React.useState<CourseMember[]>([])
@@ -206,6 +206,7 @@ export function ShareCourseDialog({
                         <div className="flex gap-2">
                             <div className="flex-1 min-w-0">
                                 <Select
+                                    dir={i18n.dir()}
                                     value={selectedUserId}
                                     onValueChange={setSelectedUserId}
                                     disabled={isLoadingUsers || isSubmitting || availableUsers.length === 0}

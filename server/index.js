@@ -906,32 +906,50 @@ app.delete('/api/courses/:id/members/:userId', authenticate, (req, res) => {
       return res.status(403).json({ error: 'Forbidden: Access to this course is required' });
     }
 
-    // Verify target user is indeed a member
-    const isMember = db.prepare('SELECT 1 FROM course_users WHERE course_id = ? AND user_id = ?').get(courseId, targetUserId);
-    if (!isMember) {
-      return res.status(404).json({ error: 'Member not found on this course' });
+    // Only allow removing other members if user is the course creator or admin; members can always remove themselves (leave)
+    const course = db.prepare('SELECT user_id FROM courses WHERE id = ?').get(courseId);
+    const isCreatorOrAdmin = (course && course.user_id === req.user.id) || req.user.role === 'admin';
+    if (!isCreatorOrAdmin && targetUserId !== req.user.id) {
+      return res.status(403).json({ error: 'forbidden', message: 'Only the course creator or an admin can remove other members' });
     }
 
-    // Orphan prevention check: At least one user must remain!
-    const memberCount = db.prepare('SELECT COUNT(*) as count FROM course_users WHERE course_id = ?').get(courseId).count;
-    if (memberCount <= 1) {
+    const removeTransaction = db.transaction(() => {
+      // Verify target user is indeed a member
+      const isMember = db.prepare('SELECT 1 FROM course_users WHERE course_id = ? AND user_id = ?').get(courseId, targetUserId);
+      if (!isMember) {
+        return { notFound: true };
+      }
+
+      // Orphan prevention check: At least one user must remain!
+      const memberCount = db.prepare('SELECT COUNT(*) as count FROM course_users WHERE course_id = ?').get(courseId).count;
+      if (memberCount <= 1) {
+        return { cannotRemoveLast: true };
+      }
+
+      // Remove user from course_users
+      db.prepare('DELETE FROM course_users WHERE course_id = ? AND user_id = ?').run(courseId, targetUserId);
+
+      // If target user was courses.user_id, reassign to a remaining member
+      if (course && course.user_id === targetUserId) {
+        const nextMember = db.prepare('SELECT user_id FROM course_users WHERE course_id = ? LIMIT 1').get(courseId);
+        if (nextMember) {
+          db.prepare('UPDATE courses SET user_id = ? WHERE id = ?').run(nextMember.user_id, courseId);
+          db.prepare('UPDATE sessions SET user_id = ? WHERE course_id = ?').run(nextMember.user_id, courseId);
+        }
+      }
+
+      return { success: true };
+    });
+
+    const result = removeTransaction();
+    if (result.notFound) {
+      return res.status(404).json({ error: 'Member not found on this course' });
+    }
+    if (result.cannotRemoveLast) {
       return res.status(400).json({
         error: 'cannot_remove_last_member',
         message: 'A course must have at least one user with access.'
       });
-    }
-
-    // Remove user from course_users
-    db.prepare('DELETE FROM course_users WHERE course_id = ? AND user_id = ?').run(courseId, targetUserId);
-
-    // If target user was courses.user_id, reassign to a remaining member
-    const course = db.prepare('SELECT user_id FROM courses WHERE id = ?').get(courseId);
-    if (course && course.user_id === targetUserId) {
-      const nextMember = db.prepare('SELECT user_id FROM course_users WHERE course_id = ? LIMIT 1').get(courseId);
-      if (nextMember) {
-        db.prepare('UPDATE courses SET user_id = ? WHERE id = ?').run(nextMember.user_id, courseId);
-        db.prepare('UPDATE sessions SET user_id = ? WHERE course_id = ?').run(nextMember.user_id, courseId);
-      }
     }
 
     const remainingMembers = db.prepare(`
@@ -981,17 +999,35 @@ app.get('/api/data', authenticate, (req, res) => {
       ORDER BY s.date ASC
     `).all(userId);
 
-    const getMembersStmt = db.prepare(`
-      SELECT u.id, u.username, u.first_name, u.last_name, u.avatar
-      FROM course_users cu
-      JOIN users u ON u.id = cu.user_id
-      WHERE cu.course_id = ?
-      ORDER BY u.first_name ASC, u.username ASC
-    `);
+    const courseIds = courseRows.map(c => c.id);
+    const membersByCourse = new Map();
+    if (courseIds.length > 0) {
+      const placeholders = courseIds.map(() => '?').join(',');
+      const allMembers = db.prepare(`
+        SELECT cu.course_id, u.id, u.username, u.first_name, u.last_name, u.avatar
+        FROM course_users cu
+        JOIN users u ON u.id = cu.user_id
+        WHERE cu.course_id IN (${placeholders})
+        ORDER BY u.first_name ASC, u.username ASC
+      `).all(...courseIds);
+
+      for (const m of allMembers) {
+        if (!membersByCourse.has(m.course_id)) {
+          membersByCourse.set(m.course_id, []);
+        }
+        membersByCourse.get(m.course_id).push({
+          id: m.id,
+          username: m.username,
+          firstName: m.first_name || '',
+          lastName: m.last_name || '',
+          avatar: m.avatar || ''
+        });
+      }
+    }
 
     const courses = courseRows.map(c => {
       const daysOfWeek = safeJsonParse(c.days_of_week, []);
-      const members = getMembersStmt.all(c.id);
+      const members = membersByCourse.get(c.id) || [];
 
       return {
         id: c.id,
@@ -1000,13 +1036,7 @@ app.get('/api/data', authenticate, (req, res) => {
         endDate: c.end_date || undefined,
         daysOfWeek,
         totalLessons: c.total_lessons || undefined,
-        sharedWith: members.map(m => ({
-          id: m.id,
-          username: m.username,
-          firstName: m.first_name || '',
-          lastName: m.last_name || '',
-          avatar: m.avatar || ''
-        }))
+        sharedWith: members
       };
     });
 
@@ -1087,6 +1117,18 @@ app.post('/api/data', authenticate, (req, res) => {
     const existingAccessibleCourseIds = new Set(existingAccessibleCourses.map(r => r.course_id));
 
     const checkCourseStmt = db.prepare('SELECT id, user_id FROM courses WHERE id = ?');
+
+    // SEC-01: Multi-tenant IDOR defense - verify all submitted existing courses are accessible to user
+    for (const c of courses) {
+      const existing = checkCourseStmt.get(c.id);
+      if (existing && !existingAccessibleCourseIds.has(c.id)) {
+        return res.status(403).json({
+          error: 'forbidden_course_access',
+          message: `Cannot modify or access course ${c.id}`
+        });
+      }
+    }
+
     const insertCourseStmt = db.prepare(`
       INSERT INTO courses (id, user_id, name, start_date, end_date, days_of_week, total_lessons, created_at)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?)
@@ -1123,10 +1165,26 @@ app.post('/api/data', authenticate, (req, res) => {
     const saveTransaction = db.transaction(() => {
       const now = new Date().toISOString();
 
-      // 1. Delete courses that user previously had access to but are missing in submitted courses (Option A: Delete removes course completely)
+      // 1. DATA-01: Handle courses missing from submitted payload
       for (const courseId of existingAccessibleCourseIds) {
         if (!submittedCourseIds.has(courseId)) {
-          deleteCourseStmt.run(courseId);
+          const memberCount = db.prepare('SELECT COUNT(*) as count FROM course_users WHERE course_id = ?').get(courseId).count;
+          if (memberCount <= 1) {
+            // Sole member: course was genuinely deleted by sole owner, hard delete
+            deleteCourseStmt.run(courseId);
+          } else {
+            // Shared course with other members: stale client auto-save or individual removal!
+            // Only unlink current user from course_users, do NOT delete course for collaborators
+            db.prepare('DELETE FROM course_users WHERE course_id = ? AND user_id = ?').run(courseId, userId);
+            const course = checkCourseStmt.get(courseId);
+            if (course && course.user_id === userId) {
+              const nextMember = db.prepare('SELECT user_id FROM course_users WHERE course_id = ? LIMIT 1').get(courseId);
+              if (nextMember) {
+                db.prepare('UPDATE courses SET user_id = ? WHERE id = ?').run(nextMember.user_id, courseId);
+                db.prepare('UPDATE sessions SET user_id = ? WHERE course_id = ?').run(nextMember.user_id, courseId);
+              }
+            }
+          }
         }
       }
 

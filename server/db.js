@@ -187,6 +187,11 @@ export function initDb() {
           VALUES (?, ?, ?, ?, ?, ?, ?, ?)
         `);
 
+        const insertCourseUser = db.prepare(`
+          INSERT OR REPLACE INTO course_users (course_id, user_id, created_at)
+          VALUES (?, ?, ?)
+        `);
+
         const insertSession = db.prepare(`
           INSERT OR REPLACE INTO sessions (
             id, user_id, course_id, course_name, date,
@@ -208,6 +213,7 @@ export function initDb() {
               c.totalLessons || null,
               now
             );
+            insertCourseUser.run(c.id, adminUserId, now);
           }
 
           for (const s of sessions) {

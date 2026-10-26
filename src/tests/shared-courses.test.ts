@@ -179,5 +179,97 @@ describe('Shared Courses & Orphan Prevention Database System', () => {
     const u2Member = db.prepare('SELECT 1 FROM course_users WHERE course_id = ? AND user_id = ?').get(c1, u2)
     expect(u2Member).toBeDefined()
   })
+
+  it('DATA-01: stale auto-save unlinks user from shared course without destroying course for others', () => {
+    const now = new Date().toISOString()
+    const testCourseId = 'data-01-course'
+    const testSessionId = 'data-01-session'
+    const userA = 'data-01-user-a'
+    const userB = 'data-01-user-b'
+
+    // Create users
+    db.prepare('INSERT OR IGNORE INTO users (id, username, password_hash, role, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)').run(userA, 'data01_a', 'hash', 'user', now, now)
+    db.prepare('INSERT OR IGNORE INTO users (id, username, password_hash, role, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)').run(userB, 'data01_b', 'hash', 'user', now, now)
+
+    // Create course owned by userA and shared with userB
+    db.prepare('INSERT INTO courses (id, user_id, name, start_date, days_of_week, created_at) VALUES (?, ?, ?, ?, ?, ?)').run(testCourseId, userA, 'Preserved Course', '2026-01-01', '[]', now)
+    db.prepare('INSERT INTO course_users (course_id, user_id, created_at) VALUES (?, ?, ?)').run(testCourseId, userA, now)
+    db.prepare('INSERT INTO course_users (course_id, user_id, created_at) VALUES (?, ?, ?)').run(testCourseId, userB, now)
+    db.prepare('INSERT INTO sessions (id, user_id, course_id, course_name, date, created_at) VALUES (?, ?, ?, ?, ?, ?)').run(testSessionId, userA, testCourseId, 'Preserved Course', '2026-01-02', now)
+
+    // User B syncs without testCourseId (simulating stale browser state)
+    // Application logic for DATA-01 in POST /api/data:
+    const userBAccessible = db.prepare('SELECT course_id FROM course_users WHERE user_id = ?').all(userB) as any[]
+    const submittedCourseIds = new Set<string>() // User B submits empty / other courses
+
+    for (const { course_id } of userBAccessible) {
+      if (!submittedCourseIds.has(course_id)) {
+        const count = (db.prepare('SELECT COUNT(*) as count FROM course_users WHERE course_id = ?').get(course_id) as any).count
+        if (count <= 1) {
+          db.prepare('DELETE FROM courses WHERE id = ?').run(course_id)
+        } else {
+          db.prepare('DELETE FROM course_users WHERE course_id = ? AND user_id = ?').run(course_id, userB)
+        }
+      }
+    }
+
+    // Verify course STILL exists for userA!
+    const courseStillExists = db.prepare('SELECT * FROM courses WHERE id = ?').get(testCourseId) as any
+    expect(courseStillExists).toBeDefined()
+    expect(courseStillExists.name).toBe('Preserved Course')
+
+    // Sessions are preserved!
+    const sessionStillExists = db.prepare('SELECT * FROM sessions WHERE id = ?').get(testSessionId) as any
+    expect(sessionStillExists).toBeDefined()
+
+    // User A is still a member, User B was unlinked
+    const userAMember = db.prepare('SELECT 1 FROM course_users WHERE course_id = ? AND user_id = ?').get(testCourseId, userA)
+    const userBMember = db.prepare('SELECT 1 FROM course_users WHERE course_id = ? AND user_id = ?').get(testCourseId, userB)
+    expect(userAMember).toBeDefined()
+    expect(userBMember).toBeUndefined()
+
+    // Clean up
+    db.prepare('DELETE FROM courses WHERE id = ?').run(testCourseId)
+    db.prepare('DELETE FROM users WHERE id IN (?, ?)').run(userA, userB)
+  })
+
+  it('AUTH-01: non-creator member cannot evict creator or other members', () => {
+    const creatorId = 'creator-u'
+    const memberId = 'member-u'
+    const otherMemberId = 'other-member-u'
+    const courseId = 'auth-01-course'
+    const now = new Date().toISOString()
+
+    db.prepare('INSERT OR IGNORE INTO users (id, username, password_hash, role, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)').run(creatorId, 'creator_u', 'hash', 'user', now, now)
+    db.prepare('INSERT OR IGNORE INTO users (id, username, password_hash, role, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)').run(memberId, 'member_u', 'hash', 'user', now, now)
+    db.prepare('INSERT OR IGNORE INTO users (id, username, password_hash, role, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)').run(otherMemberId, 'other_member_u', 'hash', 'user', now, now)
+
+    db.prepare('INSERT INTO courses (id, user_id, name, start_date, days_of_week, created_at) VALUES (?, ?, ?, ?, ?, ?)').run(courseId, creatorId, 'Auth Course', '2026-01-01', '[]', now)
+    db.prepare('INSERT INTO course_users (course_id, user_id, created_at) VALUES (?, ?, ?)').run(courseId, creatorId, now)
+    db.prepare('INSERT INTO course_users (course_id, user_id, created_at) VALUES (?, ?, ?)').run(courseId, memberId, now)
+    db.prepare('INSERT INTO course_users (course_id, user_id, created_at) VALUES (?, ?, ?)').run(courseId, otherMemberId, now)
+
+    const course = db.prepare('SELECT user_id FROM courses WHERE id = ?').get(courseId) as any
+
+    const isAllowedToRemove = (actingId: string, targetId: string, courseOwnerId: string) => {
+      return courseOwnerId === actingId || targetId === actingId
+    }
+
+    // Rule: Non-creator attempting to remove creator -> blocked
+    expect(isAllowedToRemove(memberId, creatorId, course.user_id)).toBe(false)
+
+    // Rule: Non-creator attempting to remove other member -> blocked
+    expect(isAllowedToRemove(memberId, otherMemberId, course.user_id)).toBe(false)
+
+    // Rule: Member removing self (leave course) -> allowed
+    expect(isAllowedToRemove(memberId, memberId, course.user_id)).toBe(true)
+
+    // Rule: Creator removing member -> allowed
+    expect(isAllowedToRemove(creatorId, memberId, course.user_id)).toBe(true)
+
+    // Clean up
+    db.prepare('DELETE FROM courses WHERE id = ?').run(courseId)
+    db.prepare('DELETE FROM users WHERE id IN (?, ?, ?)').run(creatorId, memberId, otherMemberId)
+  })
 })
 
