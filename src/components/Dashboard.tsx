@@ -1,9 +1,11 @@
 
 import { useMemo } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
 import { useTranslation } from "react-i18next"
-import { LayoutDashboard } from "lucide-react"
+import { LayoutDashboard, Download } from "lucide-react"
 import type { Session } from "@/types"
+import { generateCourseCsv, generateCsvFilename, downloadCsv } from "@/lib/csv"
 
 interface DashboardProps {
     sessions: Session[]
@@ -12,6 +14,7 @@ interface DashboardProps {
 interface CourseStats {
     courseId: string
     courseName: string
+    sessions: Session[]
     regularCount: number
     replacementsCount: number
     pendingRegular: number
@@ -23,7 +26,7 @@ interface CourseStats {
 }
 
 export function Dashboard({ sessions }: DashboardProps) {
-    const { t } = useTranslation()
+    const { t, i18n } = useTranslation()
 
     // Group sessions by course ID and compute stats memoized (P2-7 & P3-2)
     const courseStatsList = useMemo<CourseStats[]>(() => {
@@ -68,6 +71,7 @@ export function Dashboard({ sessions }: DashboardProps) {
             return {
                 courseId,
                 courseName,
+                sessions: courseSessions,
                 regularCount,
                 replacementsCount,
                 pendingRegular,
@@ -79,6 +83,17 @@ export function Dashboard({ sessions }: DashboardProps) {
             }
         })
     }, [sessions])
+
+    const handleExportCsv = (stats: CourseStats) => {
+        const csvContent = generateCourseCsv({
+            stats,
+            sessions: stats.sessions,
+            t,
+            language: i18n.language
+        })
+        const filename = generateCsvFilename(stats.courseName)
+        downloadCsv(filename, csvContent)
+    }
 
     return (
         <div className="h-full overflow-y-auto overscroll-y-contain space-y-6 p-4 md:p-8 pb-8">
@@ -102,9 +117,22 @@ export function Dashboard({ sessions }: DashboardProps) {
                     {courseStatsList.map((stats) => {
                         return (
                             <div key={stats.courseId} className="space-y-3">
-                                <h3 className="font-bold text-xl border-b pb-2 mx-1 select-none">
-                                    {stats.courseName}
-                                </h3>
+                                <div className="flex items-center justify-between border-b pb-2 mx-1 gap-2">
+                                    <h3 className="font-bold text-xl select-none truncate">
+                                        {stats.courseName}
+                                    </h3>
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        className="gap-1.5 shrink-0"
+                                        onClick={() => handleExportCsv(stats)}
+                                        title={t('dashboard.csv_export.export_button')}
+                                        aria-label={`${t('dashboard.csv_export.export_button')} - ${stats.courseName}`}
+                                    >
+                                        <Download className="w-4 h-4" />
+                                        <span>{t('dashboard.csv_export.export_button')}</span>
+                                    </Button>
+                                </div>
                                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
                                     <Card className="bg-gradient-to-br from-indigo-400 to-purple-500 dark:from-indigo-600 dark:to-purple-700 text-white border-none shadow-lg">
                                         <CardHeader className="p-4 pb-2">

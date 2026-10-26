@@ -94,7 +94,24 @@
         "absent": "החסרתי",
         "entitled_for_replacement": "זכאות להשלמה",
         "used_in_subscription": "נוצל מהמנוי",
-        "remaining": "ממתינים"
+        "remaining": "ממתינים",
+        "csv_export": {
+            "export_button": "ייצוא ל-CSV",
+            "course_name": "שם החוג",
+            "export_date": "תאריך ייצוא",
+            "summary_section": "סיכום",
+            "classes_section": "שיעורים",
+            "lesson_number": "#",
+            "date": "תאריך",
+            "day_of_week": "יום",
+            "type": "סוג",
+            "status": "סטטוס",
+            "reason": "סיבה",
+            "notes": "הערות",
+            "regular_lesson": "רגיל",
+            "replacement_lesson": "השלמה",
+            "pending_status": "ממתין"
+        }
     },
     "management": {
         "title": "החוגים שלי",

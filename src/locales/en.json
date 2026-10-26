@@ -94,7 +94,24 @@
         "absent": "Absent",
         "entitled_for_replacement": "Entitled for replacement",
         "used_in_subscription": "Used in subscription",
-        "remaining": "Remaining"
+        "remaining": "Remaining",
+        "csv_export": {
+            "export_button": "Export to CSV",
+            "course_name": "Course",
+            "export_date": "Export Date",
+            "summary_section": "Summary",
+            "classes_section": "Classes",
+            "lesson_number": "#",
+            "date": "Date",
+            "day_of_week": "Day",
+            "type": "Type",
+            "status": "Status",
+            "reason": "Reason",
+            "notes": "Notes",
+            "regular_lesson": "Regular",
+            "replacement_lesson": "Replacement",
+            "pending_status": "Pending"
+        }
     },
     "management": {
         "title": "My Courses",

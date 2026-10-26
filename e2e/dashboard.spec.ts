@@ -82,5 +82,14 @@ test.describe('Dashboard Statistics Flow', () => {
     await page.locator('aside nav button').nth(1).click();
     const courseHeader = page.locator(`main h3:has-text("${courseName}")`).first();
     await expect(courseHeader).toBeVisible();
+
+    // 4. Verify CSV export button is visible next to the course name and triggers download
+    const exportButton = page.getByRole('button', { name: /export to csv|ייצוא ל-csv/i }).first();
+    await expect(exportButton).toBeVisible();
+
+    const downloadPromise = page.waitForEvent('download');
+    await exportButton.click();
+    const download = await downloadPromise;
+    expect(download.suggestedFilename()).toContain('.csv');
   });
 });
