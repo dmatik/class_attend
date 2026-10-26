@@ -33,6 +33,19 @@ describe('csv utility', () => {
             expect(escapeCsvCell("line1\nline2")).toBe('"line1\nline2"')
             expect(escapeCsvCell("line1\r\nline2")).toBe('"line1\r\nline2"')
         })
+
+        it('neutralizes CSV formula injection triggers (=, +, -, @, \\t, \\r)', () => {
+            expect(escapeCsvCell('=1+1')).toBe("'=1+1")
+            expect(escapeCsvCell('+2+2')).toBe("'+2+2")
+            expect(escapeCsvCell('-5')).toBe("'-5")
+            expect(escapeCsvCell('@SUM(A1:A5)')).toBe("'@SUM(A1:A5)")
+            expect(escapeCsvCell('\t=cmd')).toBe("'\t=cmd")
+            expect(escapeCsvCell('   =HYPERLINK("http://attacker.com")')).toBe('"\'   =HYPERLINK(""http://attacker.com"")"')
+        })
+
+        it('strips null bytes and non-printable control characters', () => {
+            expect(escapeCsvCell("Hello\x00World\x07")).toBe("HelloWorld")
+        })
     })
 
     describe('generateCsvFilename', () => {
@@ -43,9 +56,16 @@ describe('csv utility', () => {
             expect(filename.endsWith('.csv')).toBe(true)
         })
 
-        it('provides default fallback for empty course name', () => {
-            const filename = generateCsvFilename('')
-            expect(filename.startsWith('course_')).toBe(true)
+        it('provides default fallback for empty, null, or undefined course name', () => {
+            expect(generateCsvFilename('')).toMatch(/^course_\d{4}-\d{2}-\d{2}\.csv$/)
+            expect(generateCsvFilename(null)).toMatch(/^course_\d{4}-\d{2}-\d{2}\.csv$/)
+            expect(generateCsvFilename(undefined)).toMatch(/^course_\d{4}-\d{2}-\d{2}\.csv$/)
+        })
+
+        it('strips control characters and limits filename length', () => {
+            const longName = 'A'.repeat(300)
+            const filename = generateCsvFilename(longName)
+            expect(filename.length).toBeLessThan(120)
         })
     })
 
@@ -198,6 +218,51 @@ describe('csv utility', () => {
             expect(csv).toContain('שיעורים')
             expect(csv).toContain('יום ראשון') // Sunday in Hebrew
         })
+
+        it('handles sessions with missing dates or undefined attendance gracefully', () => {
+            const corruptedSessions: any[] = [
+                { id: 'c1', courseId: 'c1', courseName: 'Test', date: undefined },
+                { id: 'c2', courseId: 'c1', courseName: 'Test', date: '2026-06-01' }
+            ]
+
+            const csv = generateCourseCsv({
+                stats: mockStats,
+                sessions: corruptedSessions,
+                t: mockEnT,
+                language: 'en'
+            })
+
+            expect(csv).toContain('1,,')
+            expect(csv).toContain('2,2026-06-01')
+        })
+
+        it('neutralizes formula injection in course name and session notes', () => {
+            const maliciousStats = {
+                ...mockStats,
+                courseName: '=cmd|/C calc!A0'
+            }
+            const maliciousSessions: Session[] = [
+                {
+                    id: 'm1',
+                    courseId: 'c1',
+                    courseName: '=cmd|/C calc!A0',
+                    date: '2026-06-01',
+                    attendance: { status: 'absent', details: '=HYPERLINK("http://evil.com")' }
+                }
+            ]
+
+            const csv = generateCourseCsv({
+                stats: maliciousStats,
+                sessions: maliciousSessions,
+                t: mockEnT,
+                language: 'en'
+            })
+
+            // Course name in metadata should be neutralized
+            expect(csv).toContain("'=cmd|/C calc!A0")
+            // Notes in session row should be neutralized
+            expect(csv).toContain("'=HYPERLINK(\"\"http://evil.com\"\")")
+        })
     })
 
     describe('downloadCsv', () => {
@@ -206,6 +271,7 @@ describe('csv utility', () => {
         let mockBlob: any = null
 
         beforeEach(() => {
+            vi.useFakeTimers()
             originalCreateObjectURL = URL.createObjectURL
             originalRevokeObjectURL = URL.revokeObjectURL
 
@@ -217,12 +283,13 @@ describe('csv utility', () => {
         })
 
         afterEach(() => {
+            vi.useRealTimers()
             URL.createObjectURL = originalCreateObjectURL
             URL.revokeObjectURL = originalRevokeObjectURL
             mockBlob = null
         })
 
-        it('creates a download link with UTF-8 BOM, triggers click, and cleans up', () => {
+        it('creates a download link with UTF-8 BOM, triggers click, and cleans up after delay', () => {
             const clickSpy = vi.fn()
             const appendChildSpy = vi.spyOn(document.body, 'appendChild')
             const removeChildSpy = vi.spyOn(document.body, 'removeChild')
@@ -242,6 +309,12 @@ describe('csv utility', () => {
             expect(appendChildSpy).toHaveBeenCalled()
             expect(clickSpy).toHaveBeenCalled()
             expect(removeChildSpy).toHaveBeenCalled()
+
+            // Object URL should NOT be revoked immediately (to protect async browser downloads)
+            expect(URL.revokeObjectURL).not.toHaveBeenCalled()
+
+            // Advance timers by 250ms
+            vi.advanceTimersByTime(250)
             expect(URL.revokeObjectURL).toHaveBeenCalledWith('blob:mock-url')
 
             createElementSpy.mockRestore()

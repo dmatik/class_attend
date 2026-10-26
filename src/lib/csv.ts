@@ -23,11 +23,27 @@ export interface GenerateCourseCsvParams {
 }
 
 /**
- * Escapes a cell value according to RFC 4180 CSV standard.
+ * Dangerous characters that trigger spreadsheet formula execution in Excel/Calc/Sheets (CWE-1236).
+ */
+const FORMULA_TRIGGERS = ['=', '+', '-', '@', '\t', '\r']
+
+/**
+ * Escapes a cell value according to RFC 4180 and protects against CSV formula injection (CWE-1236).
  */
 export function escapeCsvCell(cell: unknown): string {
     if (cell === null || cell === undefined) return ""
-    const str = String(cell)
+    let str = String(cell)
+
+    // Strip null bytes and non-printable control characters (preserving newline/tab/carriage return)
+    str = str.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, "")
+
+    // Neutralize formula injection if trimmed cell starts with a trigger character
+    const trimmed = str.trimStart()
+    if (FORMULA_TRIGGERS.some(trigger => trimmed.startsWith(trigger))) {
+        str = `'${str}`
+    }
+
+    // RFC 4180 escaping
     if (str.includes(",") || str.includes('"') || str.includes("\n") || str.includes("\r")) {
         return `"${str.replace(/"/g, '""')}"`
     }
@@ -44,7 +60,7 @@ export function generateCourseCsv({ stats, sessions, t, language }: GenerateCour
     const rows: string[][] = []
 
     // 1. Metadata
-    rows.push([t('dashboard.csv_export.course_name'), stats.courseName])
+    rows.push([t('dashboard.csv_export.course_name'), stats?.courseName || ""])
     rows.push([t('dashboard.csv_export.export_date'), format(new Date(), 'yyyy-MM-dd')])
     rows.push([]) // Blank line
 
@@ -59,12 +75,12 @@ export function generateCourseCsv({ stats, sessions, t, language }: GenerateCour
         t('dashboard.entitled_for_replacement')
     ])
 
-    const totalVal = `${stats.regularCount}${stats.replacementsCount > 0 ? ` (+${stats.replacementsCount})` : ''}`
-    const remainingVal = `${stats.pendingRegular}${stats.pendingReplacements > 0 ? ` (+${stats.pendingReplacements})` : ''}`
-    const presentVal = String(stats.present)
-    const absentVal = String(stats.absent)
-    const usedVal = String(stats.used)
-    const makeupsVal = `${stats.makeups}${stats.replacementsCount > 0 ? ` (${stats.replacementsCount})` : ''}`
+    const totalVal = `${stats?.regularCount || 0}${(stats?.replacementsCount || 0) > 0 ? ` (+${stats.replacementsCount})` : ''}`
+    const remainingVal = `${stats?.pendingRegular || 0}${(stats?.pendingReplacements || 0) > 0 ? ` (+${stats.pendingReplacements})` : ''}`
+    const presentVal = String(stats?.present || 0)
+    const absentVal = String(stats?.absent || 0)
+    const usedVal = String(stats?.used || 0)
+    const makeupsVal = `${stats?.makeups || 0}${(stats?.replacementsCount || 0) > 0 ? ` (${stats.replacementsCount})` : ''}`
 
     rows.push([totalVal, remainingVal, presentVal, absentVal, usedVal, makeupsVal])
     rows.push([]) // Blank line
@@ -81,39 +97,41 @@ export function generateCourseCsv({ stats, sessions, t, language }: GenerateCour
         t('dashboard.csv_export.notes')
     ])
 
-    // Sort sessions chronologically ascending
-    const sortedSessions = [...sessions].sort((a, b) => a.date.localeCompare(b.date))
+    // Sort sessions chronologically ascending with null-safety
+    const sortedSessions = [...(sessions || [])].sort((a, b) => (a?.date || "").localeCompare(b?.date || ""))
     const dateLocale = language === 'he' ? he : enUS
 
     sortedSessions.forEach((s, idx) => {
         let dayOfWeek = ""
-        try {
-            dayOfWeek = format(parseISO(s.date), 'EEEE', { locale: dateLocale })
-        } catch {
-            dayOfWeek = ""
+        if (s?.date) {
+            try {
+                dayOfWeek = format(parseISO(s.date), 'EEEE', { locale: dateLocale })
+            } catch {
+                dayOfWeek = ""
+            }
         }
 
-        const typeStr = s.isReplacement
+        const typeStr = s?.isReplacement
             ? t('dashboard.csv_export.replacement_lesson')
             : t('dashboard.csv_export.regular_lesson')
 
         let statusStr = t('dashboard.csv_export.pending_status')
-        if (s.attendance?.status === 'present') {
+        if (s?.attendance?.status === 'present') {
             statusStr = t('common.present')
-        } else if (s.attendance?.status === 'absent') {
+        } else if (s?.attendance?.status === 'absent') {
             statusStr = t('common.absent')
         }
 
         let reasonStr = ""
-        if (s.attendance?.status === 'absent' && s.attendance.reason) {
+        if (s?.attendance?.status === 'absent' && s.attendance.reason) {
             reasonStr = t(`reasons.${s.attendance.reason}`)
         }
 
-        const notesStr = s.attendance?.details || ""
+        const notesStr = s?.attendance?.details || ""
 
         rows.push([
             String(idx + 1),
-            s.date,
+            s?.date || "",
             dayOfWeek,
             typeStr,
             statusStr,
@@ -126,10 +144,18 @@ export function generateCourseCsv({ stats, sessions, t, language }: GenerateCour
 }
 
 /**
- * Creates a sanitized filename for CSV export.
+ * Creates a sanitized, safe filename for CSV export.
  */
-export function generateCsvFilename(courseName: string): string {
-    const safeName = courseName.replace(/[\\/:*?"<>|]/g, "_").trim() || "course"
+export function generateCsvFilename(courseName?: string | null): string {
+    const raw = typeof courseName === "string" ? courseName : ""
+    // Strip illegal filename characters, control chars, and BIDI override characters
+    const sanitized = raw
+        .replace(/[\\/:*?"<>|]/g, "_")
+        .replace(/[\u0000-\u001f\u007f-\u009f\u200e\u200f\u202a-\u202e]/g, "")
+        .trim()
+        .slice(0, 80) // Prevent OS filesystem path limit exhaustion
+
+    const safeName = sanitized || "course"
     return `${safeName}_${format(new Date(), 'yyyy-MM-dd')}.csv`
 }
 
@@ -143,9 +169,14 @@ export function downloadCsv(filename: string, csvContent: string): void {
     const link = document.createElement("a")
     link.href = url
     link.setAttribute("download", filename)
+
     document.body.appendChild(link)
-    link.click()
-    document.body.removeChild(link)
-    URL.revokeObjectURL(url)
+    try {
+        link.click()
+    } finally {
+        document.body.removeChild(link)
+        // Delay revocation to ensure background download manager completes stream acquisition
+        setTimeout(() => URL.revokeObjectURL(url), 250)
+    }
 }
 

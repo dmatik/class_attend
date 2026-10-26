@@ -72,10 +72,19 @@ Specialized skills are available in `.agents/skills/`:
 ## 5. Available Subagents & Roles
 
 Whenever delegating specialized tasks, use these exact role names:
-* **`code-reviewer`**: Audits diffs for security vulnerabilities (SQL injection, auth checks), multi-tenant data scoping, bilingual i18n completeness (`he.json` + `en.json`), and RTL layout compliance.
-* **`red-team-reviewer`**: Adversarial security researcher that stress-tests architectures, probes for exploit vectors (DoS, XSS, auth bypasses, timing attacks, data loss), and audits proposed remediations for flaws or regressions.
+* **`code-reviewer-architecture`**: Blue Team reviewer focused on architecture, stack compliance (React 19, Radix UI, Express 5, Better-SQLite3), type safety, lifecycle performance, and clean code.
+* **`code-reviewer-ui-testing`**: Blue Team reviewer focused on UI/UX, bilingual i18n completeness (`he.json` + `en.json`), RTL Tailwind compliance, and Vitest/Playwright test discipline and isolation.
+* **`red-team-reviewer`**: Adversarial security researcher that stress-tests architectures, probes for exploit vectors (DoS, XSS, CSV formula injection CWE-1236, auth bypasses, timing attacks, data loss), and audits edge-case resilience.
 * **`test-engineer`**: Writes and maintains Vitest component tests and Playwright E2E test suites with strict temporary user isolation and cleanup.
 * **`fullstack-engineer`**: Builds end-to-end features adhering to the project's exact stack (React 19, Radix UI, Express 5, Better-SQLite3).
+
+### Tri-Agent Code Review Protocol (2 Blue Team + 1 Red Team)
+Whenever the user requests a code review ("perform code review", "review this PR/branch"), **always** dispatch all three subagents in parallel as defined in [`.agents/rules/code-review-strategy.md`](.agents/rules/code-review-strategy.md):
+1. **`code-reviewer-architecture`** (Blue Team: Architecture, Backend, Types & Performance)
+2. **`code-reviewer-ui-testing`** (Blue Team: UI/UX, Bilingual i18n, RTL & Test Discipline)
+3. **`red-team-reviewer`** (Red Team: Adversarial Security, Penetration Testing & Edge Cases)
+
+Synthesize the three evaluations into a unified, actionable report covering architecture, UI/i18n/test compliance, security, and edge-case resilience.
 
 ---
 
