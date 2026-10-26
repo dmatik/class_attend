@@ -103,7 +103,7 @@ export function DailyView({
         .sort((a, b) => b.date.localeCompare(a.date))
 
     return (
-        <div className="h-full overflow-y-auto p-4 md:p-8 pb-24 space-y-6 bg-background">
+        <div className="h-full overflow-y-auto overscroll-y-contain p-4 md:p-8 pb-8 space-y-6 bg-background">
             {/* Page Header */}
             <div className="flex flex-row justify-between items-center gap-3 border-b pb-3 sm:pb-4">
                 <div className="min-w-0 flex-1">

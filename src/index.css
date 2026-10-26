@@ -93,9 +93,14 @@
   }
 
   html,
-  body {
+  body,
+  #root {
     @apply bg-background text-foreground font-sans;
     font-family: 'Heebo', 'Assistant', sans-serif;
+    height: 100%;
+    height: 100dvh;
+    overflow: hidden;
+    overscroll-behavior: none;
   }
 
   button,

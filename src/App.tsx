@@ -451,7 +451,7 @@ function App() {
   // 1. Initial auth check
   if (authChecking) {
     return (
-      <div className="h-screen w-full flex items-center justify-center bg-background">
+      <div className="h-dvh w-full flex items-center justify-center bg-background">
         <LoadingSpinner />
       </div>
     )
@@ -468,9 +468,9 @@ function App() {
 
   return (
     <DirectionProvider dir={i18n.dir()}>
-      <div className="flex h-screen bg-background overflow-hidden relative">
+      <div className="fixed inset-0 flex h-dvh w-full bg-background overflow-hidden">
       {/* Desktop Sidebar */}
-      <aside className="hidden md:flex flex-col w-64 bg-card border-e border-border h-screen sticky top-0 z-20 shadow-sm shrink-0">
+      <aside className="hidden md:flex flex-col w-64 bg-card border-e border-border h-full z-20 shadow-sm shrink-0">
         {/* User Icon placed before the app title */}
         <div className="p-5 border-b border-border flex items-center gap-3">
           <button
@@ -547,9 +547,9 @@ function App() {
       </aside>
 
       {/* Main Content Wrapper */}
-      <div className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden">
+      <div className="flex-1 flex flex-col min-w-0 h-full overflow-hidden">
         {/* Mobile Header with User Icon placed before the app title */}
-        <header className="md:hidden bg-background/80 backdrop-blur-md border-b border-border sticky top-0 z-20 px-4 py-3 flex items-center justify-between shrink-0">
+        <header className="md:hidden bg-background/80 backdrop-blur-md border-b border-border z-20 px-4 py-3 flex items-center justify-between shrink-0">
           <div className="flex items-center gap-2.5">
             {/* User Icon before the title */}
             <button
@@ -590,8 +590,8 @@ function App() {
         </header>
 
         {/* Scrollable Content Area */}
-        <main className="flex-1 overflow-hidden relative flex flex-col">
-          <div className="w-full h-full max-w-7xl mx-auto">
+        <main className="flex-1 min-h-0 overflow-hidden relative flex flex-col">
+          <div className="w-full flex-1 min-h-0 max-w-7xl mx-auto">
             {fetchError ? (
               <div className="flex h-full w-full flex-col items-center justify-center p-6 text-center">
                 <AlertCircle className="h-12 w-12 text-destructive mb-4" />
@@ -671,39 +671,39 @@ function App() {
             )}
           </div>
         </main>
-      </div>
 
-      {/* Mobile Bottom Navigation */}
-      <nav className="md:hidden fixed bottom-0 inset-x-0 bg-background/85 backdrop-blur-md border-t border-border pb-4 z-30 pt-1.5 shadow-sm">
-        <div className="flex justify-around items-center">
-          <MobileNavButton
-            active={activeTab === 'daily'}
-            onClick={() => setActiveTab('daily')}
-            icon={CalendarIcon}
-            label={t('common.calendar')}
-          />
-          <MobileNavButton
-            active={activeTab === 'dashboard'}
-            onClick={() => setActiveTab('dashboard')}
-            icon={LayoutDashboard}
-            label={t('common.dashboard')}
-          />
-          <MobileNavButton
-            active={activeTab === 'courses'}
-            onClick={() => setActiveTab('courses')}
-            icon={GraduationCap}
-            label={t('common.courses')}
-          />
-          {currentUser.role === 'admin' && (
+        {/* Mobile Bottom Navigation */}
+        <nav className="md:hidden bg-background/85 backdrop-blur-md border-t border-border pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-1.5 z-30 shadow-sm shrink-0">
+          <div className="flex justify-around items-center">
             <MobileNavButton
-              active={activeTab === 'admin'}
-              onClick={() => setActiveTab('admin')}
-              icon={Shield}
-              label={t('common.admin_short')}
+              active={activeTab === 'daily'}
+              onClick={() => setActiveTab('daily')}
+              icon={CalendarIcon}
+              label={t('common.calendar')}
             />
-          )}
-        </div>
-      </nav>
+            <MobileNavButton
+              active={activeTab === 'dashboard'}
+              onClick={() => setActiveTab('dashboard')}
+              icon={LayoutDashboard}
+              label={t('common.dashboard')}
+            />
+            <MobileNavButton
+              active={activeTab === 'courses'}
+              onClick={() => setActiveTab('courses')}
+              icon={GraduationCap}
+              label={t('common.courses')}
+            />
+            {currentUser.role === 'admin' && (
+              <MobileNavButton
+                active={activeTab === 'admin'}
+                onClick={() => setActiveTab('admin')}
+                icon={Shield}
+                label={t('common.admin_short')}
+              />
+            )}
+          </div>
+        </nav>
+      </div>
       <Toaster />
     </div>
     </DirectionProvider>

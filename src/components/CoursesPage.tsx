@@ -142,7 +142,7 @@ export function CoursesPage({ courses, onAddCourse, onEditCourse, onDeleteCourse
     }
 
     return (
-        <div className="h-full overflow-y-auto pb-24 space-y-6 p-4 md:p-8">
+        <div className="h-full overflow-y-auto overscroll-y-contain space-y-6 p-4 md:p-8 pb-8">
             {/* Page Header */}
             <div className="flex flex-row justify-between items-center gap-3 border-b pb-3 sm:pb-4">
                 <div className="min-w-0 flex-1">
