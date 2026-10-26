@@ -107,7 +107,7 @@ test.describe('Courses Management', () => {
     // 3. DELETE COURSE
     await page.waitForTimeout(700);
     const updatedCard = page.locator('.grid > div').filter({ hasText: updatedCourseName }).first();
-    await updatedCard.locator('button').nth(1).click();
+    await updatedCard.locator('button:has(svg.lucide-trash-2), button:last-child').first().click();
 
     // Alert dialog confirmation should be visible
     const alertDialog = page.locator('[role="alertdialog"]');

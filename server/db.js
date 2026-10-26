@@ -89,6 +89,16 @@ export function initDb() {
     );
 
     CREATE INDEX IF NOT EXISTS idx_authenticators_user ON authenticators(user_id);
+
+    CREATE TABLE IF NOT EXISTS course_users (
+      course_id TEXT NOT NULL REFERENCES courses(id) ON DELETE CASCADE,
+      user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      created_at TEXT NOT NULL,
+      PRIMARY KEY (course_id, user_id)
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_course_users_user ON course_users(user_id);
+    CREATE INDEX IF NOT EXISTS idx_course_users_course ON course_users(course_id);
   `);
 
   // Migrate missing columns on existing databases if needed
@@ -109,6 +119,15 @@ export function initDb() {
     }
 
     db.exec('CREATE INDEX IF NOT EXISTS idx_sessions_user_date ON sessions(user_id, date ASC);');
+
+    // Backfill course_users for existing courses if empty
+    const courseUsersCount = db.prepare('SELECT COUNT(*) as count FROM course_users').get().count;
+    if (courseUsersCount === 0) {
+      db.exec(`
+        INSERT OR IGNORE INTO course_users (course_id, user_id, created_at)
+        SELECT id, user_id, created_at FROM courses WHERE user_id IS NOT NULL;
+      `);
+    }
   } catch (err) {
     console.error('Migration error for columns:', err);
   }
@@ -168,6 +187,11 @@ export function initDb() {
           VALUES (?, ?, ?, ?, ?, ?, ?, ?)
         `);
 
+        const insertCourseUser = db.prepare(`
+          INSERT OR REPLACE INTO course_users (course_id, user_id, created_at)
+          VALUES (?, ?, ?)
+        `);
+
         const insertSession = db.prepare(`
           INSERT OR REPLACE INTO sessions (
             id, user_id, course_id, course_name, date,
@@ -189,6 +213,7 @@ export function initDb() {
               c.totalLessons || null,
               now
             );
+            insertCourseUser.run(c.id, adminUserId, now);
           }
 
           for (const s of sessions) {

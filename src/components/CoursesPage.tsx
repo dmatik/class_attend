@@ -2,7 +2,7 @@ import * as React from "react"
 import { useTranslation } from "react-i18next"
 import { format, parseISO } from "date-fns"
 import { DatePicker } from "@/components/ui/date-picker"
-import { Trash2, Edit, Plus, GraduationCap } from "lucide-react"
+import { Trash2, Edit, Plus, GraduationCap, Share2, Users } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -11,16 +11,30 @@ import { uuidv4 } from "@/lib/utils"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import type { Course } from "@/types"
+import { ShareCourseDialog } from "@/components/ShareCourseDialog"
+import type { Course, CourseMember } from "@/types"
 
 export interface CoursesPageProps {
     courses: Course[]
     onAddCourse: (course: Course) => void
     onEditCourse: (course: Course) => void
     onDeleteCourse: (id: string) => void
+    token?: string | null
+    currentUserId?: string
+    onUpdateCourseMembers?: (courseId: string, members: CourseMember[]) => void
+    onLeaveCourse?: (courseId: string) => void
 }
 
-export function CoursesPage({ courses, onAddCourse, onEditCourse, onDeleteCourse }: CoursesPageProps) {
+export function CoursesPage({
+    courses,
+    onAddCourse,
+    onEditCourse,
+    onDeleteCourse,
+    token = null,
+    currentUserId = "",
+    onUpdateCourseMembers,
+    onLeaveCourse
+}: CoursesPageProps) {
     const { t, i18n } = useTranslation()
 
     const DAYS = [
@@ -44,6 +58,7 @@ export function CoursesPage({ courses, onAddCourse, onEditCourse, onDeleteCourse
     const [isDialogOpen, setIsDialogOpen] = React.useState(false)
     const [editingCourse, setEditingCourse] = React.useState<Course | null>(null)
     const [courseToDelete, setCourseToDelete] = React.useState<Course | null>(null)
+    const [sharingCourse, setSharingCourse] = React.useState<Course | null>(null)
     const [name, setName] = React.useState("")
     const [startDate, setStartDate] = React.useState("")
 
@@ -169,7 +184,18 @@ export function CoursesPage({ courses, onAddCourse, onEditCourse, onDeleteCourse
                             <Card key={course.id} className="overflow-hidden bg-card border-border shadow-sm hover:shadow-md transition-shadow">
                                 <CardContent className="p-4 flex items-center justify-between">
                                     <div>
-                                        <h4 className="font-bold text-foreground">{course.name}</h4>
+                                        <div className="flex items-center gap-2">
+                                            <h4 className="font-bold text-foreground">{course.name}</h4>
+                                            {course.sharedWith && course.sharedWith.length > 1 && (
+                                                <span
+                                                    className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-primary/10 text-primary font-medium"
+                                                    title={t('management.sharing.members_count', { count: course.sharedWith.length })}
+                                                >
+                                                    <Users className="w-3 h-3" />
+                                                    <span>{course.sharedWith.length}</span>
+                                                </span>
+                                            )}
+                                        </div>
                                         <p className="text-sm text-muted-foreground">
                                             {t('management.days')} {course.daysOfWeek.map(d => DAYS_FULL.find(day => day.value === d)?.label).join(', ')}
                                         </p>
@@ -177,6 +203,15 @@ export function CoursesPage({ courses, onAddCourse, onEditCourse, onDeleteCourse
                                     <div className="flex items-center gap-2">
                                         <Button variant="ghost" size="icon" onClick={() => handleEditClick(course)} className="bg-primary/10 dark:bg-muted/80 text-primary hover:bg-primary/20 dark:hover:bg-muted transition-colors">
                                             <Edit className="w-5 h-5" />
+                                        </Button>
+                                        <Button
+                                            variant="ghost"
+                                            size="icon"
+                                            onClick={() => setSharingCourse(course)}
+                                            title={t('management.sharing.share_course')}
+                                            className="bg-primary/10 dark:bg-muted/80 text-primary hover:bg-primary/20 dark:hover:bg-muted transition-colors"
+                                        >
+                                            <Share2 className="w-5 h-5" />
                                         </Button>
                                         <Button variant="ghost" size="icon" onClick={() => handleDeleteClick(course)} className="bg-destructive/10 dark:bg-muted/80 text-destructive dark:text-red-400 hover:bg-destructive/20 dark:hover:bg-muted transition-colors">
                                             <Trash2 className="w-5 h-5" />
@@ -291,8 +326,13 @@ export function CoursesPage({ courses, onAddCourse, onEditCourse, onDeleteCourse
                 <AlertDialogContent>
                     <AlertDialogHeader>
                         <AlertDialogTitle>{t('management.are_you_sure')}</AlertDialogTitle>
-                        <AlertDialogDescription>
-                            {t('management.delete_course_description', { courseName: courseToDelete?.name })}
+                        <AlertDialogDescription className="space-y-2">
+                            <span>{t('management.delete_course_description', { courseName: courseToDelete?.name })}</span>
+                            {courseToDelete?.sharedWith && courseToDelete.sharedWith.length > 1 && (
+                                <span className="block text-destructive font-medium mt-2">
+                                    {t('management.sharing.delete_shared_warning', { count: courseToDelete.sharedWith.length - 1 })}
+                                </span>
+                            )}
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
@@ -301,6 +341,26 @@ export function CoursesPage({ courses, onAddCourse, onEditCourse, onDeleteCourse
                     </AlertDialogFooter>
                 </AlertDialogContent>
             </AlertDialog>
+
+            <ShareCourseDialog
+                course={sharingCourse}
+                isOpen={!!sharingCourse}
+                onClose={() => setSharingCourse(null)}
+                token={token}
+                currentUserId={currentUserId}
+                onCourseUpdated={(updatedCourse) => {
+                    setSharingCourse(updatedCourse)
+                    if (onUpdateCourseMembers && updatedCourse.sharedWith) {
+                        onUpdateCourseMembers(updatedCourse.id, updatedCourse.sharedWith)
+                    }
+                }}
+                onLeaveCourse={(courseId) => {
+                    setSharingCourse(null)
+                    if (onLeaveCourse) {
+                        onLeaveCourse(courseId)
+                    }
+                }}
+            />
         </div >
     )
 }

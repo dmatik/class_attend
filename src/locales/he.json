@@ -139,6 +139,27 @@
             "saturday": "ש"
         },
         "days": "ימי",
+        "sharing": {
+            "share_course": "שיתוף חוג",
+            "share_course_description": "הגדר מי יכול לצפות ולנהל חוג זה",
+            "title": "שיתוף: {{courseName}}",
+            "members_count": "{{count}} משתמשים",
+            "current_members": "משתמשים בעלי גישה",
+            "add_member": "הוספת משתמש",
+            "select_user_placeholder": "בחר משתמש...",
+            "add_button": "הוסף",
+            "adding": "מוסיף...",
+            "remove": "הסר",
+            "leave_course": "עזוב חוג",
+            "you": "את/ה",
+            "cannot_remove_last_member": "לקורס חייב להיות לפחות משתמש אחד בעל גישה.",
+            "delete_shared_warning": "שים לב: חוג זה משותף עם עוד {{count}} משתמשים. מחיקתו תמחק את החוג לצמיתות עבור כולם.",
+            "member_added_success": "המשתמש נוסף לחוג בהצלחה",
+            "member_removed_success": "המשתמש הוסר מהחוג",
+            "left_course_success": "הוסרת בהצלחה מהחוג",
+            "loading_users": "טוען משתמשים...",
+            "no_available_users": "לכל המשתמשים כבר יש גישה לחוג זה"
+        },
         "toast": {
             "course_added_success": "החוג נוצר בהצלחה",
             "course_added_success_description": "נוצרו {{sessionsAdded}} שיעורים עבור {{courseName}}",

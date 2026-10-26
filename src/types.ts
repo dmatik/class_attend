@@ -6,6 +6,14 @@ export interface AttendanceRecord {
     details?: string;
 }
 
+export interface CourseMember {
+    id: string;
+    username: string;
+    firstName: string;
+    lastName: string;
+    avatar?: string;
+}
+
 export interface Course {
     id: string
     name: string
@@ -13,6 +21,7 @@ export interface Course {
     daysOfWeek: number[]
     endDate?: string
     totalLessons?: number
+    sharedWith?: CourseMember[]
 }
 
 export interface Session {
