@@ -140,7 +140,7 @@ function safeJsonParse(value, fallback = []) {
 }
 
 app.use(cors());
-app.use(express.json({ limit: '2mb' })); // Support bulk session sync and avatar upload
+app.use(express.json({ limit: '10mb' })); // Support bulk session sync and avatar upload up to 5MB (Base64)
 
 // Cache-Control headers for all API requests
 app.use('/api', (req, res, next) => {
@@ -491,9 +491,9 @@ app.put('/api/auth/profile', authenticate, (req, res) => {
       return res.status(400).json({ error: 'avatar_invalid', message: 'Avatar must be a string' });
     }
     if (avatar.trim().length > 0) {
-      // 500KB limit (~700KB base64 string)
-      if (avatar.length > 700000) {
-        return res.status(400).json({ error: 'avatar_too_large', message: 'Avatar image must be under 500KB' });
+      // 5MB limit (~7MB base64 string)
+      if (avatar.length > 7 * 1024 * 1024) {
+        return res.status(400).json({ error: 'avatar_too_large', message: 'Avatar image must be under 5MB' });
       }
       // Strict image MIME check (PNG, JPEG, WebP only; rejects SVG to prevent stored XSS)
       const isAllowedImage = /^data:image\/(png|jpeg|jpg|webp);base64,[A-Za-z0-9+/=]+$/.test(avatar.trim());
@@ -1262,6 +1262,14 @@ app.use('/api', (req, res) => {
 
 // Global API error handler
 app.use((err, req, res, next) => {
+  // Handle payload / body size errors gracefully
+  if (err.type === 'entity.too.large' || err.status === 413 || err.statusCode === 413) {
+    return res.status(413).json({
+      error: 'payload_too_large',
+      message: 'Request payload is too large. Maximum size is 5MB.'
+    });
+  }
+
   console.error('Unhandled server error:', err);
   if (req.path.startsWith('/api') || req.originalUrl?.startsWith('/api')) {
     const isProd = process.env.NODE_ENV === 'production';
