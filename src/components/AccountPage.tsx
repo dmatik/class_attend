@@ -25,6 +25,7 @@ import {
 } from "@/components/ui/alert-dialog"
 import { toast } from "@/hooks/use-toast"
 import { isPasskeySupported, registerPasskey, fetchUserPasskeys, deletePasskey, type PasskeyInfo } from "@/lib/webauthn"
+import { compressImage } from "@/lib/image"
 import type { User as UserType } from "@/types"
 
 interface AccountPageProps {
@@ -147,27 +148,39 @@ export function AccountPage({ user, token, onUpdateUser, onLogout }: AccountPage
     }
   }
 
-  // Handle avatar file selection
-  const handleAvatarFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+  // Handle avatar file selection with client-side compression and 5MB limit
+  const handleAvatarFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
 
-    // Limit file size to 2MB
-    if (file.size > 2 * 1024 * 1024) {
+    // Limit file size to 5MB
+    const MAX_FILE_SIZE = 5 * 1024 * 1024
+    if (file.size > MAX_FILE_SIZE) {
       toast({
         variant: "destructive",
         title: t("account.avatar_too_large"),
         description: t("account.avatar_size_limit_desc")
       })
+      if (fileInputRef.current) {
+        fileInputRef.current.value = ""
+      }
       return
     }
 
-    const reader = new FileReader()
-    reader.onload = (event) => {
-      const result = event.target?.result as string
-      setAvatar(result)
+    try {
+      const compressed = await compressImage(file, { maxWidth: 512, maxHeight: 512, quality: 0.85 })
+      setAvatar(compressed)
+    } catch {
+      toast({
+        variant: "destructive",
+        title: t("common.error"),
+        description: t("account.avatar_invalid_format")
+      })
+    } finally {
+      if (fileInputRef.current) {
+        fileInputRef.current.value = ""
+      }
     }
-    reader.readAsDataURL(file)
   }
 
   // Save Profile
@@ -192,7 +205,23 @@ export function AccountPage({ user, token, onUpdateUser, onLogout }: AccountPage
       const isJson = res.headers.get("content-type")?.includes("application/json")
       const data = isJson ? await res.json().catch(() => null) : null
       if (!res.ok) {
-        throw new Error(data?.error || t("account.update_failed"))
+        if (res.status === 413 || data?.error === "payload_too_large" || data?.error === "avatar_too_large") {
+          toast({
+            variant: "destructive",
+            title: t("account.avatar_too_large"),
+            description: t("account.avatar_size_limit_desc")
+          })
+          return
+        }
+        if (data?.error === "avatar_invalid_format") {
+          toast({
+            variant: "destructive",
+            title: t("common.error"),
+            description: t("account.avatar_invalid_format")
+          })
+          return
+        }
+        throw new Error(data?.message || data?.error || t("account.update_failed"))
       }
 
       onUpdateUser(data.user)
