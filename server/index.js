@@ -764,11 +764,197 @@ app.delete('/api/admin/users/:id', authenticate, requireAdmin, (req, res) => {
       }
     }
 
+    // Handle courses of deleted user to prevent orphans
+    const userCourses = db.prepare('SELECT course_id FROM course_users WHERE user_id = ?').all(id);
+    for (const { course_id } of userCourses) {
+      const memberCount = db.prepare('SELECT COUNT(*) as count FROM course_users WHERE course_id = ?').get(course_id).count;
+      if (memberCount <= 1) {
+        // Sole member: delete course completely so no orphan course remains
+        db.prepare('DELETE FROM courses WHERE id = ?').run(course_id);
+      } else {
+        // Shared with others: reassign course/session user_id to a remaining member if needed
+        const nextMember = db.prepare('SELECT user_id FROM course_users WHERE course_id = ? AND user_id != ? LIMIT 1').get(course_id, id);
+        if (nextMember) {
+          db.prepare('UPDATE courses SET user_id = ? WHERE id = ?').run(nextMember.user_id, course_id);
+          db.prepare('UPDATE sessions SET user_id = ? WHERE course_id = ?').run(nextMember.user_id, course_id);
+        }
+        db.prepare('DELETE FROM course_users WHERE course_id = ? AND user_id = ?').run(course_id, id);
+      }
+    }
+
     db.prepare('DELETE FROM users WHERE id = ?').run(id);
     res.json({ success: true });
   } catch (err) {
     console.error('Failed to delete user:', err);
     res.status(500).json({ error: 'delete_failed' });
+  }
+});
+
+/* --- Course Sharing & Members Routes --- */
+
+// GET /api/users (List all users for sharing - safe public profiles)
+app.get('/api/users', authenticate, (req, res) => {
+  try {
+    const users = db.prepare(`
+      SELECT id, username, first_name, last_name, avatar
+      FROM users
+      ORDER BY first_name ASC, username ASC
+    `).all();
+
+    res.json({
+      users: users.map(u => ({
+        id: u.id,
+        username: u.username,
+        firstName: u.first_name || '',
+        lastName: u.last_name || '',
+        avatar: u.avatar || ''
+      }))
+    });
+  } catch (err) {
+    console.error('Failed to list users:', err);
+    res.status(500).json({ error: 'Failed to list users' });
+  }
+});
+
+// GET /api/courses/:id/members (List members of a course)
+app.get('/api/courses/:id/members', authenticate, (req, res) => {
+  try {
+    const courseId = req.params.id;
+    const hasAccess = db.prepare('SELECT 1 FROM course_users WHERE course_id = ? AND user_id = ?').get(courseId, req.user.id);
+    if (!hasAccess) {
+      return res.status(403).json({ error: 'Forbidden: Access to this course is required' });
+    }
+
+    const members = db.prepare(`
+      SELECT u.id, u.username, u.first_name, u.last_name, u.avatar
+      FROM course_users cu
+      JOIN users u ON u.id = cu.user_id
+      WHERE cu.course_id = ?
+      ORDER BY u.first_name ASC, u.username ASC
+    `).all(courseId);
+
+    res.json({
+      members: members.map(m => ({
+        id: m.id,
+        username: m.username,
+        firstName: m.first_name || '',
+        lastName: m.last_name || '',
+        avatar: m.avatar || ''
+      }))
+    });
+  } catch (err) {
+    console.error('Failed to list course members:', err);
+    res.status(500).json({ error: 'Failed to list course members' });
+  }
+});
+
+// POST /api/courses/:id/members (Add a member to course)
+app.post('/api/courses/:id/members', authenticate, (req, res) => {
+  try {
+    const courseId = req.params.id;
+    const { userId } = req.body;
+
+    if (!userId) {
+      return res.status(400).json({ error: 'userId is required' });
+    }
+
+    const hasAccess = db.prepare('SELECT 1 FROM course_users WHERE course_id = ? AND user_id = ?').get(courseId, req.user.id);
+    if (!hasAccess) {
+      return res.status(403).json({ error: 'Forbidden: Access to this course is required' });
+    }
+
+    const targetUser = db.prepare('SELECT id FROM users WHERE id = ?').get(userId);
+    if (!targetUser) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    const now = new Date().toISOString();
+    db.prepare('INSERT OR IGNORE INTO course_users (course_id, user_id, created_at) VALUES (?, ?, ?)').run(courseId, userId, now);
+
+    const members = db.prepare(`
+      SELECT u.id, u.username, u.first_name, u.last_name, u.avatar
+      FROM course_users cu
+      JOIN users u ON u.id = cu.user_id
+      WHERE cu.course_id = ?
+      ORDER BY u.first_name ASC, u.username ASC
+    `).all(courseId);
+
+    res.json({
+      success: true,
+      members: members.map(m => ({
+        id: m.id,
+        username: m.username,
+        firstName: m.first_name || '',
+        lastName: m.last_name || '',
+        avatar: m.avatar || ''
+      }))
+    });
+  } catch (err) {
+    console.error('Failed to add course member:', err);
+    res.status(500).json({ error: 'Failed to add course member' });
+  }
+});
+
+// DELETE /api/courses/:id/members/:userId (Remove member from course - orphan guard)
+app.delete('/api/courses/:id/members/:userId', authenticate, (req, res) => {
+  try {
+    const courseId = req.params.id;
+    const targetUserId = req.params.userId;
+
+    const hasAccess = db.prepare('SELECT 1 FROM course_users WHERE course_id = ? AND user_id = ?').get(courseId, req.user.id);
+    if (!hasAccess) {
+      return res.status(403).json({ error: 'Forbidden: Access to this course is required' });
+    }
+
+    // Verify target user is indeed a member
+    const isMember = db.prepare('SELECT 1 FROM course_users WHERE course_id = ? AND user_id = ?').get(courseId, targetUserId);
+    if (!isMember) {
+      return res.status(404).json({ error: 'Member not found on this course' });
+    }
+
+    // Orphan prevention check: At least one user must remain!
+    const memberCount = db.prepare('SELECT COUNT(*) as count FROM course_users WHERE course_id = ?').get(courseId).count;
+    if (memberCount <= 1) {
+      return res.status(400).json({
+        error: 'cannot_remove_last_member',
+        message: 'A course must have at least one user with access.'
+      });
+    }
+
+    // Remove user from course_users
+    db.prepare('DELETE FROM course_users WHERE course_id = ? AND user_id = ?').run(courseId, targetUserId);
+
+    // If target user was courses.user_id, reassign to a remaining member
+    const course = db.prepare('SELECT user_id FROM courses WHERE id = ?').get(courseId);
+    if (course && course.user_id === targetUserId) {
+      const nextMember = db.prepare('SELECT user_id FROM course_users WHERE course_id = ? LIMIT 1').get(courseId);
+      if (nextMember) {
+        db.prepare('UPDATE courses SET user_id = ? WHERE id = ?').run(nextMember.user_id, courseId);
+        db.prepare('UPDATE sessions SET user_id = ? WHERE course_id = ?').run(nextMember.user_id, courseId);
+      }
+    }
+
+    const remainingMembers = db.prepare(`
+      SELECT u.id, u.username, u.first_name, u.last_name, u.avatar
+      FROM course_users cu
+      JOIN users u ON u.id = cu.user_id
+      WHERE cu.course_id = ?
+      ORDER BY u.first_name ASC, u.username ASC
+    `).all(courseId);
+
+    res.json({
+      success: true,
+      members: remainingMembers.map(m => ({
+        id: m.id,
+        username: m.username,
+        firstName: m.first_name || '',
+        lastName: m.last_name || '',
+        avatar: m.avatar || ''
+      }))
+    });
+  } catch (err) {
+    console.error('Failed to remove course member:', err);
+    res.status(500).json({ error: 'Failed to remove course member' });
   }
 });
 
@@ -779,11 +965,33 @@ app.get('/api/data', authenticate, (req, res) => {
   try {
     const userId = req.user.id;
 
-    const courseRows = db.prepare('SELECT * FROM courses WHERE user_id = ? ORDER BY created_at ASC').all(userId);
-    const sessionRows = db.prepare('SELECT * FROM sessions WHERE user_id = ? ORDER BY date ASC').all(userId);
+    const courseRows = db.prepare(`
+      SELECT c.*
+      FROM courses c
+      JOIN course_users cu ON cu.course_id = c.id
+      WHERE cu.user_id = ?
+      ORDER BY c.created_at ASC
+    `).all(userId);
+
+    const sessionRows = db.prepare(`
+      SELECT s.*
+      FROM sessions s
+      JOIN course_users cu ON cu.course_id = s.course_id
+      WHERE cu.user_id = ?
+      ORDER BY s.date ASC
+    `).all(userId);
+
+    const getMembersStmt = db.prepare(`
+      SELECT u.id, u.username, u.first_name, u.last_name, u.avatar
+      FROM course_users cu
+      JOIN users u ON u.id = cu.user_id
+      WHERE cu.course_id = ?
+      ORDER BY u.first_name ASC, u.username ASC
+    `);
 
     const courses = courseRows.map(c => {
       const daysOfWeek = safeJsonParse(c.days_of_week, []);
+      const members = getMembersStmt.all(c.id);
 
       return {
         id: c.id,
@@ -791,7 +999,14 @@ app.get('/api/data', authenticate, (req, res) => {
         startDate: c.start_date,
         endDate: c.end_date || undefined,
         daysOfWeek,
-        totalLessons: c.total_lessons || undefined
+        totalLessons: c.total_lessons || undefined,
+        sharedWith: members.map(m => ({
+          id: m.id,
+          username: m.username,
+          firstName: m.first_name || '',
+          lastName: m.last_name || '',
+          avatar: m.avatar || ''
+        }))
       };
     });
 
@@ -845,7 +1060,11 @@ app.post('/api/data', authenticate, (req, res) => {
 
     // Safety guard against accidental full-data wipe (P0-5)
     if (courses.length === 0) {
-      const existingCoursesCount = db.prepare('SELECT COUNT(*) as count FROM courses WHERE user_id = ?').get(userId).count;
+      const existingCoursesCount = db.prepare(`
+        SELECT COUNT(*) as count
+        FROM course_users
+        WHERE user_id = ?
+      `).get(userId).count;
       if (existingCoursesCount > 0 && !confirmEmpty) {
         return res.status(400).json({
           error: 'wipe_prevented',
@@ -864,43 +1083,96 @@ app.post('/api/data', authenticate, (req, res) => {
       }
     }
 
-    const deleteSessions = db.prepare('DELETE FROM sessions WHERE user_id = ?');
-    const deleteCourses = db.prepare('DELETE FROM courses WHERE user_id = ?');
+    const existingAccessibleCourses = db.prepare('SELECT course_id FROM course_users WHERE user_id = ?').all(userId);
+    const existingAccessibleCourseIds = new Set(existingAccessibleCourses.map(r => r.course_id));
 
-    const insertCourse = db.prepare(`
+    const checkCourseStmt = db.prepare('SELECT id, user_id FROM courses WHERE id = ?');
+    const insertCourseStmt = db.prepare(`
       INSERT INTO courses (id, user_id, name, start_date, end_date, days_of_week, total_lessons, created_at)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?)
     `);
+    const updateCourseStmt = db.prepare(`
+      UPDATE courses
+      SET name = ?, start_date = ?, end_date = ?, days_of_week = ?, total_lessons = ?
+      WHERE id = ?
+    `);
+    const insertCourseUserStmt = db.prepare(`
+      INSERT OR IGNORE INTO course_users (course_id, user_id, created_at)
+      VALUES (?, ?, ?)
+    `);
+    const deleteCourseStmt = db.prepare('DELETE FROM courses WHERE id = ?');
 
-    const insertSession = db.prepare(`
+    const upsertSessionStmt = db.prepare(`
       INSERT INTO sessions (
         id, user_id, course_id, course_name, date,
         attendance_status, attendance_reason, attendance_details,
         replacement_session_id, replacement_for_session_id, is_replacement, created_at
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      ON CONFLICT(id) DO UPDATE SET
+        course_name = excluded.course_name,
+        date = excluded.date,
+        attendance_status = excluded.attendance_status,
+        attendance_reason = excluded.attendance_reason,
+        attendance_details = excluded.attendance_details,
+        replacement_session_id = excluded.replacement_session_id,
+        replacement_for_session_id = excluded.replacement_for_session_id,
+        is_replacement = excluded.is_replacement
     `);
+    const deleteSessionStmt = db.prepare('DELETE FROM sessions WHERE id = ?');
 
     const saveTransaction = db.transaction(() => {
-      deleteSessions.run(userId);
-      deleteCourses.run(userId);
-
       const now = new Date().toISOString();
 
+      // 1. Delete courses that user previously had access to but are missing in submitted courses (Option A: Delete removes course completely)
+      for (const courseId of existingAccessibleCourseIds) {
+        if (!submittedCourseIds.has(courseId)) {
+          deleteCourseStmt.run(courseId);
+        }
+      }
+
+      // 2. Insert or update courses
       for (const c of courses) {
-        insertCourse.run(
-          c.id,
-          userId,
-          c.name,
-          c.startDate,
-          c.endDate || null,
-          JSON.stringify(c.daysOfWeek || []),
-          c.totalLessons || null,
-          now
-        );
+        const existing = checkCourseStmt.get(c.id);
+        if (!existing) {
+          insertCourseStmt.run(
+            c.id,
+            userId,
+            c.name,
+            c.startDate,
+            c.endDate || null,
+            JSON.stringify(c.daysOfWeek || []),
+            c.totalLessons || null,
+            now
+          );
+          insertCourseUserStmt.run(c.id, userId, now);
+        } else {
+          if (existingAccessibleCourseIds.has(c.id)) {
+            updateCourseStmt.run(
+              c.name,
+              c.startDate,
+              c.endDate || null,
+              JSON.stringify(c.daysOfWeek || []),
+              c.totalLessons || null,
+              c.id
+            );
+          }
+        }
+      }
+
+      // 3. Sync sessions
+      const submittedSessionIds = new Set(sessions.map(s => s.id));
+
+      for (const courseId of submittedCourseIds) {
+        const existingSessions = db.prepare('SELECT id FROM sessions WHERE course_id = ?').all(courseId);
+        for (const s of existingSessions) {
+          if (!submittedSessionIds.has(s.id)) {
+            deleteSessionStmt.run(s.id);
+          }
+        }
       }
 
       for (const s of sessions) {
-        insertSession.run(
+        upsertSessionStmt.run(
           s.id,
           userId,
           s.courseId,

@@ -16,7 +16,7 @@ import { Toaster } from "@/components/ui/toaster"
 import { toast } from "@/hooks/use-toast"
 import { Button } from "@/components/ui/button"
 import { cn, uuidv4 } from "@/lib/utils"
-import type { Session, Course, User } from "@/types"
+import type { Session, Course, User, CourseMember } from "@/types"
 import { ModeToggle } from "@/components/mode-toggle"
 import { LanguageSwitcher } from "@/components/LanguageSwitcher"
 import { LoginView } from "@/components/LoginView"
@@ -288,7 +288,17 @@ function App() {
 
   const handleAddCourse = (course: Course) => {
     try {
-      setCourses([...courses, course])
+      const courseWithCreator: Course = {
+        ...course,
+        sharedWith: currentUser ? [{
+          id: currentUser.id,
+          username: currentUser.username,
+          firstName: currentUser.firstName,
+          lastName: currentUser.lastName,
+          avatar: currentUser.avatar
+        }] : []
+      }
+      setCourses(prev => [...prev, courseWithCreator])
       const newSessions: Session[] = []
       const start = parseISO(course.startDate)
 
@@ -351,6 +361,15 @@ function App() {
       }
       return s
     }))
+  }
+
+  const handleUpdateCourseMembers = (courseId: string, members: CourseMember[]) => {
+    setCourses(prev => prev.map(c => c.id === courseId ? { ...c, sharedWith: members } : c))
+  }
+
+  const handleLeaveCourse = (courseId: string) => {
+    setCourses(prev => prev.filter(c => c.id !== courseId))
+    setSessions(prev => prev.filter(s => s.courseId !== courseId))
   }
 
   const handleUpdateAttendance = (sessionId: string, data: Session['attendance']) => {
@@ -647,6 +666,10 @@ function App() {
                             onAddCourse={handleAddCourse}
                             onEditCourse={handleEditCourse}
                             onDeleteCourse={handleDeleteCourse}
+                            token={token}
+                            currentUserId={currentUser?.id || ""}
+                            onUpdateCourseMembers={handleUpdateCourseMembers}
+                            onLeaveCourse={handleLeaveCourse}
                           />
                         )}
                         {activeTab === 'admin' && currentUser.role === 'admin' && (

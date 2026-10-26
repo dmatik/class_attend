@@ -53,6 +53,12 @@ vi.mock('lucide-react', () => ({
     X: () => <span data-testid="icon-x" />, // Used by Dialog close button
     Plus: () => <span data-testid="icon-plus" />,
     GraduationCap: () => <span data-testid="icon-graduation-cap" />,
+    Share2: () => <span data-testid="icon-share" />,
+    Users: () => <span data-testid="icon-users" />,
+    UserPlus: () => <span data-testid="icon-user-plus" />,
+    LogOut: () => <span data-testid="icon-logout" />,
+    Loader2: () => <span data-testid="icon-loader" />,
+    AlertCircle: () => <span data-testid="icon-alert" />,
 }))
 
 const mockCourses: Course[] = [

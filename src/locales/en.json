@@ -139,6 +139,27 @@
             "saturday": "Sat"
         },
         "days": "Days:",
+        "sharing": {
+            "share_course": "Share Course",
+            "share_course_description": "Configure who can view and manage this course",
+            "title": "Sharing: {{courseName}}",
+            "members_count": "{{count}} members",
+            "current_members": "Current Members",
+            "add_member": "Add Member",
+            "select_user_placeholder": "Select user...",
+            "add_button": "Add",
+            "adding": "Adding...",
+            "remove": "Remove",
+            "leave_course": "Leave Course",
+            "you": "You",
+            "cannot_remove_last_member": "At least one user must have access to the course.",
+            "delete_shared_warning": "Warning: This course is shared with {{count}} other user(s). Deleting it will permanently delete it for everyone.",
+            "member_added_success": "User added to course successfully",
+            "member_removed_success": "User removed from course",
+            "left_course_success": "You have left the course",
+            "loading_users": "Loading users...",
+            "no_available_users": "All users already have access to this course"
+        },
         "toast": {
             "course_added_success": "Course added successfully",
             "course_added_success_description": "Total of {{sessionsAdded}} lessons created for {{courseName}}",
